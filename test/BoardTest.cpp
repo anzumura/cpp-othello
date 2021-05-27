@@ -11,12 +11,6 @@ protected:
   Board board;
 };
 
-TEST_F(BoardTest, EnumHasExpectedValues) {
-  EXPECT_EQ(static_cast<int8_t>(BoardValue::Empty), 0);
-  EXPECT_EQ(static_cast<int8_t>(BoardValue::Black), 1);
-  EXPECT_EQ(static_cast<int8_t>(BoardValue::White), 2);
-}
-
 TEST_F(BoardTest, ToStream) {
   auto expected = "\
 +-+-----------------+-+\n\

@@ -1,5 +1,15 @@
 #include "Board.h"
 
+// lambdas used for checking bounds when calculating flips
+constexpr auto UpCheck = [](int x) { return x >= 0; };
+constexpr auto DownCheck = [](int x) { return x < 64; };
+// LeftCheck is omitted on purpose (UpLeftCheck is used for this case)
+constexpr auto UpLeftCheck = [](int x) { return x >= 0 && x % 8 != 7; };
+constexpr auto DownLeftCheck = [](int x) { return x < 64 && x % 8 != 7; };
+constexpr auto RightCheck = [](int x) { return x % 8 != 0; };
+constexpr auto UpRightCheck = [](int x) { return x >= 0 && x % 8 != 0; };
+constexpr auto DownRightCheck = [](int x) { return x < 64 && x % 8 != 0; };
+
 Board::Board(const char* str) {
   const char* p = str;
   for (int i = 0; i < 64; ++i, ++p)
@@ -20,6 +30,40 @@ std::string Board::toString() const {
   return result;
 }
 
+std::vector<std::string> Board::validMoves(BoardValue value) const {
+  std::vector<std::string> result;
+  const Set& myValues = value == BoardValue::Black ? black : white;
+  const Set& opValues = value == BoardValue::Black ? white : black;
+  for (int i = 0; i < 64; ++i)
+    if (!black.test(i) && !white.test(i) && validMove(i, myValues, opValues))
+      result.emplace_back(posToString(i));
+  return result;
+}
+
+bool Board::validMove(int pos, const Set& myValues, const Set& opValues) const {
+  const auto valid = [&](int inc, bool pred(int)) {
+    if (int x = pos + inc; opValues.test(x)) {
+      x += inc;
+      do {
+        if (myValues.test(x)) return true;
+        if (!opValues.test(x)) break;
+        x += inc;
+      } while (pred(x));
+    }
+    return false;
+  };
+  const bool canFlipUp = pos > 15;  // must be > 2rd row to flip up
+  if (canFlipUp && valid(-8, UpCheck)) return true;
+  const bool canFlipDown = pos < 48;  // must be < 7th row flip down
+  return (canFlipDown && valid(8, DownCheck)) ||
+         (pos % 8 > 1 &&  // must be > 2rd column to flip left
+          (valid(-1, UpLeftCheck) || (canFlipUp && valid(-9, UpLeftCheck)) ||
+           (canFlipDown && valid(7, DownLeftCheck)))) ||
+         (pos % 8 < 6 &&  // must be < 7th column to flip right
+          (valid(1, RightCheck) || (canFlipUp && valid(-7, UpRightCheck)) ||
+           (canFlipDown && valid(9, DownRightCheck))));
+}
+
 int Board::set(const char* pos, BoardValue value) {
   if (strlen(pos) != 2) return 0;
   const int col = pos[0] - 'a';
@@ -31,16 +75,6 @@ int Board::set(const char* pos, BoardValue value) {
   if (value == BoardValue::Black) return set(z, black, white);
   return set(z, white, black);
 }
-
-// lambdas used for checking bounds when calculating flips
-constexpr auto UpCheck = [](int x) { return x >= 0; };
-constexpr auto DownCheck = [](int x) { return x < 64; };
-// LeftCheck is omitted on purpose (UpLeftCheck is used for this case)
-constexpr auto UpLeftCheck = [](int x) { return x >= 0 && x % 8 != 7; };
-constexpr auto DownLeftCheck = [](int x) { return x < 64 && x % 8 != 7; };
-constexpr auto RightCheck = [](int x) { return x % 8 != 0; };
-constexpr auto UpRightCheck = [](int x) { return x >= 0 && x % 8 != 0; };
-constexpr auto DownRightCheck = [](int x) { return x < 64 && x % 8 != 0; };
 
 int Board::set(int pos, Set& myValues, Set& opValues) {
   int totalFlipped = 0;
@@ -85,7 +119,8 @@ int Board::set(int pos, Set& myValues, Set& opValues) {
 }
 
 // for printing to stream
-constexpr auto Border = "\
+constexpr auto Border =
+    "\
 +-+-----------------+-+\n\
 | | A B C D E F G H | |\n\
 +-+-----------------+-+\n";

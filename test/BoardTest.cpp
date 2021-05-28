@@ -17,10 +17,29 @@ class BoardTest : public ::testing::Test {
 };
 
 TEST_F(BoardTest, BoardSize) {
-  // 'board' should be 16 bytes (128 bits) and 'long long' should be 8 bytes (64
-  // bits)
+  // 'board' should be 16 bytes (128 bits)
   EXPECT_EQ(sizeof(board), 16);
+  // 'long long' should be 8 bytes (64 bits)
   EXPECT_EQ(sizeof(1LL), 8);
+}
+
+TEST_F(BoardTest, Scores) {
+  // Initial score
+  EXPECT_EQ(board.blackCount(), 2);
+  EXPECT_EQ(board.whiteCount(), 2);
+  // place one piece and then check scores again
+  ASSERT_EQ(board.set("d3", BoardValue::Black), 1);  
+  EXPECT_EQ(board.blackCount(), 4);
+  EXPECT_EQ(board.whiteCount(), 1);
+}
+
+TEST_F(BoardTest, ValidMoves) {
+  auto blackMoves = board.validMoves(BoardValue::Black);
+  std::vector<std::string> expectedBlackMoves = {"d3","c4","f5","e6"};
+  ASSERT_EQ(blackMoves, expectedBlackMoves);
+  auto whiteMoves = board.validMoves(BoardValue::White);
+  std::vector<std::string> expectedWhiteMoves = {"e3","f4","c5","d6"};
+  ASSERT_EQ(whiteMoves, expectedWhiteMoves);
 }
 
 TEST_F(BoardTest, ToStream) {

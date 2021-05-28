@@ -35,10 +35,10 @@ TEST_F(BoardTest, Scores) {
 
 TEST_F(BoardTest, ValidMoves) {
   auto blackMoves = board.validMoves(BoardValue::Black);
-  std::vector<std::string> expectedBlackMoves = {"d3","c4","f5","e6"};
+  std::vector<std::string> expectedBlackMoves = {"d3", "c4", "f5", "e6"};
   ASSERT_EQ(blackMoves, expectedBlackMoves);
   auto whiteMoves = board.validMoves(BoardValue::White);
-  std::vector<std::string> expectedWhiteMoves = {"e3","f4","c5","d6"};
+  std::vector<std::string> expectedWhiteMoves = {"e3", "f4", "c5", "d6"};
   ASSERT_EQ(whiteMoves, expectedWhiteMoves);
 }
 

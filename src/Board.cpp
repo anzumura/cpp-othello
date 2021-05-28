@@ -1,14 +1,19 @@
+#include <utility>
+
 #include "Board.h"
 
+// LeftCheck also must check >= 0 so use this lambda for both cases
+constexpr auto UpLeftLambda = [](int x) { return x >= 0 && x % 8 != 7; };
+
 // lambdas used for checking bounds when calculating flips
-constexpr auto UpCheck = [](int x) { return x >= 0; };
-constexpr auto DownCheck = [](int x) { return x < 64; };
-// LeftCheck is omitted on purpose (UpLeftCheck is used for this case)
-constexpr auto UpLeftCheck = [](int x) { return x >= 0 && x % 8 != 7; };
-constexpr auto DownLeftCheck = [](int x) { return x < 64 && x % 8 != 7; };
-constexpr auto RightCheck = [](int x) { return x % 8 != 0; };
-constexpr auto UpRightCheck = [](int x) { return x >= 0 && x % 8 != 0; };
-constexpr auto DownRightCheck = [](int x) { return x < 64 && x % 8 != 0; };
+constexpr auto UpCheck = std::make_pair(-8, [](int x) { return x >= 0; });
+constexpr auto DownCheck = std::make_pair(8, [](int x) { return x < 64; });
+constexpr auto LeftCheck = std::make_pair(-1, UpLeftLambda);
+constexpr auto UpLeftCheck = std::make_pair(-9, UpLeftLambda);
+constexpr auto DownLeftCheck = std::make_pair(7, [](int x) { return x < 64 && x % 8 != 7; });
+constexpr auto RightCheck = std::make_pair(1, [](int x) { return x % 8 != 0; });
+constexpr auto UpRightCheck = std::make_pair(-7, [](int x) { return x >= 0 && x % 8 != 0; });
+constexpr auto DownRightCheck = std::make_pair(9, [](int x) { return x < 64 && x % 8 != 0; });
 
 Board::Board(const char* str) {
   const char* p = str;
@@ -41,27 +46,28 @@ std::vector<std::string> Board::validMoves(BoardValue value) const {
 }
 
 bool Board::validMove(int pos, const Set& myValues, const Set& opValues) const {
-  const auto valid = [&](int inc, bool pred(int)) {
-    if (int x = pos + inc; opValues.test(x)) {
-      x += inc;
+  const auto valid = [&](const auto& c) {
+    if (int x = pos + c.first; opValues.test(x)) {
+      x += c.first;
       do {
         if (myValues.test(x)) return true;
         if (!opValues.test(x)) break;
-        x += inc;
-      } while (pred(x));
+        x += c.first;
+      } while (c.second(x));
     }
     return false;
   };
   const bool canFlipUp = pos > 15;  // must be > 2rd row to flip up
-  if (canFlipUp && valid(-8, UpCheck)) return true;
+  if (canFlipUp && valid(UpCheck))
+    return true;
   const bool canFlipDown = pos < 48;  // must be < 7th row flip down
-  return (canFlipDown && valid(8, DownCheck)) ||
+  return (canFlipDown && valid(DownCheck)) ||
          (pos % 8 > 1 &&  // must be > 2rd column to flip left
-          (valid(-1, UpLeftCheck) || (canFlipUp && valid(-9, UpLeftCheck)) ||
-           (canFlipDown && valid(7, DownLeftCheck)))) ||
+          (valid(LeftCheck) || (canFlipUp && valid(UpLeftCheck)) ||
+           (canFlipDown && valid(DownLeftCheck)))) ||
          (pos % 8 < 6 &&  // must be < 7th column to flip right
-          (valid(1, RightCheck) || (canFlipUp && valid(-7, UpRightCheck)) ||
-           (canFlipDown && valid(9, DownRightCheck))));
+          (valid(RightCheck) || (canFlipUp && valid(UpRightCheck)) ||
+           (canFlipDown && valid(DownRightCheck))));
 }
 
 int Board::set(const char* pos, BoardValue value) {
@@ -79,12 +85,12 @@ int Board::set(const char* pos, BoardValue value) {
 int Board::set(int pos, Set& myValues, Set& opValues) {
   int totalFlipped = 0;
   // bounds are already checked before calling 'flip' so can use do-while
-  const auto flip = [&](int inc, bool pred(int)) {
-    if (int x = pos + inc; opValues.test(x)) {
-      x += inc;
+  const auto flip = [&](const auto& c) {
+    if (int x = pos + c.first; opValues.test(x)) {
+      x += c.first;
       do {
         if (myValues.test(x)) {  // found 'op-vals' + 'my-val' so flip backwards
-          for (x -= inc; x != pos; x -= inc) {
+          for (x -= c.first; x != pos; x -= c.first) {
             ++totalFlipped;
             myValues.set(x);
             opValues.reset(x);
@@ -92,26 +98,26 @@ int Board::set(int pos, Set& myValues, Set& opValues) {
           break;
         } else if (!opValues.test(x))
           break;  // found a space in the chain so nothing to flip
-        x += inc;
-      } while (pred(x));
+        x += c.first;
+      } while (c.second(x));
     }
   };
   // check 8 directions for flips
   const bool canFlipUp = pos > 15;  // must be > 2rd row to flip up
-  if (canFlipUp) flip(-8, UpCheck);
+  if (canFlipUp) flip(UpCheck);
   const bool canFlipDown = pos < 48;  // must be < 7th row flip down
-  if (canFlipDown) flip(8, DownCheck);
+  if (canFlipDown) flip(DownCheck);
   // must be > 2rd column to flip left
   if (pos % 8 > 1) {
-    flip(-1, UpLeftCheck);  // must also check >= 0 so use UpLeftCheck
-    if (canFlipUp) flip(-9, UpLeftCheck);
-    if (canFlipDown) flip(7, DownLeftCheck);
+    flip(LeftCheck);
+    if (canFlipUp) flip(UpLeftCheck);
+    if (canFlipDown) flip(DownLeftCheck);
   }
   // must be < 7th column to flip right
   if (pos % 8 < 6) {
-    flip(1, RightCheck);
-    if (canFlipUp) flip(-7, UpRightCheck);
-    if (canFlipDown) flip(9, DownRightCheck);
+    flip(RightCheck);
+    if (canFlipUp) flip(UpRightCheck);
+    if (canFlipDown) flip(DownRightCheck);
   }
   // set 'pos' cell (passed into this function) if it resulted in flips
   if (totalFlipped > 0) myValues.set(pos);

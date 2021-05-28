@@ -4,10 +4,10 @@
 #include <bitset>
 #include <iostream>
 
-enum class BoardValue:int8_t { Black, White };
+enum class BoardValue : int8_t { Black, White };
 
 class Board {
-public:
+ public:
   // construct a Board with initial '4 disk' position
   Board() : black((1LL << 28) | (1LL << 35)), white((1LL << 27) | (1LL << 36)) {}
   // construct a Board from a 64 length char representation where:
@@ -18,12 +18,13 @@ public:
   // simple toString function to help with testing (returns a 64 length string)
   std::string toString() const;
 
-  // Set updates Board to reflect the new position (including performing flips) and
-  // returns the number of disks that were flipped. If no disks would be flipped by
-  // the move then Board is not be updated (since the move is illegal).
-  // pos should be a value like 'a1' or 'h8' (column letter followed by row number)
+  // Set updates Board to reflect the new position (including performing flips)
+  // and returns the number of disks that were flipped. If no disks would be
+  // flipped by the move then Board is not be updated (since the move is
+  // illegal). pos should be a value like 'a1' or 'h8' (column letter followed
+  // by row number)
   int set(const char* pos, BoardValue value);
-private:
+ private:
   friend std::ostream& operator<<(std::ostream&, const Board&);
   using Set = std::bitset<64>;
   int set(int pos, Set& myValues, Set& opValues);
@@ -35,4 +36,4 @@ private:
 // output friendly printing including borders with letters and numbers
 std::ostream& operator<<(std::ostream&, const Board&);
 
-#endif //OTHELLO_BOARD_H
+#endif  // OTHELLO_BOARD_H

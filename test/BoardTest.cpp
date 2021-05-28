@@ -7,10 +7,8 @@
 using ::testing::StartsWith;
 
 class BoardTest : public ::testing::Test {
-protected:
-  void set(const char* initialLayout) {
-    board = Board(initialLayout);
-  }
+ protected:
+  void set(const char* initialLayout) { board = Board(initialLayout); }
   void check(const char* expectedLayout) {
     ASSERT_STREQ(board.toString().c_str(), expectedLayout);
   }
@@ -299,7 +297,7 @@ xxxxxxxx\
 }
 
 TEST_F(BoardTest, SetFailsForBadRowOrColumn) {
-  for(auto v : values) {
+  for (auto v : values) {
     // bad lengths
     EXPECT_EQ(board.set("", v), 0);
     EXPECT_EQ(board.set("f", v), 0);

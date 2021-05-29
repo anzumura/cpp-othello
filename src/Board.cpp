@@ -1,23 +1,52 @@
-#include <utility>
-
 #include "Board.h"
 
-// LeftCheck also must check >= 0 so use this lambda for both cases
-constexpr auto UpLeftLambda = [](int x) { return x >= 0 && x % 8 != 7; };
+#include <utility>
 
-// lambdas used for checking bounds when calculating flips
-constexpr auto UpCheck = std::make_pair(-8, [](int x) { return x >= 0; });
-constexpr auto DownCheck = std::make_pair(8, [](int x) { return x < 64; });
-constexpr auto LeftCheck = std::make_pair(-1, UpLeftLambda);
-constexpr auto UpLeftCheck = std::make_pair(-9, UpLeftLambda);
-constexpr auto DownLeftCheck = std::make_pair(7, [](int x) { return x < 64 && x % 8 != 7; });
-constexpr auto RightCheck = std::make_pair(1, [](int x) { return x % 8 != 0; });
-constexpr auto UpRightCheck = std::make_pair(-7, [](int x) { return x >= 0 && x % 8 != 0; });
-constexpr auto DownRightCheck = std::make_pair(9, [](int x) { return x < 64 && x % 8 != 0; });
+namespace othello {
+
+namespace {
+
+inline auto rowSizeCheck(int x) { return x > FirstPos && x < RowSize; };
+
+// must be > 2rd row to flip up
+inline auto canFlipUp(int x) { return x > SecondRowEnd; };
+// must be < 7th row flip down
+inline auto canFlipDown(int x) { return x < SeventhRowStart; };
+// must be > 2rd column to flip left
+inline auto canFlipLeft(int x) { return x % RowSize > OneColumn; };
+// must be < 7th column to flip right
+inline auto canFlipRight(int x) { return x % RowSize < RowSizeMinusTwo; };
+
+inline auto topEdge(int x) { return x >= FirstPos; };
+inline auto bottomEdge(int x) { return x < BoardSize; };
+inline auto leftEdge(int x) { return x % RowSize != RowSizeMinusOne; };
+inline auto rightEdge(int x) { return x % RowSize != FirstPos; };
+
+// LeftCheck must also check >= 0 to avoid 'mod -1' so use same lambda for both Left and UpLeft cases
+constexpr auto UpLeft = [](int x) { return topEdge(x) && leftEdge(x); };
+
+// lambdas used for checking bounds when finding valid moves or performing flips
+constexpr auto UpCheck = std::make_pair(-RowSize, topEdge);
+constexpr auto DownCheck = std::make_pair(RowSize, bottomEdge);
+constexpr auto LeftCheck = std::make_pair(-OneColumn, UpLeft);
+constexpr auto UpLeftCheck = std::make_pair(-RowSizePlusOne, UpLeft);
+constexpr auto DownLeftCheck = std::make_pair(RowSizeMinusOne, [](int x) { return bottomEdge(x) && leftEdge(x); });
+constexpr auto RightCheck = std::make_pair(OneColumn, rightEdge);
+constexpr auto UpRightCheck = std::make_pair(-RowSizeMinusOne, [](int x) { return topEdge(x) && rightEdge(x); });
+constexpr auto DownRightCheck = std::make_pair(RowSizePlusOne, [](int x) { return bottomEdge(x) && rightEdge(x); });
+
+// for printing to stream
+constexpr auto Border =
+    "\
++-+-----------------+-+\n\
+| | A B C D E F G H | |\n\
++-+-----------------+-+\n";
+
+}  // namespace
 
 Board::Board(const char* str) {
   const char* p = str;
-  for (int i = 0; i < 64; ++i, ++p)
+  for (int i = 0; i < BoardSize; ++i, ++p)
     if (*p == 'x')
       black.set(i);
     else if (*p == 'o')
@@ -25,8 +54,8 @@ Board::Board(const char* str) {
 }
 
 std::string Board::toString() const {
-  std::string result(64, '.');
-  for (int i = 0; i < 64; ++i)
+  std::string result(BoardSize, '.');
+  for (int i = 0; i < BoardSize; ++i)
     if (black.test(i)) {
       assert(!white.test(i));
       result[i] = 'x';
@@ -35,12 +64,12 @@ std::string Board::toString() const {
   return result;
 }
 
-std::vector<std::string> Board::validMoves(BoardValue value) const {
+std::vector<std::string> Board::validMoves(Color c) const {
   std::vector<std::string> result;
-  const Set& myValues = value == BoardValue::Black ? black : white;
-  const Set& opValues = value == BoardValue::Black ? white : black;
-  for (int i = 0; i < 64; ++i)
-    if (!black.test(i) && !white.test(i) && validMove(i, myValues, opValues))
+  const Set& myValues = c == Color::Black ? black : white;
+  const Set& opValues = c == Color::Black ? white : black;
+  for (int i = 0; i < BoardSize; ++i)
+    if (!occupied(i) && validMove(i, myValues, opValues))
       result.emplace_back(posToString(i));
   return result;
 }
@@ -57,29 +86,29 @@ bool Board::validMove(int pos, const Set& myValues, const Set& opValues) const {
     }
     return false;
   };
-  const bool canFlipUp = pos > 15;  // must be > 2rd row to flip up
-  if (canFlipUp && valid(UpCheck))
+  const bool flipUp = canFlipUp(pos);
+  if (flipUp && valid(UpCheck))
     return true;
-  const bool canFlipDown = pos < 48;  // must be < 7th row flip down
-  return (canFlipDown && valid(DownCheck)) ||
-         (pos % 8 > 1 &&  // must be > 2rd column to flip left
-          (valid(LeftCheck) || (canFlipUp && valid(UpLeftCheck)) ||
-           (canFlipDown && valid(DownLeftCheck)))) ||
-         (pos % 8 < 6 &&  // must be < 7th column to flip right
-          (valid(RightCheck) || (canFlipUp && valid(UpRightCheck)) ||
-           (canFlipDown && valid(DownRightCheck))));
+  const bool flipDown = canFlipDown(pos);
+  return (flipDown && valid(DownCheck)) ||
+         (canFlipLeft(pos) &&
+          (valid(LeftCheck) || (flipUp && valid(UpLeftCheck)) ||
+           (flipDown && valid(DownLeftCheck)))) ||
+         (canFlipRight(pos) &&
+          (valid(RightCheck) || (flipUp && valid(UpRightCheck)) ||
+           (flipDown && valid(DownRightCheck))));
 }
 
-int Board::set(const char* pos, BoardValue value) {
+int Board::set(const char* pos, Color c) {
   if (strlen(pos) != 2) return 0;
   const int col = pos[0] - 'a';
-  if (col < 0 || col > 7) return 0;
+  if (!rowSizeCheck(col)) return 0;
   const int row = pos[1] - '1';
-  if (row < 0 || row > 7) return 0;
-  const int z = row * 8 + col;
-  if (black.test(z) || white.test(z)) return 0;
-  if (value == BoardValue::Black) return set(z, black, white);
-  return set(z, white, black);
+  if (!rowSizeCheck(row)) return 0;
+  const int x = row * RowSize + col;
+  if (occupied(x)) return 0;
+  if (c == Color::Black) return set(x, black, white);
+  return set(x, white, black);
 }
 
 int Board::set(int pos, Set& myValues, Set& opValues) {
@@ -103,43 +132,34 @@ int Board::set(int pos, Set& myValues, Set& opValues) {
     }
   };
   // check 8 directions for flips
-  const bool canFlipUp = pos > 15;  // must be > 2rd row to flip up
-  if (canFlipUp) flip(UpCheck);
-  const bool canFlipDown = pos < 48;  // must be < 7th row flip down
-  if (canFlipDown) flip(DownCheck);
-  // must be > 2rd column to flip left
-  if (pos % 8 > 1) {
+  const bool flipUp = canFlipUp(pos);
+  if (flipUp) flip(UpCheck);
+  const bool flipDown = canFlipDown(pos);
+  if (flipDown) flip(DownCheck);
+  if (canFlipLeft(pos)) {
     flip(LeftCheck);
-    if (canFlipUp) flip(UpLeftCheck);
-    if (canFlipDown) flip(DownLeftCheck);
+    if (flipUp) flip(UpLeftCheck);
+    if (flipDown) flip(DownLeftCheck);
   }
-  // must be < 7th column to flip right
-  if (pos % 8 < 6) {
+  if (canFlipRight(pos)) {
     flip(RightCheck);
-    if (canFlipUp) flip(UpRightCheck);
-    if (canFlipDown) flip(DownRightCheck);
+    if (flipUp) flip(UpRightCheck);
+    if (flipDown) flip(DownRightCheck);
   }
   // set 'pos' cell (passed into this function) if it resulted in flips
   if (totalFlipped > 0) myValues.set(pos);
   return totalFlipped;
 }
 
-// for printing to stream
-constexpr auto Border =
-    "\
-+-+-----------------+-+\n\
-| | A B C D E F G H | |\n\
-+-+-----------------+-+\n";
-
 std::ostream& operator<<(std::ostream& os, const Board& b) {
   os << Border;
-  for (int i = 0; i < 8; ++i) {
+  for (int i = 0; i < RowSize; ++i) {
     os << '|' << i + 1 << "| ";
-    for (int j = 0; j < 8; ++j)
-      if (b.black.test(i * 8 + j)) {
-        assert(!b.white.test(i * 8 + j));
+    for (int j = 0; j < RowSize; ++j)
+      if (b.black.test(i * RowSize + j)) {
+        assert(!b.white.test(i * RowSize + j));
         os << "x ";
-      } else if (b.white.test(i * 8 + j))
+      } else if (b.white.test(i * RowSize + j))
         os << "o ";
       else
         os << ". ";
@@ -147,3 +167,5 @@ std::ostream& operator<<(std::ostream& os, const Board& b) {
   }
   return os << Border;
 }
+
+}  // namespace othello

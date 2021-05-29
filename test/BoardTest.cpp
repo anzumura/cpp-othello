@@ -1,8 +1,10 @@
-#include <strstream>
-
 #include "Board.h"
+
+#include <strstream>
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+
+namespace othello {
 
 using ::testing::StartsWith;
 
@@ -13,7 +15,7 @@ class BoardTest : public ::testing::Test {
     ASSERT_STREQ(board.toString().c_str(), expectedLayout);
   }
   Board board;
-  std::array<BoardValue, 2> values = {BoardValue::White, BoardValue::Black};
+  std::array<Board::Color, 2> values = {Board::Color::White, Board::Color::Black};
 };
 
 TEST_F(BoardTest, BoardSize) {
@@ -28,16 +30,16 @@ TEST_F(BoardTest, Scores) {
   EXPECT_EQ(board.blackCount(), 2);
   EXPECT_EQ(board.whiteCount(), 2);
   // place one piece and then check scores again
-  ASSERT_EQ(board.set("d3", BoardValue::Black), 1);  
+  ASSERT_EQ(board.set("d3", Board::Color::Black), 1);  
   EXPECT_EQ(board.blackCount(), 4);
   EXPECT_EQ(board.whiteCount(), 1);
 }
 
 TEST_F(BoardTest, ValidMoves) {
-  auto blackMoves = board.validMoves(BoardValue::Black);
+  auto blackMoves = board.validMoves(Board::Color::Black);
   std::vector<std::string> expectedBlackMoves = {"d3", "c4", "f5", "e6"};
   ASSERT_EQ(blackMoves, expectedBlackMoves);
-  auto whiteMoves = board.validMoves(BoardValue::White);
+  auto whiteMoves = board.validMoves(Board::Color::White);
   std::vector<std::string> expectedWhiteMoves = {"e3", "f4", "c5", "d6"};
   ASSERT_EQ(whiteMoves, expectedWhiteMoves);
 }
@@ -76,7 +78,7 @@ TEST_F(BoardTest, ToString) {
 }
 
 TEST_F(BoardTest, FlipUp) {
-  ASSERT_EQ(board.set("d6", BoardValue::White), 1);
+  ASSERT_EQ(board.set("d6", Board::Color::White), 1);
   check("\
 ........\
 ........\
@@ -89,7 +91,7 @@ TEST_F(BoardTest, FlipUp) {
 }
 
 TEST_F(BoardTest, FlipDown) {
-  ASSERT_EQ(board.set("d3", BoardValue::Black), 1);
+  ASSERT_EQ(board.set("d3", Board::Color::Black), 1);
   check("\
 ........\
 ........\
@@ -102,7 +104,7 @@ TEST_F(BoardTest, FlipDown) {
 }
 
 TEST_F(BoardTest, FlipLeft) {
-  ASSERT_EQ(board.set("f4", BoardValue::White), 1);
+  ASSERT_EQ(board.set("f4", Board::Color::White), 1);
   check("\
 ........\
 ........\
@@ -115,7 +117,7 @@ TEST_F(BoardTest, FlipLeft) {
 }
 
 TEST_F(BoardTest, FlipRight) {
-  ASSERT_EQ(board.set("c5", BoardValue::White), 1);
+  ASSERT_EQ(board.set("c5", Board::Color::White), 1);
   check("\
 ........\
 ........\
@@ -128,8 +130,8 @@ TEST_F(BoardTest, FlipRight) {
 }
 
 TEST_F(BoardTest, FlipUpLeft) {
-  ASSERT_EQ(board.set("e6", BoardValue::Black), 1);
-  ASSERT_EQ(board.set("f6", BoardValue::White), 1);
+  ASSERT_EQ(board.set("e6", Board::Color::Black), 1);
+  ASSERT_EQ(board.set("f6", Board::Color::White), 1);
   check("\
 ........\
 ........\
@@ -142,8 +144,8 @@ TEST_F(BoardTest, FlipUpLeft) {
 }
 
 TEST_F(BoardTest, FlipUpRight) {
-  ASSERT_EQ(board.set("d6", BoardValue::White), 1);
-  ASSERT_EQ(board.set("c6", BoardValue::Black), 1);
+  ASSERT_EQ(board.set("d6", Board::Color::White), 1);
+  ASSERT_EQ(board.set("c6", Board::Color::Black), 1);
   check("\
 ........\
 ........\
@@ -156,8 +158,8 @@ TEST_F(BoardTest, FlipUpRight) {
 }
 
 TEST_F(BoardTest, FlipDownLeft) {
-  ASSERT_EQ(board.set("e3", BoardValue::White), 1);
-  ASSERT_EQ(board.set("f3", BoardValue::Black), 1);
+  ASSERT_EQ(board.set("e3", Board::Color::White), 1);
+  ASSERT_EQ(board.set("f3", Board::Color::Black), 1);
   check("\
 ........\
 ........\
@@ -170,8 +172,8 @@ TEST_F(BoardTest, FlipDownLeft) {
 }
 
 TEST_F(BoardTest, FlipDownRight) {
-  ASSERT_EQ(board.set("d3", BoardValue::Black), 1);
-  ASSERT_EQ(board.set("c3", BoardValue::White), 1);
+  ASSERT_EQ(board.set("d3", Board::Color::Black), 1);
+  ASSERT_EQ(board.set("c3", Board::Color::White), 1);
   check("\
 ........\
 ........\
@@ -193,7 +195,7 @@ TEST_F(BoardTest, MultipleFlipsDown) {
 ........\
 ........\
 ........");
-  ASSERT_EQ(board.set("e3", BoardValue::White), 3);
+  ASSERT_EQ(board.set("e3", Board::Color::White), 3);
   check("\
 ........\
 ........\
@@ -215,7 +217,7 @@ TEST_F(BoardTest, MultipleFlipsUp) {
 ........\
 ........\
 ........");
-  ASSERT_EQ(board.set("e6", BoardValue::Black), 3);
+  ASSERT_EQ(board.set("e6", Board::Color::Black), 3);
   check("\
 ........\
 ........\
@@ -237,7 +239,7 @@ xooooo.o\
 ........\
 ........\
 ........");
-  ASSERT_EQ(board.set("g3", BoardValue::Black), 6);
+  ASSERT_EQ(board.set("g3", Board::Color::Black), 6);
   check("\
 ........\
 ......oo\
@@ -259,7 +261,7 @@ TEST_F(BoardTest, FlipHittingBottomEdge) {
 ..x.....\
 .x.xxxxo\
 .xx.....");
-  ASSERT_EQ(board.set("c7", BoardValue::White), 9);
+  ASSERT_EQ(board.set("c7", Board::Color::White), 9);
   check("\
 ..o.....\
 ..o.....\
@@ -281,7 +283,7 @@ x......x\
 .....o.o\
 ......oo\
 ooooooo.");
-  ASSERT_EQ(board.set("h8", BoardValue::Black), 12);
+  ASSERT_EQ(board.set("h8", Board::Color::Black), 12);
   check("\
 x......x\
 .x.....x\
@@ -303,7 +305,7 @@ xo.oooox\
 ..o.o...\
 ..o..o..\
 ..x...x.");
-  ASSERT_EQ(board.set("c4", BoardValue::Black), 14);
+  ASSERT_EQ(board.set("c4", Board::Color::Black), 14);
   set("\
 ..o..x..\
 x.o.x...\
@@ -336,3 +338,5 @@ TEST_F(BoardTest, SetFailsForBadRowOrColumn) {
     EXPECT_EQ(board.set("e5", v), 0);
   }
 }
+
+}  // namespace othello

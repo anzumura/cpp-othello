@@ -8,23 +8,29 @@
 
 namespace othello {
 
-enum Values {
+enum BoardValues {
   FirstPos = 0, OneColumn, RowSizeMinusTwo = 6, RowSizeMinusOne, RowSize, RowSizePlusOne,
-  SecondRowEnd = 15, SeventhRowStart = 48, BoardSize = 64
+  SecondRowEnd = 15,
+  PosD4 = 27, PosE4, PosD5 = 35, PosE5,  // initial positions
+  SeventhRowStart = 48, BoardSize = 64
 };
 
 class Board {
  public:
-  enum class Color : int8_t { Black, White };
+  enum class Color { Black, White };
 
   // construct a Board with initial '4 disk' position
-  Board() : black((1LL << 28) | (1LL << 35)), white((1LL << 27) | (1LL << 36)) {}
+  Board() : black((1LL << PosE4) | (1LL << PosD5)), white((1LL << PosD4) | (1LL << PosE5)) {}
 
   // construct a Board from a 64 length char representation where:
   //   . = empty cell
   //   x = black cell
   //   o = white cell
-  explicit Board(const char*);
+  // 'initialEmpty' can be used to allow shorted stings when making boards (helpful for testing), i.e.:
+  //   Board(63, "o") creates a board with just a single whith cell in the bottom right corner
+  // partial boards are also fine: any cells beyond the end of the string are assumed to be empty, i.e.:
+  //   Board(".xo....o") creates a board with some values in the first row, but the rest empty
+  explicit Board(const std::string&, int initialEmpty = 0);
 
   // simple toString function to help with testing (returns a 64 length string)
   std::string toString() const;
@@ -41,7 +47,7 @@ class Board {
   // flipped by the move then Board is not be updated (since the move is
   // illegal). pos should be a value like 'a1' or 'h8' (column letter followed
   // by row number)
-  int set(const char* pos, Color);
+  int set(const std::string& pos, Color);
  private:
   friend std::ostream& operator<<(std::ostream&, const Board&);
   static auto posToString(int pos) {

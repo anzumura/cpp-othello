@@ -6,7 +6,7 @@ namespace othello {
 
 namespace {
 
-inline auto rowSizeCheck(int x) { return x > FirstPos && x < RowSize; };
+inline auto rowSizeCheck(int x) { return x >= FirstPos && x < RowSize; };
 
 // must be > 2rd row to flip up
 inline auto canFlipUp(int x) { return x > SecondRowEnd; };
@@ -17,40 +17,43 @@ inline auto canFlipLeft(int x) { return x % RowSize > OneColumn; };
 // must be < 7th column to flip right
 inline auto canFlipRight(int x) { return x % RowSize < RowSizeMinusTwo; };
 
-inline auto topEdge(int x) { return x >= FirstPos; };
-inline auto bottomEdge(int x) { return x < BoardSize; };
-inline auto leftEdge(int x) { return x % RowSize != RowSizeMinusOne; };
-inline auto rightEdge(int x) { return x % RowSize != FirstPos; };
+constexpr auto TopEdge = [](int x) { return x >= FirstPos; };
+constexpr auto BottomEdge = [](int x) { return x < BoardSize; };
+constexpr auto LeftEdge = [](int x) { return x % RowSize != RowSizeMinusOne; };
+constexpr auto RightEdge = [](int x) { return x % RowSize != FirstPos; };
 
 // LeftCheck must also check >= 0 to avoid 'mod -1' so use same lambda for both Left and UpLeft cases
-constexpr auto UpLeft = [](int x) { return topEdge(x) && leftEdge(x); };
+constexpr auto UpLeft = [](int x) { return TopEdge(x) && LeftEdge(x); };
 
 // lambdas used for checking bounds when finding valid moves or performing flips
-constexpr auto UpCheck = std::make_pair(-RowSize, topEdge);
-constexpr auto DownCheck = std::make_pair(RowSize, bottomEdge);
+constexpr auto UpCheck = std::make_pair(-RowSize, TopEdge);
+constexpr auto DownCheck = std::make_pair(RowSize, BottomEdge);
 constexpr auto LeftCheck = std::make_pair(-OneColumn, UpLeft);
 constexpr auto UpLeftCheck = std::make_pair(-RowSizePlusOne, UpLeft);
-constexpr auto DownLeftCheck = std::make_pair(RowSizeMinusOne, [](int x) { return bottomEdge(x) && leftEdge(x); });
-constexpr auto RightCheck = std::make_pair(OneColumn, rightEdge);
-constexpr auto UpRightCheck = std::make_pair(-RowSizeMinusOne, [](int x) { return topEdge(x) && rightEdge(x); });
-constexpr auto DownRightCheck = std::make_pair(RowSizePlusOne, [](int x) { return bottomEdge(x) && rightEdge(x); });
+constexpr auto DownLeftCheck = std::make_pair(RowSizeMinusOne, [](int x) { return BottomEdge(x) && LeftEdge(x); });
+constexpr auto RightCheck = std::make_pair(OneColumn, RightEdge);
+constexpr auto UpRightCheck = std::make_pair(-RowSizeMinusOne, [](int x) { return TopEdge(x) && RightEdge(x); });
+constexpr auto DownRightCheck = std::make_pair(RowSizePlusOne, [](int x) { return BottomEdge(x) && RightEdge(x); });
 
 // for printing to stream
-constexpr auto Border =
-    "\
+constexpr auto Border = "\
 +-+-----------------+-+\n\
 | | A B C D E F G H | |\n\
 +-+-----------------+-+\n";
 
 }  // namespace
 
-Board::Board(const char* str) {
-  const char* p = str;
-  for (int i = 0; i < BoardSize; ++i, ++p)
-    if (*p == 'x')
+Board::Board(const std::string& str, int initialEmpty) {
+  assert(initialEmpty >= 0 && initialEmpty <= BoardSize);
+  assert(initialEmpty + str.length() <= BoardSize);
+  int i = initialEmpty;
+  for (auto c : str) {
+    if (c == 'x')
       black.set(i);
-    else if (*p == 'o')
+    else if (c == 'o')
       white.set(i);
+    ++i;
+  }
 }
 
 std::string Board::toString() const {
@@ -87,8 +90,7 @@ bool Board::validMove(int pos, const Set& myValues, const Set& opValues) const {
     return false;
   };
   const bool flipUp = canFlipUp(pos);
-  if (flipUp && valid(UpCheck))
-    return true;
+  if (flipUp && valid(UpCheck)) return true;
   const bool flipDown = canFlipDown(pos);
   return (flipDown && valid(DownCheck)) ||
          (canFlipLeft(pos) &&
@@ -99,8 +101,8 @@ bool Board::validMove(int pos, const Set& myValues, const Set& opValues) const {
            (flipDown && valid(DownRightCheck))));
 }
 
-int Board::set(const char* pos, Color c) {
-  if (strlen(pos) != 2) return 0;
+int Board::set(const std::string& pos, Color c) {
+  if (pos.length() != 2) return 0;
   const int col = pos[0] - 'a';
   if (!rowSizeCheck(col)) return 0;
   const int row = pos[1] - '1';
@@ -125,8 +127,7 @@ int Board::set(int pos, Set& myValues, Set& opValues) {
             opValues.reset(x);
           }
           break;
-        } else if (!opValues.test(x))
-          break;  // found a space in the chain so nothing to flip
+        } else if (!opValues.test(x)) break;  // found a space in the chain so nothing to flip
         x += c.first;
       } while (c.second(x));
     }

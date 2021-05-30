@@ -77,6 +77,15 @@ std::vector<std::string> Board::validMoves(Color c) const {
   return result;
 }
 
+bool Board::hasValidMoves(Color c) const {
+  const Set& myValues = c == Color::Black ? black : white;
+  const Set& opValues = c == Color::Black ? white : black;
+  for (int i = 0; i < BoardSize; ++i)
+    if (!occupied(i) && validMove(i, myValues, opValues))
+      return true;
+  return false;
+}
+
 bool Board::validMove(int pos, const Set& myValues, const Set& opValues) const {
   const auto valid = [&](const auto& c) {
     if (int x = pos + c.first; opValues.test(x)) {
@@ -166,7 +175,7 @@ std::ostream& operator<<(std::ostream& os, const Board& b) {
         os << ". ";
     os << "|" << i + 1 << "|\n";
   }
-  return os << Border;
+  return os << Border << "Score - Black(x): " << b.blackCount() << ", White(o): " << b.whiteCount() << std::endl;
 }
 
 }  // namespace othello

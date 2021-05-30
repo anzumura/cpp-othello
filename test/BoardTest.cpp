@@ -10,9 +10,9 @@ using ::testing::StartsWith;
 
 class BoardTest : public ::testing::Test {
  protected:
-  void set(int emptyRows, const char* initialLayout) { board = Board(initialLayout, emptyRows * RowSize); }
+  void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * RowSize); }
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
-  void check(int emptyRows, const char* expectedLayout) const {
+  void check(int emptyRows, const std::string& expectedLayout) const {
     std::string expected(emptyRows * RowSize, '.');
     check(expected + expectedLayout);
   }
@@ -20,7 +20,6 @@ class BoardTest : public ::testing::Test {
     ASSERT_EQ(board.toString(), expected + std::string(BoardSize - expected.length(), '.'));
   }
   Board board;
-  std::array<Board::Color, 2> values = {Board::Color::White, Board::Color::Black};
 };
 
 TEST_F(BoardTest, BoardSize) {
@@ -64,7 +63,8 @@ TEST_F(BoardTest, ToStream) {
 |8| . . . . . . . . |8|\n\
 +-+-----------------+-+\n\
 | | A B C D E F G H | |\n\
-+-+-----------------+-+\n";
++-+-----------------+-+\n\
+Score - Black(x): 2, White(o): 2\n";
   std::ostrstream os;
   os << board;
   EXPECT_STREQ(os.str(), expected);
@@ -82,6 +82,12 @@ TEST_F(BoardTest, FlipUp) {
 ...ox...\
 ...oo...\
 ...o");
+  // test flip up boundry position
+  auto moves = std::array { std::make_pair("o", 1), std::make_pair("x", 0) };
+  for (const auto& m : moves) {
+    set(std::string("x.......") + m.first);
+    ASSERT_EQ(board.set("a3", Board::Color::Black), m.second);
+  }
 }
 
 TEST_F(BoardTest, FlipDown) {
@@ -90,6 +96,14 @@ TEST_F(BoardTest, FlipDown) {
 ...x....\
 ...xx...\
 ...xo");
+  // test flip down boundry position
+  auto moves = std::array { std::make_pair("o", 1), std::make_pair("x", 0) };
+  for (const auto& m : moves) {
+    set(6, std::string("\
+.......x\
+.......") + m.first);
+    ASSERT_EQ(board.set("h6", Board::Color::White), m.second);
+  }
 }
 
 TEST_F(BoardTest, FlipLeft) {
@@ -97,6 +111,11 @@ TEST_F(BoardTest, FlipLeft) {
   check(3, "\
 ...ooo..\
 ...xo");
+  // test flip left boundry position
+  set("xo");
+  ASSERT_EQ(board.set("c1", Board::Color::Black), 1);
+  set("oo");
+  ASSERT_EQ(board.set("c1", Board::Color::Black), 0);
 }
 
 TEST_F(BoardTest, FlipRight) {
@@ -104,6 +123,11 @@ TEST_F(BoardTest, FlipRight) {
   check(3, "\
 ...ox...\
 ..ooo");
+  // test flip right boundry position
+  set(7, "......ox");
+  ASSERT_EQ(board.set("f8", Board::Color::Black), 1);
+  set(7, "......oo");
+  ASSERT_EQ(board.set("f8", Board::Color::Black), 0);
 }
 
 TEST_F(BoardTest, FlipUpLeft) {
@@ -307,7 +331,7 @@ xxxxxxxx\
 }
 
 TEST_F(BoardTest, SetFailsForBadRowOrColumn) {
-  for (auto v : values) {
+  for (auto v : Board::Colors) {
     // bad lengths
     EXPECT_EQ(board.set("", v), 0);
     EXPECT_EQ(board.set("f", v), 0);

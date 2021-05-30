@@ -1,6 +1,7 @@
 #ifndef OTHELLO_BOARD_H
 #define OTHELLO_BOARD_H
 
+#include <array>
 #include <bitset>
 #include <iostream>
 #include <string>
@@ -18,6 +19,7 @@ enum BoardValues {
 class Board {
  public:
   enum class Color { Black, White };
+  static constexpr std::array Colors = { Color::Black, Color::White };
 
   // construct a Board with initial '4 disk' position
   Board() : black((1LL << PosE4) | (1LL << PosD5)), white((1LL << PosD4) | (1LL << PosE5)) {}
@@ -42,6 +44,8 @@ class Board {
   // get list of valid moves for a given color
   std::vector<std::string> validMoves(Color) const;
 
+  bool hasValidMoves(Color) const;
+
   // Set updates Board to reflect the new position (including performing flips)
   // and returns the number of disks that were flipped. If no disks would be
   // flipped by the move then Board is not be updated (since the move is
@@ -65,6 +69,9 @@ class Board {
   Set white;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const Board::Color& c) {
+  return os << (c == Board::Color::Black ? "Black" : "White");
+}
 // output friendly printing including borders with letters and numbers
 std::ostream& operator<<(std::ostream&, const Board&);
 

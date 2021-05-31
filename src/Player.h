@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <memory>
+#include <string>
 
 #include "Board.h"
 
@@ -24,6 +25,7 @@ class Player {
   explicit Player(Board::Color c) : color(c), totalTime(0) {};
  private:
   virtual bool makeMove(Board&) const = 0;
+  static char getChar(const std::string&, bool(char));
   mutable std::chrono::nanoseconds totalTime;
 };
 
@@ -36,10 +38,11 @@ class HumanPlayer : public Player {
 
 class ComputerPlayer : public Player {
  public:
-  explicit ComputerPlayer(Board::Color c) : Player(c) {};
-  std::string toString() const override { return Player::toString() + " with search=0"; }
+  ComputerPlayer(Board::Color c, int s) : Player(c), search(s) {};
+  std::string toString() const override { return Player::toString() + " with search=" + std::to_string(search); }
  private:
   bool makeMove(Board&) const override;
+  const int search;
 };
 
 }  // namespace othello

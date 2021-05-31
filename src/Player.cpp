@@ -9,15 +9,21 @@
 namespace othello {
 
 std::unique_ptr<Player> Player::createPlayer(Board::Color color) {
+  char x = getChar(std::string("Choose type for ") + othello::toString(color) + " player (h=human, c=computer)",
+    [](char x){ return x == 'h' || x == 'c'; });
+  if (x == 'h') return std::make_unique<HumanPlayer>(color);
+  x = getChar("  Enter computer type (0=random, 1-9=moves to search)",
+    [](char x){ return x >= '0' && x <= '9'; });
+  return std::make_unique<ComputerPlayer>(color, x - '0');
+}
+
+char Player::getChar(const std::string& msg, bool pred(char)) {
+  std::string line;
   do {
-    std::cout << "Choose type for " << color << " player (h=human, c=computer): ";
-    std::string line;
+    std::cout << msg << ": ";
     std::getline(std::cin, line);
-    if (line.length() == 1) {
-      if (line[0] == 'h') return std::make_unique<HumanPlayer>(color);
-      if (line[0] == 'c') return std::make_unique<ComputerPlayer>(color);
-    }
-  } while (true);
+  } while(line.length() != 1 || !pred(line[0]));
+  return line[0];
 }
 
 bool Player::move(Board& board) const {
@@ -29,7 +35,8 @@ bool Player::move(Board& board) const {
 }
 
 void Player::printTotalTime() const {
-  std::cout << "Total time for " << toString() << ": " << totalTime.count() / 1'000'000'000.0 << " seconds\n";
+  std::cout << "Total time for " << toString() << ": "
+    << std::chrono::duration_cast<std::chrono::microseconds>(totalTime).count() / 1'000'000.0 << " seconds\n";
 }
 
 bool HumanPlayer::makeMove(Board& board) const {

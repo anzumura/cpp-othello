@@ -1,39 +1,31 @@
 #include "Board.h"
 #include "Player.h"
 
+#include <memory>
+#include <vector>
+
 using namespace othello;
 
-int main() {
+void playGame() {
   Board board;
-  std::array players = {
-    Player::createPlayer(Board::Color::Black),
-    Player::createPlayer(Board::Color::White)
-  };
-  int player = 0;
-  int noValidMoves = false;
-  do {
+  std::vector<std::unique_ptr<Player>> players;
+  for (auto c : Board::Colors)
+    players.emplace_back(Player::createPlayer(c));
+  for (int player = 0, skippedTurns = 0; skippedTurns < 2; player ^= 1) {
     if (board.hasValidMoves(players[player]->color)) {
-      if (noValidMoves) {
-        std::cout << std::endl << players[player + 1 % 2]->color << " has no valid moves - skipping turn\n";
-        noValidMoves = false;
+      if (skippedTurns) {
+        std::cout << std::endl << players[player ^ 1]->color << " has no valid moves - skipping turn\n";
+        skippedTurns = 0;
       }
-      if (!players[player]->move(board))
-        break;
-    } else if (noValidMoves)
-      break;
-    else
-      noValidMoves = true;
-    player = (player + 1) % 2;
-  } while (true);
-  if (noValidMoves) {
-    std::cout << std::endl << board;
-    int blackCount = board.blackCount();
-    int whiteCount = board.whiteCount();
-    std::cout << "\nGame Over - ";
-    if (blackCount == whiteCount)
-      std::cout << "draw\n";
-    else
-      std::cout << (blackCount > whiteCount ? "black" : "white") << " wins!\n";
-  }
+      if (!players[player]->move(board)) return;
+    } else ++skippedTurns;
+  };
+  board.printGameResult();
+  for (const auto& p : players)
+    p->printTotalTime();
+}
+
+int main() {
+  playGame();
   return 0;
 }

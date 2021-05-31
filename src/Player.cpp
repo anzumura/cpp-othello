@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include <cctype>
+#include <chrono>
 #include <iostream>
 #include <random>
 #include <string>
@@ -21,7 +22,14 @@ std::unique_ptr<Player> Player::createPlayer(Board::Color color) {
 
 bool Player::move(Board& board) const {
   std::cout << std::endl << board << std::endl;
-  return makeMove(board);
+  auto start = std::chrono::high_resolution_clock::now();
+  auto result = makeMove(board);
+  totalTime += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start);
+  return result;
+}
+
+void Player::printTotalTime() const {
+  std::cout << "Total time for " << toString() << ": " << totalTime.count() / 1'000'000'000.0 << " seconds\n";
 }
 
 bool HumanPlayer::makeMove(Board& board) const {

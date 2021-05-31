@@ -161,6 +161,17 @@ int Board::set(int pos, Set& myValues, Set& opValues) {
   return totalFlipped;
 }
 
+void Board::printGameResult() const {
+  std::cout << std::endl << *this;
+  const auto bc = blackCount();
+  const auto wc = whiteCount();
+  std::cout << "\nGame Over - ";
+  if (bc == wc)
+    std::cout << "draw!\n";
+  else
+    std::cout << (bc > wc ? Color::Black : Color::White) << " wins!\n";
+}
+
 std::ostream& operator<<(std::ostream& os, const Board& b) {
   os << Border;
   for (int i = 0; i < RowSize; ++i) {

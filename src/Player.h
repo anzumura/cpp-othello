@@ -1,6 +1,7 @@
 #ifndef OTHELLO_PLAYER_H
 #define OTHELLO_PLAYER_H
 
+#include <chrono>
 #include <memory>
 
 #include "Board.h"
@@ -15,12 +16,15 @@ class Player {
   virtual ~Player() = default;
 
   bool move(Board&) const;
+  void printTotalTime() const;
 
   const Board::Color color;
+  virtual std::string toString() const { return othello::toString(color); }
  protected:
-  explicit Player(Board::Color c) : color(c) {};
+  explicit Player(Board::Color c) : color(c), totalTime(0) {};
  private:
   virtual bool makeMove(Board&) const = 0;
+  mutable std::chrono::nanoseconds totalTime;
 };
 
 class HumanPlayer : public Player {
@@ -33,6 +37,7 @@ class HumanPlayer : public Player {
 class ComputerPlayer : public Player {
  public:
   explicit ComputerPlayer(Board::Color c) : Player(c) {};
+  std::string toString() const override { return Player::toString() + " with search=0"; }
  private:
   bool makeMove(Board&) const override;
 };

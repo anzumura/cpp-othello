@@ -45,6 +45,7 @@ class Board {
   std::vector<std::string> validMoves(Color) const;
 
   bool hasValidMoves(Color) const;
+  void printGameResult() const;
 
   // Set updates Board to reflect the new position (including performing flips)
   // and returns the number of disks that were flipped. If no disks would be
@@ -69,8 +70,9 @@ class Board {
   Set white;
 };
 
+inline const char* toString(Board::Color c) { return c == Board::Color::Black ? "Black" : "White"; }
 inline std::ostream& operator<<(std::ostream& os, const Board::Color& c) {
-  return os << (c == Board::Color::Black ? "Black" : "White");
+  return os << toString(c);
 }
 // output friendly printing including borders with letters and numbers
 std::ostream& operator<<(std::ostream&, const Board&);

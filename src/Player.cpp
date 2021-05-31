@@ -65,7 +65,7 @@ bool ComputerPlayer::makeMove(Board& board) const {
   static std::random_device rd;
   static std::mt19937 gen(rd());
 
-  auto moves = board.validMoves(color);
+  auto moves = findMove(board);
   int move = 0;
   if (moves.size() > 1) {
     std::uniform_int_distribution<> dis(0, moves.size() - 1);
@@ -75,6 +75,10 @@ bool ComputerPlayer::makeMove(Board& board) const {
   std::cout << color << " played at: " << moves[move] << " (" << result
     << " flip" << (result > 1 ? "s" : "") << ")\n";
   return true;
+}
+
+std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
+  return board.validMoves(color);
 }
 
 }  // namespace othello

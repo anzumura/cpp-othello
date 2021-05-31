@@ -42,6 +42,7 @@ class ComputerPlayer : public Player {
   std::string toString() const override { return Player::toString() + " with search=" + std::to_string(search); }
  private:
   bool makeMove(Board&) const override;
+  std::vector<std::string> findMove(const Board&) const;
   const int search;
 };
 

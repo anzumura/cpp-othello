@@ -77,6 +77,18 @@ std::vector<std::string> Board::validMoves(Color c) const {
   return result;
 }
 
+int Board::validMoves(Color c, Moves& moves, Boards& boards) const {
+  int count = 0;
+  Board board(*this);
+  for (int i = 0; i < BoardSize; ++i)
+    if (!occupied(i) && board.set(i, c)) {
+      moves[count] = i;
+      boards[count++] = board;
+      board = *this;
+    }
+  return count;
+}
+
 bool Board::hasValidMoves(Color c) const {
   const Set& myValues = c == Color::Black ? black : white;
   const Set& opValues = c == Color::Black ? white : black;
@@ -118,8 +130,7 @@ int Board::set(const std::string& pos, Color c) {
   if (!rowSizeCheck(row)) return 0;
   const int x = row * RowSize + col;
   if (occupied(x)) return 0;
-  if (c == Color::Black) return set(x, black, white);
-  return set(x, white, black);
+  return set(x, c);
 }
 
 int Board::set(int pos, Set& myValues, Set& opValues) {

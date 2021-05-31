@@ -17,7 +17,7 @@ class BoardTest : public ::testing::Test {
     check(expected + expectedLayout);
   }
   void check(const std::string& expected) const {
-    ASSERT_EQ(board.toString(), expected + std::string(BoardSize - expected.length(), '.'));
+    EXPECT_EQ(board.toString(), expected + std::string(BoardSize - expected.length(), '.'));
   }
   Board board;
 };
@@ -46,6 +46,42 @@ TEST_F(BoardTest, ValidMoves) {
   auto whiteMoves = board.validMoves(Board::Color::White);
   std::vector<std::string> expectedWhiteMoves = {"e3", "f4", "c5", "d6"};
   ASSERT_EQ(whiteMoves, expectedWhiteMoves);
+  set("\
+........\
+.xxxxxx.\
+.xoooox.\
+.xo.xox.\
+.xox.ox.\
+.xoooox.\
+.xxxxxx.\
+........");
+  auto moves = board.validMoves(Board::Color::White);
+  EXPECT_EQ(moves.size(), 30);
+}
+
+TEST_F(BoardTest, ValidMovesWithArrays) {
+  Board::Moves moves;
+  Board::Boards boards;
+  auto result = board.validMoves(Board::Color::Black, moves, boards);
+  ASSERT_EQ(result, 4);
+  EXPECT_EQ(moves[0], 19);
+  EXPECT_EQ(moves[1], 26);
+  EXPECT_EQ(moves[2], 37);
+  EXPECT_EQ(moves[3], 44);
+  board = boards[0]; check(2, "\
+...x....\
+...xx...\
+...xo");
+  board = boards[1]; check(3, "\
+..xxx...\
+...xo");
+  board = boards[2]; check(3, "\
+...ox...\
+...xxx");
+  board = boards[3]; check(3, "\
+...ox...\
+...xx...\
+....x");
 }
 
 TEST_F(BoardTest, ToStream) {

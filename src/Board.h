@@ -11,8 +11,7 @@ namespace othello {
 
 enum BoardValues {
   FirstPos = 0, OneColumn, RowSizeMinusTwo = 6, RowSizeMinusOne, RowSize, RowSizePlusOne,
-  SecondRowEnd = 15,
-  PosD4 = 27, PosE4, PosD5 = 35, PosE5,  // initial positions
+  SecondRowEnd = 15, PosD4 = 27, PosE4, MaxValidMoves = 32, PosD5 = 35, PosE5,
   SeventhRowStart = 48, BoardSize = 64
 };
 
@@ -20,6 +19,8 @@ class Board {
  public:
   enum class Color { Black, White };
   static constexpr std::array Colors = { Color::Black, Color::White };
+  using Moves = std::array<int, MaxValidMoves>;
+  using Boards = std::array<Board, MaxValidMoves>;
 
   // construct a Board with initial '4 disk' position
   Board() : black((1LL << PosE4) | (1LL << PosD5)), white((1LL << PosD4) | (1LL << PosE5)) {}
@@ -44,6 +45,10 @@ class Board {
   // get list of valid moves for a given color
   std::vector<std::string> validMoves(Color) const;
 
+  // fill 'moves' with positions of valid moves and 'boards' with the corresponding new board for each move
+  // and return the total number of valid moves (method used by ComputerPlayer)
+  int validMoves(Color, Moves& moves, Boards& boards) const;
+
   bool hasValidMoves(Color) const;
   void printGameResult() const;
 
@@ -64,6 +69,10 @@ class Board {
   bool occupied(int pos) const { return black.test(pos) || white.test(pos); }
   using Set = std::bitset<BoardSize>;
   bool validMove(int pos, const Set& myValues, const Set& opValues) const;
+  int set(int pos, Color c) {
+    if (c == Color::Black) return set(pos, black, white);
+    return set(pos, white, black);
+  }
   int set(int pos, Set& myValues, Set& opValues);
 
   Set black;

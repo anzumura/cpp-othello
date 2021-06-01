@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cctype>
 #include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <random>
 #include <string>
@@ -37,8 +38,8 @@ bool Player::move(Board& board) const {
 }
 
 void Player::printTotalTime() const {
-  std::cout << "Total time for " << toString() << ": "
-    << std::chrono::duration_cast<std::chrono::microseconds>(totalTime).count() / 1'000'000.0 << " seconds\n";
+  std::cout << "Total time for " << toString() << ": " << std::fixed << std::setprecision(6)
+    << totalTime.count() / 1'000'000'000.0 << " seconds\n";
 }
 
 bool HumanPlayer::makeMove(Board& board) const {
@@ -65,10 +66,10 @@ bool HumanPlayer::makeMove(Board& board) const {
 
 const char* HumanPlayer::errorToString(int result) {
   switch (result) {
-    case BadLength: return "location must be 2 characters";
-    case BadColumn: return "column must be a value from 'a' to 'h'";
-    case BadRow: return "row must be a value from '1' to '8'";
-    case BadCell: return "cell already occupied";
+    case Board::BadLength: return "location must be 2 characters";
+    case Board::BadColumn: return "column must be a value from 'a' to 'h'";
+    case Board::BadRow: return "row must be a value from '1' to '8'";
+    case Board::BadCell: return "cell already occupied";
   }
   return "must flip at least one piece";
 }

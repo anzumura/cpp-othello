@@ -7,34 +7,41 @@ namespace othello {
 
 namespace {
 
-inline auto rowSizeCheck(int x) { return x >= FirstPos && x < RowSize; };
+enum BoardValues {
+  FirstPos, OneColumn, SecondRowEnd = 15, SeventhRowStart = 48
+};
+
+inline auto rowSizeCheck(int x) { return x >= FirstPos && x < Board::RowSize; };
 
 // must be > 2rd row to flip up
 inline auto canFlipUp(int x) { return x > SecondRowEnd; };
 // must be < 7th row flip down
 inline auto canFlipDown(int x) { return x < SeventhRowStart; };
 // must be > 2rd column to flip left
-inline auto canFlipLeft(int x) { return x % RowSize > OneColumn; };
+inline auto canFlipLeft(int x) { return x % Board::RowSize > OneColumn; };
 // must be < 7th column to flip right
-inline auto canFlipRight(int x) { return x % RowSize < RowSizeMinusTwo; };
+inline auto canFlipRight(int x) { return x % Board::RowSize < Board::RowSizeMinusTwo; };
 
 constexpr auto TopEdge = [](int x) { return x >= FirstPos; };
-constexpr auto BottomEdge = [](int x) { return x < BoardSize; };
-constexpr auto LeftEdge = [](int x) { return x % RowSize != RowSizeMinusOne; };
-constexpr auto RightEdge = [](int x) { return x % RowSize != FirstPos; };
+constexpr auto BottomEdge = [](int x) { return x < Board::BoardSize; };
+constexpr auto LeftEdge = [](int x) { return x % Board::RowSize != Board::RowSizeMinusOne; };
+constexpr auto RightEdge = [](int x) { return x % Board::RowSize != FirstPos; };
 
-// LeftCheck must also check >= 0 to avoid 'mod -1' so use same lambda for both Left and UpLeft cases
 constexpr auto UpLeft = [](int x) { return TopEdge(x) && LeftEdge(x); };
+constexpr auto DownLeft = [](int x) { return BottomEdge(x) && LeftEdge(x); };
+constexpr auto UpRight = [](int x) { return TopEdge(x) && RightEdge(x); };
+constexpr auto DownRight = [](int x) { return BottomEdge(x) && RightEdge(x); };
 
 // lambdas used for checking bounds when finding valid moves or performing flips
-constexpr auto UpCheck = std::make_pair(-RowSize, TopEdge);
-constexpr auto DownCheck = std::make_pair(RowSize, BottomEdge);
+constexpr auto UpCheck = std::make_pair(-Board::RowSize, TopEdge);
+constexpr auto DownCheck = std::make_pair(Board::RowSize, BottomEdge);
+// LeftCheck must also check >= 0 to avoid 'mod -1' so use same lambda for both Left and UpLeft cases
 constexpr auto LeftCheck = std::make_pair(-OneColumn, UpLeft);
-constexpr auto UpLeftCheck = std::make_pair(-RowSizePlusOne, UpLeft);
-constexpr auto DownLeftCheck = std::make_pair(RowSizeMinusOne, [](int x) { return BottomEdge(x) && LeftEdge(x); });
+constexpr auto UpLeftCheck = std::make_pair(-Board::RowSizePlusOne, UpLeft);
+constexpr auto DownLeftCheck = std::make_pair(Board::RowSizeMinusOne, DownLeft);
 constexpr auto RightCheck = std::make_pair(OneColumn, RightEdge);
-constexpr auto UpRightCheck = std::make_pair(-RowSizeMinusOne, [](int x) { return TopEdge(x) && RightEdge(x); });
-constexpr auto DownRightCheck = std::make_pair(RowSizePlusOne, [](int x) { return BottomEdge(x) && RightEdge(x); });
+constexpr auto UpRightCheck = std::make_pair(-Board::RowSizeMinusOne, UpRight);
+constexpr auto DownRightCheck = std::make_pair(Board::RowSizePlusOne, DownRight);
 
 // for printing to stream
 constexpr auto Border = "\
@@ -189,18 +196,21 @@ void Board::printGameResult() const {
 
 std::ostream& operator<<(std::ostream& os, const Board& b) {
   os << Border;
-  for (int i = 0; i < RowSize; ++i) {
-    os << '|' << i + 1 << "| ";
-    for (int j = 0; j < RowSize; ++j)
-      if (b.black.test(i * RowSize + j)) {
-        assert(!b.white.test(i * RowSize + j));
+  int i = 0;
+  auto side = [&](char c){ os << '|' << i / Board::RowSize + (c == ' ' ? 1 : 0) << '|' << c; };
+  do {
+    side(' ');
+    do {
+      if (b.black.test(i)) {
+        assert(!b.white.test(i));
         os << "x ";
-      } else if (b.white.test(i * RowSize + j))
+      } else if (b.white.test(i))
         os << "o ";
       else
         os << ". ";
-    os << "|" << i + 1 << "|\n";
-  }
+    } while (++i % Board::RowSize);
+    side('\n');
+  } while (i < Board::BoardSize);
   return os << Border << "Score - Black(x): " << b.blackCount() << ", White(o): " << b.whiteCount() << std::endl;
 }
 

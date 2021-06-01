@@ -9,16 +9,14 @@
 
 namespace othello {
 
-enum BoardValues {
-  BadLength = -4, BadColumn, BadRow, BadCell,  // see 'set' function for details on error conditions
-  FirstPos, OneColumn, RowSizeMinusTwo = 6, RowSizeMinusOne, RowSize, RowSizePlusOne, SecondRowEnd = 15,
-  PosD4 = 27, PosE4, MaxValidMoves = 32, PosD5 = 35, PosE5, SeventhRowStart = 48, BoardSize = 64
-};
-
 class Board {
  public:
   enum class Color { Black, White };
   static constexpr std::array Colors = { Color::Black, Color::White };
+  enum Values {
+    BadLength = -4, BadColumn, BadRow, BadCell,  // see 'set' function for details on error conditions
+    RowSizeMinusTwo = 6, RowSizeMinusOne, RowSize, RowSizePlusOne, MaxValidMoves = 32, BoardSize = 64
+  };
   using Moves = std::array<int, MaxValidMoves>;
   using Boards = std::array<Board, MaxValidMoves>;
 
@@ -65,6 +63,7 @@ class Board {
   int set(const std::string& pos, Color);
  private:
   friend std::ostream& operator<<(std::ostream&, const Board&);
+  enum PrivateValues { PosD4 = 27, PosE4, PosD5 = 35, PosE5 };
   static auto posToString(int pos) {
     std::string result(1, 'a' + pos % RowSize);
     result.push_back('1' + pos / RowSize);

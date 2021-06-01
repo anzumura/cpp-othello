@@ -16,11 +16,11 @@ class Player {
   Player(const Player&) = delete;
   virtual ~Player() = default;
 
-  // move returns true once a move has been made or false if player wants to end the game
+  // 'move' returns true once a move has been made or false if player wants to end the game
   // note: move is only called if valid moves exist for this player's color
   bool move(Board&) const;
-  // printTotalTime prints the total time taken to make moves so far by this player
-  // note: time is internally tracked in nanoseconds, but converted to microseconds when printing
+  // 'printTotalTime' prints the total time taken in seconds to make moves by this player
+  // note: time is internally measured in nanoseconds, but rounded to nearest microsecond when printing
   void printTotalTime() const;
 
   const Board::Color color;

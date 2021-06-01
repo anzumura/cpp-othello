@@ -10,14 +10,14 @@ using ::testing::StartsWith;
 
 class BoardTest : public ::testing::Test {
  protected:
-  void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * RowSize); }
+  void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * Board::RowSize); }
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
   void check(int emptyRows, const std::string& expectedLayout) const {
-    std::string expected(emptyRows * RowSize, '.');
+    std::string expected(emptyRows * Board::RowSize, '.');
     check(expected + expectedLayout);
   }
   void check(const std::string& expected) const {
-    EXPECT_EQ(board.toString(), expected + std::string(BoardSize - expected.length(), '.'));
+    EXPECT_EQ(board.toString(), expected + std::string(Board::BoardSize - expected.length(), '.'));
   }
   Board board;
 };
@@ -203,7 +203,7 @@ TEST_F(BoardTest, FlipDownRight) {
 }
 
 TEST_F(BoardTest, MultipleFlipsDown) {
-  for (int i = 0; i < RowSizeMinusTwo; ++i) {
+  for (int i = 0; i < Board::RowSizeMinusTwo; ++i) {
     set(i + 1, "\
 ...xxx..\
 ..ooooo");
@@ -219,7 +219,7 @@ TEST_F(BoardTest, MultipleFlipsDown) {
 }
 
 TEST_F(BoardTest, MultipleFlipsUp) {
-  for (int i = 0; i < RowSizeMinusTwo; ++i) {
+  for (int i = 0; i < Board::RowSizeMinusTwo; ++i) {
     set(i, "\
 ..xxxxx.\
 ...ooo");
@@ -235,11 +235,11 @@ TEST_F(BoardTest, MultipleFlipsUp) {
 }
 
 TEST_F(BoardTest, MultipleFlipsLeft) {
-  for (int i = 0; i < RowSizeMinusTwo; ++i) {
+  for (int i = 0; i < Board::RowSizeMinusTwo; ++i) {
     auto f = [i](const char* s){
       std::string result(i, '.');
       result.append(s);
-      return result + std::string(RowSizeMinusTwo - 1 - i, '.');
+      return result + std::string(Board::RowSizeMinusTwo - 1 - i, '.');
     };
     set(
       f("o..") +
@@ -248,7 +248,7 @@ TEST_F(BoardTest, MultipleFlipsLeft) {
       f("ox.") +
       f("o"));
     std::vector<std::string> moves;
-    for (int j = 1; j < RowSizeMinusTwo; ++j) moves.emplace_back(std::string(1, 'c' + i) + std::to_string(j));
+    for (int j = 1; j < Board::RowSizeMinusTwo; ++j) moves.emplace_back(std::string(1, 'c' + i) + std::to_string(j));
     ASSERT_EQ(board.validMoves(Board::Color::White), moves);
     ASSERT_EQ(board.set(moves[2], Board::Color::White), 3);
     check(
@@ -261,11 +261,11 @@ TEST_F(BoardTest, MultipleFlipsLeft) {
 }
 
 TEST_F(BoardTest, MultipleFlipsRight) {
-  for (int i = 0; i < RowSizeMinusTwo; ++i) {
+  for (int i = 0; i < Board::RowSizeMinusTwo; ++i) {
     auto f = [i](const char* s){
       std::string result(i, '.');
       result.append(s);
-      return result + std::string(RowSizeMinusTwo - 1 - i, '.');
+      return result + std::string(Board::RowSizeMinusTwo - 1 - i, '.');
     };
     set(
       f("..x") +
@@ -274,7 +274,7 @@ TEST_F(BoardTest, MultipleFlipsRight) {
       f(".ox") +
       f("..x"));
     std::vector<std::string> moves;
-    for (int j = 1; j < RowSizeMinusTwo; ++j) moves.emplace_back(std::string(1, 'a' + i) + std::to_string(j));
+    for (int j = 1; j < Board::RowSizeMinusTwo; ++j) moves.emplace_back(std::string(1, 'a' + i) + std::to_string(j));
     ASSERT_EQ(board.validMoves(Board::Color::Black), moves);
     ASSERT_EQ(board.set(moves[2], Board::Color::Black), 3);
     check(
@@ -369,22 +369,22 @@ xxxxxxxx\
 TEST_F(BoardTest, SetFailsForBadRowOrColumn) {
   for (auto v : Board::Colors) {
     // bad lengths
-    EXPECT_EQ(board.set("", v), BadLength);
-    EXPECT_EQ(board.set("f", v), BadLength);
-    EXPECT_EQ(board.set("f44", v), BadLength);
+    EXPECT_EQ(board.set("", v), Board::BadLength);
+    EXPECT_EQ(board.set("f", v), Board::BadLength);
+    EXPECT_EQ(board.set("f44", v), Board::BadLength);
     // bad rows
-    EXPECT_EQ(board.set("f0", v), BadRow);
-    EXPECT_EQ(board.set("f9", v), BadRow);
-    EXPECT_EQ(board.set("fa", v), BadRow);
+    EXPECT_EQ(board.set("f0", v), Board::BadRow);
+    EXPECT_EQ(board.set("f9", v), Board::BadRow);
+    EXPECT_EQ(board.set("fa", v), Board::BadRow);
     // bad columns
-    EXPECT_EQ(board.set("F4", v), BadColumn);
-    EXPECT_EQ(board.set("24", v), BadColumn);
-    EXPECT_EQ(board.set("i4", v), BadColumn);
+    EXPECT_EQ(board.set("F4", v), Board::BadColumn);
+    EXPECT_EQ(board.set("24", v), Board::BadColumn);
+    EXPECT_EQ(board.set("i4", v), Board::BadColumn);
     // occupied spaces
-    EXPECT_EQ(board.set("d4", v), BadCell);
-    EXPECT_EQ(board.set("e4", v), BadCell);
-    EXPECT_EQ(board.set("d5", v), BadCell);
-    EXPECT_EQ(board.set("e5", v), BadCell);
+    EXPECT_EQ(board.set("d4", v), Board::BadCell);
+    EXPECT_EQ(board.set("e4", v), Board::BadCell);
+    EXPECT_EQ(board.set("d5", v), Board::BadCell);
+    EXPECT_EQ(board.set("e5", v), Board::BadCell);
   }
 }
 

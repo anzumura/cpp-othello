@@ -55,10 +55,20 @@ bool HumanPlayer::makeMove(Board& board) const {
     } else {
       auto result = board.set(line, color);
       if (result > 0) return true;
-      std::cout << "  invalid move: " << line << std::endl;
-      std::cout << "  please enter a location (eg 'a1' or 'h8'), 'q' to quit or 'v' to print valid moves\n";
+      std::cout << "  invalid move: '" << line << "' - " << errorToString(result)
+        << "\n  please enter a location (eg 'a1' or 'h8'), 'q' to quit or 'v' to print valid moves\n";
     }
   } while (true);
+}
+
+const char* HumanPlayer::errorToString(int result) {
+  switch (result) {
+    case BadLength: return "location must be 2 characters";
+    case BadColumn: return "column must be a value from 'a' to 'h'";
+    case BadRow: return "row must be a value from '1' to '8'";
+    case BadCell: return "cell already occupied";
+  }
+  return "must flip at least one piece";
 }
 
 bool ComputerPlayer::makeMove(Board& board) const {

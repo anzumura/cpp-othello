@@ -10,9 +10,9 @@
 namespace othello {
 
 enum BoardValues {
-  FirstPos = 0, OneColumn, RowSizeMinusTwo = 6, RowSizeMinusOne, RowSize, RowSizePlusOne,
-  SecondRowEnd = 15, PosD4 = 27, PosE4, MaxValidMoves = 32, PosD5 = 35, PosE5,
-  SeventhRowStart = 48, BoardSize = 64
+  BadLength = -4, BadColumn, BadRow, BadCell,  // see 'set' function for details on error conditions
+  FirstPos, OneColumn, RowSizeMinusTwo = 6, RowSizeMinusOne, RowSize, RowSizePlusOne, SecondRowEnd = 15,
+  PosD4 = 27, PosE4, MaxValidMoves = 32, PosD5 = 35, PosE5, SeventhRowStart = 48, BoardSize = 64
 };
 
 class Board {
@@ -57,6 +57,11 @@ class Board {
   // flipped by the move then Board is not be updated (since the move is
   // illegal). pos should be a value like 'a1' or 'h8' (column letter followed
   // by row number)
+  // Negtive numbers are returned for error conditions:
+  //   BadLenght: pos string was not length 2
+  //   BadColumn: pos string first character was not a value from 'a' to 'f'
+  //   BadRow: pos string second character was not a value from '1' to '8'
+  //   BadCell: the cell represented by pos is already occupied
   int set(const std::string& pos, Color);
  private:
   friend std::ostream& operator<<(std::ostream&, const Board&);

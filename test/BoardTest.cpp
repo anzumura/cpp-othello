@@ -369,22 +369,22 @@ xxxxxxxx\
 TEST_F(BoardTest, SetFailsForBadRowOrColumn) {
   for (auto v : Board::Colors) {
     // bad lengths
-    EXPECT_EQ(board.set("", v), 0);
-    EXPECT_EQ(board.set("f", v), 0);
-    EXPECT_EQ(board.set("f44", v), 0);
+    EXPECT_EQ(board.set("", v), BadLength);
+    EXPECT_EQ(board.set("f", v), BadLength);
+    EXPECT_EQ(board.set("f44", v), BadLength);
     // bad rows
-    EXPECT_EQ(board.set("f0", v), 0);
-    EXPECT_EQ(board.set("f9", v), 0);
-    EXPECT_EQ(board.set("fa", v), 0);
+    EXPECT_EQ(board.set("f0", v), BadRow);
+    EXPECT_EQ(board.set("f9", v), BadRow);
+    EXPECT_EQ(board.set("fa", v), BadRow);
     // bad columns
-    EXPECT_EQ(board.set("F4", v), 0);
-    EXPECT_EQ(board.set("24", v), 0);
-    EXPECT_EQ(board.set("i4", v), 0);
+    EXPECT_EQ(board.set("F4", v), BadColumn);
+    EXPECT_EQ(board.set("24", v), BadColumn);
+    EXPECT_EQ(board.set("i4", v), BadColumn);
     // occupied spaces
-    EXPECT_EQ(board.set("d4", v), 0);
-    EXPECT_EQ(board.set("e4", v), 0);
-    EXPECT_EQ(board.set("d5", v), 0);
-    EXPECT_EQ(board.set("e5", v), 0);
+    EXPECT_EQ(board.set("d4", v), BadCell);
+    EXPECT_EQ(board.set("e4", v), BadCell);
+    EXPECT_EQ(board.set("d5", v), BadCell);
+    EXPECT_EQ(board.set("e5", v), BadCell);
   }
 }
 

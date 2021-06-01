@@ -123,13 +123,13 @@ bool Board::validMove(int pos, const Set& myValues, const Set& opValues) const {
 }
 
 int Board::set(const std::string& pos, Color c) {
-  if (pos.length() != 2) return 0;
+  if (pos.length() != 2) return BadLength;
   const int col = pos[0] - 'a';
-  if (!rowSizeCheck(col)) return 0;
+  if (!rowSizeCheck(col)) return BadColumn;
   const int row = pos[1] - '1';
-  if (!rowSizeCheck(row)) return 0;
+  if (!rowSizeCheck(row)) return BadRow;
   const int x = row * RowSize + col;
-  if (occupied(x)) return 0;
+  if (occupied(x)) return BadCell;
   return set(x, c);
 }
 

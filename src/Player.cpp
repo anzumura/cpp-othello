@@ -1,5 +1,6 @@
 #include "Player.h"
 
+#include <cassert>
 #include <cctype>
 #include <chrono>
 #include <iostream>
@@ -27,6 +28,7 @@ char Player::getChar(const std::string& msg, bool pred(char)) {
 }
 
 bool Player::move(Board& board) const {
+  assert(board.hasValidMoves(color));
   std::cout << std::endl << board << std::endl;
   auto start = std::chrono::high_resolution_clock::now();
   auto result = makeMove(board);
@@ -76,6 +78,7 @@ bool ComputerPlayer::makeMove(Board& board) const {
   static std::mt19937 gen(rd());
 
   auto moves = findMove(board);
+  assert(!moves.empty());
   int move = 0;
   if (moves.size() > 1) {
     std::uniform_int_distribution<> dis(0, moves.size() - 1);

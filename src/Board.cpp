@@ -1,5 +1,6 @@
 #include "Board.h"
 
+#include <cassert>
 #include <utility>
 
 namespace othello {
@@ -82,6 +83,7 @@ int Board::validMoves(Color c, Moves& moves, Boards& boards) const {
   Board board(*this);
   for (int i = 0; i < BoardSize; ++i)
     if (!occupied(i) && board.set(i, c)) {
+      assert(count < MaxValidMoves);
       moves[count] = i;
       boards[count++] = board;
       board = *this;
@@ -142,6 +144,8 @@ int Board::set(int pos, Set& myValues, Set& opValues) {
       do {
         if (myValues.test(x)) {  // found 'op-vals' + 'my-val' so flip backwards
           for (x -= c.first; x != pos; x -= c.first) {
+            assert(!myValues.test(x));
+            assert(opValues.test(x));
             ++totalFlipped;
             myValues.set(x);
             opValues.reset(x);

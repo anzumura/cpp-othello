@@ -48,12 +48,12 @@ TEST_F(BoardTest, ValidMoves) {
   ASSERT_EQ(whiteMoves, expectedWhiteMoves);
   set("\
 ........\
-.xxxxxx.\
-.xoooox.\
-.xo.xox.\
-.xox.ox.\
-.xoooox.\
-.xxxxxx.\
+.******.\
+.*oooo*.\
+.*o.*o*.\
+.*o*.o*.\
+.*oooo*.\
+.******.\
 ........");
   auto moves = board.validMoves(Board::Color::White);
   EXPECT_EQ(moves.size(), 30);
@@ -69,19 +69,19 @@ TEST_F(BoardTest, ValidMovesWithArrays) {
   EXPECT_EQ(moves[2], 37);
   EXPECT_EQ(moves[3], 44);
   board = boards[0]; check(2, "\
-...x....\
-...xx...\
-...xo");
+...*....\
+...**...\
+...*o");
   board = boards[1]; check(3, "\
-..xxx...\
-...xo");
+..***...\
+...*o");
   board = boards[2]; check(3, "\
-...ox...\
-...xxx");
+...o*...\
+...***");
   board = boards[3]; check(3, "\
-...ox...\
-...xx...\
-....x");
+...o*...\
+...**...\
+....*");
 }
 
 TEST_F(BoardTest, ToStream) {
@@ -91,11 +91,11 @@ TEST_F(BoardTest, ToStream) {
 1| . . . . . . . .\n\
 2| . . . . . . . .\n\
 3| . . . . . . . .\n\
-4| . . . o x . . .\n\
-5| . . . x o . . .\n\
+4| . . . o * . . .\n\
+5| . . . * o . . .\n\
 6| . . . . . . . .\n\
 7| . . . . . . . .\n\
-8| . . . . . . . . Black(x): 2, White(o): 2\n";
+8| . . . . . . . .  Black(*): 2, White(o): 2\n";
   std::ostrstream os;
   os << board;
   EXPECT_STREQ(os.str(), expected);
@@ -103,20 +103,20 @@ TEST_F(BoardTest, ToStream) {
 
 TEST_F(BoardTest, ToString) {
   check(3, "\
-...ox...\
-...xo");
+...o*...\
+...*o");
 }
 
 TEST_F(BoardTest, FlipUp) {
   ASSERT_EQ(board.set("d6", Board::Color::White), 1);
   check(3, "\
-...ox...\
+...o*...\
 ...oo...\
 ...o");
   // test flip up boundry position
-  auto moves = std::array { std::make_pair("o", 1), std::make_pair("x", 0) };
+  auto moves = std::array { std::make_pair("o", 1), std::make_pair("*", 0) };
   for (const auto& m : moves) {
-    set(std::string("x.......") + m.first);
+    set(std::string("*.......") + m.first);
     ASSERT_EQ(board.set("a3", Board::Color::Black), m.second);
   }
 }
@@ -124,14 +124,14 @@ TEST_F(BoardTest, FlipUp) {
 TEST_F(BoardTest, FlipDown) {
   ASSERT_EQ(board.set("d3", Board::Color::Black), 1);
   check(2, "\
-...x....\
-...xx...\
-...xo");
+...*....\
+...**...\
+...*o");
   // test flip down boundry position
-  auto moves = std::array { std::make_pair("o", 1), std::make_pair("x", 0) };
+  auto moves = std::array { std::make_pair("o", 1), std::make_pair("*", 0) };
   for (const auto& m : moves) {
     set(6, std::string("\
-.......x\
+.......*\
 .......") + m.first);
     ASSERT_EQ(board.set("h6", Board::Color::White), m.second);
   }
@@ -141,9 +141,9 @@ TEST_F(BoardTest, FlipLeft) {
   ASSERT_EQ(board.set("f4", Board::Color::White), 1);
   check(3, "\
 ...ooo..\
-...xo");
+...*o");
   // test flip left boundry position
-  set("xo");
+  set("*o");
   ASSERT_EQ(board.set("c1", Board::Color::Black), 1);
   set("oo");
   ASSERT_EQ(board.set("c1", Board::Color::Black), 0);
@@ -152,10 +152,10 @@ TEST_F(BoardTest, FlipLeft) {
 TEST_F(BoardTest, FlipRight) {
   ASSERT_EQ(board.set("c5", Board::Color::White), 1);
   check(3, "\
-...ox...\
+...o*...\
 ..ooo");
   // test flip right boundry position
-  set(7, "......ox");
+  set(7, "......o*");
   ASSERT_EQ(board.set("f8", Board::Color::Black), 1);
   set(7, "......oo");
   ASSERT_EQ(board.set("f8", Board::Color::Black), 0);
@@ -165,42 +165,42 @@ TEST_F(BoardTest, FlipUpLeft) {
   ASSERT_EQ(board.set("e6", Board::Color::Black), 1);
   ASSERT_EQ(board.set("f6", Board::Color::White), 1);
   check(3, "\
-...ox...\
-...xo...\
-....xo");
+...o*...\
+...*o...\
+....*o");
 }
 
 TEST_F(BoardTest, FlipUpRight) {
   ASSERT_EQ(board.set("d6", Board::Color::White), 1);
   ASSERT_EQ(board.set("c6", Board::Color::Black), 1);
   check(3, "\
-...ox...\
-...xo...\
-..xo");
+...o*...\
+...*o...\
+..*o");
 }
 
 TEST_F(BoardTest, FlipDownLeft) {
   ASSERT_EQ(board.set("e3", Board::Color::White), 1);
   ASSERT_EQ(board.set("f3", Board::Color::Black), 1);
   check(2, "\
-....ox..\
-...ox...\
-...xo");
+....o*..\
+...o*...\
+...*o");
 }
 
 TEST_F(BoardTest, FlipDownRight) {
   ASSERT_EQ(board.set("d3", Board::Color::Black), 1);
   ASSERT_EQ(board.set("c3", Board::Color::White), 1);
   check(2, "\
-..ox....\
-...ox...\
-...xo");
+..o*....\
+...o*...\
+...*o");
 }
 
 TEST_F(BoardTest, MultipleFlipsDown) {
   for (int i = 0; i < Board::RowSizeMinusTwo; ++i) {
     set(i + 1, "\
-...xxx..\
+...***..\
 ..ooooo");
     std::vector<std::string> moves = { "c", "d", "e", "f", "g" };
     for(auto& m : moves) m += std::to_string(i + 1);
@@ -216,16 +216,16 @@ TEST_F(BoardTest, MultipleFlipsDown) {
 TEST_F(BoardTest, MultipleFlipsUp) {
   for (int i = 0; i < Board::RowSizeMinusTwo; ++i) {
     set(i, "\
-..xxxxx.\
+..*****.\
 ...ooo");
     std::vector<std::string> moves = { "c", "d", "e", "f", "g" };
     for(auto& m : moves) m += std::to_string(i + 3);
     ASSERT_EQ(board.validMoves(Board::Color::Black), moves);
     ASSERT_EQ(board.set(moves[2], Board::Color::Black), 3);
     check(i, "\
-..xxxxx.\
-...xxx..\
-....x");
+..*****.\
+...***..\
+....*");
   }
 }
 
@@ -238,9 +238,9 @@ TEST_F(BoardTest, MultipleFlipsLeft) {
     };
     set(
       f("o..") +
-      f("ox.") +
-      f("ox.") +
-      f("ox.") +
+      f("o*.") +
+      f("o*.") +
+      f("o*.") +
       f("o"));
     std::vector<std::string> moves;
     for (int j = 1; j < Board::RowSizeMinusTwo; ++j) moves.emplace_back(std::string(1, 'c' + i) + std::to_string(j));
@@ -263,48 +263,48 @@ TEST_F(BoardTest, MultipleFlipsRight) {
       return result + std::string(Board::RowSizeMinusTwo - 1 - i, '.');
     };
     set(
-      f("..x") +
-      f(".ox") +
-      f(".ox") +
-      f(".ox") +
-      f("..x"));
+      f("..*") +
+      f(".o*") +
+      f(".o*") +
+      f(".o*") +
+      f("..*"));
     std::vector<std::string> moves;
     for (int j = 1; j < Board::RowSizeMinusTwo; ++j) moves.emplace_back(std::string(1, 'a' + i) + std::to_string(j));
     ASSERT_EQ(board.validMoves(Board::Color::Black), moves);
     ASSERT_EQ(board.set(moves[2], Board::Color::Black), 3);
     check(
-      f("..x") +
-      f(".xx") +
-      f("xxx") +
-      f(".xx") +
-      f("..x"));
+      f("..*") +
+      f(".**") +
+      f("***") +
+      f(".**") +
+      f("..*"));
   }
 }
 
 TEST_F(BoardTest, FlipHittingRightEdge) {
   set(1, "\
 ......oo\
-xooooo.o\
+*ooooo.o\
 ......o.\
-......x");
+......*");
   ASSERT_EQ(board.set("g3", Board::Color::Black), 6);
   check(1, "\
 ......oo\
-xxxxxxxo\
-......x.\
-......x");
+*******o\
+......*.\
+......*");
 }
 
 TEST_F(BoardTest, FlipHittingBottomEdge) {
   set("\
 ..o.....\
-..x.....\
-..x.....\
-..x.....\
-..x.....\
-..x.....\
-.x.xxxxo\
-.xx.....");
+..*.....\
+..*.....\
+..*.....\
+..*.....\
+..*.....\
+.*.****o\
+.**.....");
   ASSERT_EQ(board.set("c7", Board::Color::White), 9);
   check("\
 ..o.....\
@@ -313,13 +313,13 @@ TEST_F(BoardTest, FlipHittingBottomEdge) {
 ..o.....\
 ..o.....\
 ..o.....\
-.xoooooo\
-.xx.....");
+.*oooooo\
+.**.....");
 }
 
 TEST_F(BoardTest, FlipHittingLeftEdge) {
   set("\
-x......x\
+*......*\
 .o.....o\
 ..o....o\
 ...o...o\
@@ -329,36 +329,36 @@ x......x\
 ooooooo.");
   ASSERT_EQ(board.set("h8", Board::Color::Black), 12);
   check("\
-x......x\
-.x.....x\
-..x....x\
-...x...x\
-....x..x\
-.....x.x\
-......xx\
-ooooooox");
+*......*\
+.*.....*\
+..*....*\
+...*...*\
+....*..*\
+.....*.*\
+......**\
+ooooooo*");
 }
 
 TEST_F(BoardTest, FlipHittingTopEdge) {
   set("\
-..o..x..\
-x.o.o...\
+..o..*..\
+*.o.o...\
 .ooo....\
-xo.oooox\
+*o.oooo*\
 ..oo....\
 ..o.o...\
 ..o..o..\
-..x...x.");
+..*...*.");
   ASSERT_EQ(board.set("c4", Board::Color::Black), 14);
   set("\
-..o..x..\
-x.o.x...\
-.xox....\
-xxxxxxxx\
-..xx....\
-..x.x...\
-..x..x..\
-..x...x.");
+..o..*..\
+*.o.*...\
+.*o*....\
+********\
+..**....\
+..*.*...\
+..*..*..\
+..*...*.");
 }
 
 TEST_F(BoardTest, SetFailsForBadRowOrColumn) {

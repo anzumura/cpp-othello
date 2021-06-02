@@ -55,29 +55,29 @@ Board::Board(const std::string& str, int initialEmpty) {
   assert(initialEmpty + str.length() <= BoardSize);
   int i = initialEmpty;
   for (auto c : str) {
-    if (c == 'x')
-      black.set(i);
-    else if (c == 'o')
-      white.set(i);
+    if (c == BlackCell)
+      black_.set(i);
+    else if (c == WhiteCell)
+      white_.set(i);
     ++i;
   }
 }
 
 std::string Board::toString() const {
-  std::string result(BoardSize, '.');
+  std::string result(BoardSize, EmptyCell);
   for (int i = 0; i < BoardSize; ++i)
-    if (black.test(i)) {
-      assert(!white.test(i));
-      result[i] = 'x';
-    } else if (white.test(i))
-      result[i] = 'o';
+    if (black_.test(i)) {
+      assert(!white_.test(i));
+      result[i] = BlackCell;
+    } else if (white_.test(i))
+      result[i] = WhiteCell;
   return result;
 }
 
 std::vector<std::string> Board::validMoves(Color c) const {
   std::vector<std::string> result;
-  const Set& myValues = c == Color::Black ? black : white;
-  const Set& opValues = c == Color::Black ? white : black;
+  const Set& myValues = c == Color::Black ? black_ : white_;
+  const Set& opValues = c == Color::Black ? white_ : black_;
   for (int i = 0; i < BoardSize; ++i)
     if (!occupied(i) && validMove(i, myValues, opValues))
       result.emplace_back(posToString(i));
@@ -98,8 +98,8 @@ int Board::validMoves(Color c, Moves& moves, Boards& boards) const {
 }
 
 bool Board::hasValidMoves(Color c) const {
-  const Set& myValues = c == Color::Black ? black : white;
-  const Set& opValues = c == Color::Black ? white : black;
+  const Set& myValues = c == Color::Black ? black_ : white_;
+  const Set& opValues = c == Color::Black ? white_ : black_;
   for (int i = 0; i < BoardSize; ++i)
     if (!occupied(i) && validMove(i, myValues, opValues))
       return true;
@@ -194,21 +194,20 @@ void Board::printGameResult() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const Board& b) {
+  static char black[] = { ' ', Board::BlackCell, '\0' };
+  static char white[] = { ' ', Board::WhiteCell, '\0' };
+  static char empty[] = { ' ', Board::EmptyCell, '\0' };
+  static auto blackScore = std::string("  ") + toString(Board::Color::Black) + '(' + Board::BlackCell + "): ";
+  static auto whiteScore = std::string(", ") + toString(Board::Color::White) + '(' + Board::WhiteCell + "): ";
   os << Border;
-  int i = 0;
-  do {
-    os << "\n" << i / Board::RowSize + 1 << '|';
-    do {
-      if (b.black.test(i)) {
-        assert(!b.white.test(i));
-        os << " x";
-      } else if (b.white.test(i))
-        os << " o";
-      else
-        os << " .";
-    } while (++i % Board::RowSize);
-  } while (i < Board::BoardSize);
-  return os << " Black(x): " << b.blackCount() << ", White(o): " << b.whiteCount() << '\n';
+  for (int i = 0; i < Board::BoardSize; ++i) {
+    if (i % Board::RowSize == 0) os << "\n" << i / Board::RowSize + 1 << '|';
+    if (b.black().test(i)) {
+      assert(!b.white().test(i));
+      os << black;
+    } else os << (b.white().test(i) ? white : empty);
+  }
+  return os << blackScore << b.blackCount() << whiteScore << b.whiteCount() << '\n';
 }
 
 }  // namespace othello

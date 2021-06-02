@@ -3,7 +3,8 @@
         {
             "name": "Mac",
             "includePath": [
-                "/opt/homebrew/opt/boost/include"
+                "/opt/homebrew/opt/boost/include",
+                "${workspaceFolder}/**"
             ],
             "defines": [],
             "macFrameworkPath": [],

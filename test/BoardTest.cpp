@@ -1,12 +1,10 @@
 #include "Board.h"
 
+#include <string>
 #include <strstream>
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace othello {
-
-using ::testing::StartsWith;
 
 class BoardTest : public ::testing::Test {
  protected:

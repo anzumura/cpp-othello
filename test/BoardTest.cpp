@@ -86,21 +86,16 @@ TEST_F(BoardTest, ValidMovesWithArrays) {
 
 TEST_F(BoardTest, ToStream) {
   auto expected = "\
-+-+-----------------+-+\n\
-| | A B C D E F G H | |\n\
-+-+-----------------+-+\n\
-|1| . . . . . . . . |1|\n\
-|2| . . . . . . . . |2|\n\
-|3| . . . . . . . . |3|\n\
-|4| . . . o x . . . |4|\n\
-|5| . . . x o . . . |5|\n\
-|6| . . . . . . . . |6|\n\
-|7| . . . . . . . . |7|\n\
-|8| . . . . . . . . |8|\n\
-+-+-----------------+-+\n\
-| | A B C D E F G H | |\n\
-+-+-----------------+-+\n\
-Score - Black(x): 2, White(o): 2\n";
+   a b c d e f g h\n\
+ +----------------\n\
+1| . . . . . . . .\n\
+2| . . . . . . . .\n\
+3| . . . . . . . .\n\
+4| . . . o x . . .\n\
+5| . . . x o . . .\n\
+6| . . . . . . . .\n\
+7| . . . . . . . .\n\
+8| . . . . . . . . Black(x): 2, White(o): 2\n";
   std::ostrstream os;
   os << board;
   EXPECT_STREQ(os.str(), expected);

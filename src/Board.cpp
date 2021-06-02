@@ -45,9 +45,8 @@ constexpr auto DownRightCheck = std::make_pair(Board::RowSizePlusOne, DownRight)
 
 // for printing to stream
 constexpr auto Border = "\
-+-+-----------------+-+\n\
-| | A B C D E F G H | |\n\
-+-+-----------------+-+\n";
+   a b c d e f g h\n\
+ +----------------";
 
 }  // namespace
 
@@ -197,21 +196,19 @@ void Board::printGameResult() const {
 std::ostream& operator<<(std::ostream& os, const Board& b) {
   os << Border;
   int i = 0;
-  auto side = [&](char c){ os << '|' << i / Board::RowSize + (c == ' ' ? 1 : 0) << '|' << c; };
   do {
-    side(' ');
+    os << "\n" << i / Board::RowSize + 1 << '|';
     do {
       if (b.black.test(i)) {
         assert(!b.white.test(i));
-        os << "x ";
+        os << " x";
       } else if (b.white.test(i))
-        os << "o ";
+        os << " o";
       else
-        os << ". ";
+        os << " .";
     } while (++i % Board::RowSize);
-    side('\n');
   } while (i < Board::BoardSize);
-  return os << Border << "Score - Black(x): " << b.blackCount() << ", White(o): " << b.whiteCount() << std::endl;
+  return os << " Black(x): " << b.blackCount() << ", White(o): " << b.whiteCount() << '\n';
 }
 
 }  // namespace othello

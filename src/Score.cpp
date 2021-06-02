@@ -27,7 +27,21 @@ inline auto isNextToEdge(int row, int col) {
 
 }  // namespace
 
-int Score::score(const Board& board, int row, int col, const Board::Set& myValues, const Board::Set& opValues) {
+int Score::scoreBoard(const Board& board, const Board::Set& myValues, const Board::Set& opValues) {
+  if (board.hasValidMoves()) {
+    int result = 0, pos = 0;
+    for (int row = 0; row < Board::RowSize; ++row)
+      for (int col = 0; col < Board::RowSize; ++col, ++pos)
+        if (myValues.test(pos)) result += scoreCell(board, row, col, myValues, opValues);
+        else if (opValues.test(pos)) result -= scoreCell(board, row, col, myValues, opValues);
+    return result;
+  }
+  int myCount = myValues.count();
+  int opCount = opValues.count();
+  return myCount > opCount ? Win : myCount < opCount ? -Win : 0;
+}
+
+int Score::scoreCell(const Board& board, int row, int col, const Board::Set& myValues, const Board::Set& opValues) {
   if (isCorner(row, col)) return Corner;
   if (isSafeEdge(row, col)) return SafeEdge;
   if (isEdge(row, col)) return Edge;

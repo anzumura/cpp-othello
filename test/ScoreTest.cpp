@@ -3,6 +3,7 @@
 
 #include <array>
 #include <string>
+#include <utility>
 #include "gtest/gtest.h"
 
 namespace othello {
@@ -12,8 +13,6 @@ class ScoreTest : public ::testing::Test {
   void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * Board::RowSize); }
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
   Board board;
-  static constexpr std::array firstAndLastRow { 0, 7 };
-  static constexpr std::array firstAndLastColumn { "*", ".......*" };
 };
 
 TEST_F(ScoreTest, InitialPosition) {
@@ -28,12 +27,30 @@ TEST_F(ScoreTest, AfterOneFlip) {
 }
 
 TEST_F(ScoreTest, Corners) {
-  for (int row : firstAndLastRow)
-    for (auto col : firstAndLastColumn) {
-      set(row, col);
-      EXPECT_EQ(Score::score(board, Board::Color::Black), Score::Corner);
-      EXPECT_EQ(Score::score(board, Board::Color::White), -Score::Corner);
-    }
+  // use boards with at least one valid move in order to avoid 'Win' scores
+  std::array corners {
+    std::make_pair(0, "\
+*.......\
+........\
+..*o"),
+    std::make_pair(0, "\
+.......*\
+........\
+..*o"),
+    std::make_pair(5, "\
+..*o....\
+........\
+*"),
+    std::make_pair(5, "\
+..*o....\
+........\
+.......*")
+  };
+  for (auto c : corners) {
+    set(c.first, c.second);
+    EXPECT_EQ(Score::score(board, Board::Color::Black), Score::Corner);
+    EXPECT_EQ(Score::score(board, Board::Color::White), -Score::Corner);
+  }
 }
 
 }  // namespace othello

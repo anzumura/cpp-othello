@@ -53,6 +53,7 @@ class Board {
   int validMoves(Color, Moves& moves, Boards& boards) const;
 
   bool hasValidMoves(Color) const;
+  bool hasValidMoves() const { return hasValidMoves(Color::Black) || hasValidMoves(Color::White); }
   void printGameResult() const;
 
   // Set updates Board to reflect the new position (including performing flips)

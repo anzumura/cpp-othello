@@ -38,6 +38,7 @@ TEST_F(BoardTest, Scores) {
 }
 
 TEST_F(BoardTest, ValidMoves) {
+  ASSERT_TRUE(board.hasValidMoves());
   auto blackMoves = board.validMoves(Board::Color::Black);
   std::vector<std::string> expectedBlackMoves = {"d3", "c4", "f5", "e6"};
   ASSERT_EQ(blackMoves, expectedBlackMoves);

@@ -20,11 +20,11 @@ inline auto canFlipDown(int x) { return x < SeventhRowStart; };
 // must be > 2rd column to flip left
 inline auto canFlipLeft(int x) { return x % Board::Rows > OneColumn; };
 // must be < 7th column to flip right
-inline auto canFlipRight(int x) { return x % Board::Rows < Board::RowSizeMinusTwo; };
+inline auto canFlipRight(int x) { return x % Board::Rows < Board::RowsMinusTwo; };
 
 constexpr auto TopEdge = [](int x) { return x >= FirstPos; };
 constexpr auto BottomEdge = [](int x) { return x < Board::Size; };
-constexpr auto LeftEdge = [](int x) { return x % Board::Rows != Board::RowSizeMinusOne; };
+constexpr auto LeftEdge = [](int x) { return x % Board::Rows != Board::RowsMinusOne; };
 constexpr auto RightEdge = [](int x) { return x % Board::Rows != FirstPos; };
 
 constexpr auto UpLeft = [](int x) { return TopEdge(x) && LeftEdge(x); };
@@ -37,11 +37,11 @@ constexpr auto UpCheck = std::make_pair(-Board::Rows, TopEdge);
 constexpr auto DownCheck = std::make_pair(Board::Rows, BottomEdge);
 // LeftCheck must also check >= 0 to avoid 'mod -1' so use same lambda for both Left and UpLeft cases
 constexpr auto LeftCheck = std::make_pair(-OneColumn, UpLeft);
-constexpr auto UpLeftCheck = std::make_pair(-Board::RowSizePlusOne, UpLeft);
-constexpr auto DownLeftCheck = std::make_pair(Board::RowSizeMinusOne, DownLeft);
+constexpr auto UpLeftCheck = std::make_pair(-Board::RowsPlusOne, UpLeft);
+constexpr auto DownLeftCheck = std::make_pair(Board::RowsMinusOne, DownLeft);
 constexpr auto RightCheck = std::make_pair(OneColumn, RightEdge);
-constexpr auto UpRightCheck = std::make_pair(-Board::RowSizeMinusOne, UpRight);
-constexpr auto DownRightCheck = std::make_pair(Board::RowSizePlusOne, DownRight);
+constexpr auto UpRightCheck = std::make_pair(-Board::RowsMinusOne, UpRight);
+constexpr auto DownRightCheck = std::make_pair(Board::RowsPlusOne, DownRight);
 
 // for printing to stream
 constexpr auto Border = "\

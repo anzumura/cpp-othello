@@ -15,7 +15,7 @@ class Board {
   static constexpr std::array Colors = { Color::Black, Color::White };
   enum Values {
     BadLength = -4, BadColumn, BadRow, BadCell,  // see 'set' function for details on error conditions
-    RowSizeMinusTwo = 6, RowSizeMinusOne, Rows, RowSizePlusOne, MaxValidMoves = 32, Size = 64
+    RowsMinusTwo = 6, RowsMinusOne, Rows, RowsPlusOne, MaxValidMoves = 32, Size = 64
   };
   using Moves = std::array<int, MaxValidMoves>;
   using Boards = std::array<Board, MaxValidMoves>;

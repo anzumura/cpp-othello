@@ -8,7 +8,7 @@ namespace othello {
 class Score {
  public:
   enum Values {
-    NextToCorner = -16, NextToEdge = -4,
+    NextToEmptyCorner = -16, NextToEmptyEdge = -4,
     Center = 1, Edge = 16, SafeEdge = 64, Corner = 2048, Win = 1'000'000
   };
   // If there are no move valid moves then return 'Win' if the given color has more pieces or '-Win' if
@@ -16,9 +16,9 @@ class Score {
   // calculated score is returned. The calculated score takes into account things like:
   //   Corner: most valuable location since it can't be flipped
   //   SafeEdge: edge position that can't be flipped, i.e., same color extends to a corner or edge is full
-  //   NextToCorner: 'bad location' if the adjacent corner is unoccupied
+  //   NextToEmptyCorner: 'bad location' if the adjacent corner is unoccupied
   //   Edge: edge position that isn't one of the positions already mentioned
-  //   NextToEdge: 'bad location' if any of the adjacent edge positions are unoccupied
+  //   NextToEmptyEdge: 'bad location' if any of the adjacent edge positions are unoccupied
   //   Center: any location that isn't one of the positions already mentioned
   static int score(const Board& board, Board::Color c) {
     if (c == Board::Color::Black)

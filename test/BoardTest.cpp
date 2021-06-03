@@ -8,14 +8,14 @@ namespace othello {
 
 class BoardTest : public ::testing::Test {
  protected:
-  void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * Board::RowSize); }
+  void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * Board::Rows); }
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
   void check(int emptyRows, const std::string& expectedLayout) const {
-    std::string expected(emptyRows * Board::RowSize, '.');
+    std::string expected(emptyRows * Board::Rows, '.');
     check(expected + expectedLayout);
   }
   void check(const std::string& expected) const {
-    EXPECT_EQ(board.toString(), expected + std::string(Board::BoardSize - expected.length(), '.'));
+    EXPECT_EQ(board.toString(), expected + std::string(Board::Size - expected.length(), '.'));
   }
   Board board;
 };

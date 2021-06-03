@@ -15,11 +15,11 @@ class Board {
   static constexpr std::array Colors = { Color::Black, Color::White };
   enum Values {
     BadLength = -4, BadColumn, BadRow, BadCell,  // see 'set' function for details on error conditions
-    RowSizeMinusTwo = 6, RowSizeMinusOne, RowSize, RowSizePlusOne, MaxValidMoves = 32, BoardSize = 64
+    RowSizeMinusTwo = 6, RowSizeMinusOne, Rows, RowSizePlusOne, MaxValidMoves = 32, Size = 64
   };
   using Moves = std::array<int, MaxValidMoves>;
   using Boards = std::array<Board, MaxValidMoves>;
-  using Set = std::bitset<BoardSize>;
+  using Set = std::bitset<Size>;
   static constexpr char BlackCell = '*';
   static constexpr char WhiteCell = 'o';
   static constexpr char EmptyCell = '.';
@@ -70,18 +70,18 @@ class Board {
  private:
   enum PrivateValues { PosD4 = 27, PosE4, PosD5 = 35, PosE5 };
   static auto posToString(int pos) {
-    std::string result(1, 'a' + pos % RowSize);
-    result.push_back('1' + pos / RowSize);
+    std::string result(1, 'a' + pos % Rows);
+    result.push_back('1' + pos / Rows);
     return result;
   }
 
   bool occupied(int pos) const { return black_.test(pos) || white_.test(pos); }
-  bool validMove(int pos, const Set& myValues, const Set& opValues) const;
+  bool validMove(int pos, const Set& myVals, const Set& opVals) const;
   int set(int pos, Color c) {
     if (c == Color::Black) return set(pos, black_, white_);
     return set(pos, white_, black_);
   }
-  int set(int pos, Set& myValues, Set& opValues);
+  int set(int pos, Set& myVals, Set& opVals);
 
   Set black_;
   Set white_;

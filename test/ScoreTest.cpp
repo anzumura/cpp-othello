@@ -10,8 +10,12 @@ namespace othello {
 
 class ScoreTest : public ::testing::Test {
  protected:
-  void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * Board::RowSize); }
+  void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * Board::Rows); }
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
+  void check(int s) {
+    for (auto c : Board::Colors)
+      ASSERT_EQ(Score::score(board, c), c == Board::Color::Black ? s : -s) << "Color: " << c;
+  }
   Board board;
 };
 
@@ -20,10 +24,23 @@ TEST_F(ScoreTest, InitialPosition) {
     EXPECT_EQ(Score::score(board, c), 0);
 }
 
+TEST_F(ScoreTest, Win) {
+  set("*");
+  check(Score::Win);
+  set(std::string(64, '*'));
+  check(Score::Win);
+}
+
+TEST_F(ScoreTest, Draw) {
+  set("");  // board with no valid moves and equal counts
+  check(0);
+  set("*.o");
+  check(0);
+}
+
 TEST_F(ScoreTest, AfterOneFlip) {
   board.set("d3", Board::Color::Black); // flips 1 resulting in 4 black and 1 white
-  EXPECT_EQ(Score::score(board, Board::Color::Black), 3);
-  EXPECT_EQ(Score::score(board, Board::Color::White), -3);
+  check(3);
 }
 
 TEST_F(ScoreTest, Corners) {
@@ -48,50 +65,49 @@ TEST_F(ScoreTest, Corners) {
   };
   for (auto c : corners) {
     set(c.first, c.second);
-    EXPECT_EQ(Score::score(board, Board::Color::Black), Score::Corner);
-    EXPECT_EQ(Score::score(board, Board::Color::White), -Score::Corner);
+    check(Score::Corner);
   }
 }
 
 TEST_F(ScoreTest, SafeHorizontalEdge) {
   set("\
-oo......\
+**......\
 ........\
 ..*o");
-  EXPECT_EQ(Score::score(board, Board::Color::White), Score::Corner + Score::SafeEdge);
+  check(Score::Corner + Score::SafeEdge);
   set("\
-oo....oo\
+**....**\
 ........\
 ..*o");
-  EXPECT_EQ(Score::score(board, Board::Color::White), 2 * (Score::Corner + Score::SafeEdge));
+  check(2 * (Score::Corner + Score::SafeEdge));
   set("\
 oooo****\
 ........\
 ..*o");
-  EXPECT_EQ(Score::score(board, Board::Color::White), 0);
+  check(0);
   set(5, "\
 ....o*..\
 ........\
 *o*o*o*o");
-  EXPECT_EQ(Score::score(board, Board::Color::White), 0);
+  check(0);
 }
 
 TEST_F(ScoreTest, SafeVerticalEdge) {
   set("\
-.......o\
-.......o\
+.......*\
+.......*\
 ..*o");
-  EXPECT_EQ(Score::score(board, Board::Color::White), Score::Corner + Score::SafeEdge);
+  check(Score::Corner + Score::SafeEdge);
   set("\
-.......o\
-.......o\
+.......*\
+.......*\
 ........\
 ........\
 ..*o....\
 ........\
-.......o\
-.......o");
-  EXPECT_EQ(Score::score(board, Board::Color::White), 2 * (Score::Corner + Score::SafeEdge));
+.......*\
+.......*");
+  check(2 * (Score::Corner + Score::SafeEdge));
   set("\
 .......*\
 .......*\
@@ -101,7 +117,7 @@ TEST_F(ScoreTest, SafeVerticalEdge) {
 .......o\
 .......o\
 ..*o...o");
-  EXPECT_EQ(Score::score(board, Board::Color::White), 0);
+  check(0);
   set("\
 o.......\
 o.......\
@@ -111,7 +127,51 @@ o.......\
 o.......\
 *.......\
 *");
-  EXPECT_EQ(Score::score(board, Board::Color::White), 0);
+  check(0);
+}
+
+TEST_F(ScoreTest, EdgeNextToTopEmptyCorners) {
+  set("\
+.*......\
+........\
+..*o");
+  check(Score::NextToEmptyCorner);
+  set("\
+......*.\
+........\
+..*o");
+  check(Score::NextToEmptyCorner);
+  set("\
+........\
+*.......\
+..*o");
+  check(Score::NextToEmptyCorner);
+  set("\
+........\
+.......*\
+..*o");
+  check(Score::NextToEmptyCorner);
+}
+
+TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
+  set(5, "\
+..*o....\
+........\
+.*");
+  check(Score::NextToEmptyCorner);
+  set(5, "\
+..*o....\
+........\
+......*");
+  check(Score::NextToEmptyCorner);
+  set(5, "\
+..*o....\
+*");
+  check(Score::NextToEmptyCorner);
+  set(5, "\
+..*o....\
+.......*");
+  check(Score::NextToEmptyCorner);
 }
 
 }  // namespace othello

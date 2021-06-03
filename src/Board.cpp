@@ -11,21 +11,21 @@ enum BoardValues {
   FirstPos, OneColumn, SecondRowEnd = 15, SeventhRowStart = 48
 };
 
-inline auto rowSizeCheck(int x) { return x >= FirstPos && x < Board::RowSize; };
+inline auto rowSizeCheck(int x) { return x >= FirstPos && x < Board::Rows; };
 
 // must be > 2rd row to flip up
 inline auto canFlipUp(int x) { return x > SecondRowEnd; };
 // must be < 7th row flip down
 inline auto canFlipDown(int x) { return x < SeventhRowStart; };
 // must be > 2rd column to flip left
-inline auto canFlipLeft(int x) { return x % Board::RowSize > OneColumn; };
+inline auto canFlipLeft(int x) { return x % Board::Rows > OneColumn; };
 // must be < 7th column to flip right
-inline auto canFlipRight(int x) { return x % Board::RowSize < Board::RowSizeMinusTwo; };
+inline auto canFlipRight(int x) { return x % Board::Rows < Board::RowSizeMinusTwo; };
 
 constexpr auto TopEdge = [](int x) { return x >= FirstPos; };
-constexpr auto BottomEdge = [](int x) { return x < Board::BoardSize; };
-constexpr auto LeftEdge = [](int x) { return x % Board::RowSize != Board::RowSizeMinusOne; };
-constexpr auto RightEdge = [](int x) { return x % Board::RowSize != FirstPos; };
+constexpr auto BottomEdge = [](int x) { return x < Board::Size; };
+constexpr auto LeftEdge = [](int x) { return x % Board::Rows != Board::RowSizeMinusOne; };
+constexpr auto RightEdge = [](int x) { return x % Board::Rows != FirstPos; };
 
 constexpr auto UpLeft = [](int x) { return TopEdge(x) && LeftEdge(x); };
 constexpr auto DownLeft = [](int x) { return BottomEdge(x) && LeftEdge(x); };
@@ -33,8 +33,8 @@ constexpr auto UpRight = [](int x) { return TopEdge(x) && RightEdge(x); };
 constexpr auto DownRight = [](int x) { return BottomEdge(x) && RightEdge(x); };
 
 // lambdas used for checking bounds when finding valid moves or performing flips
-constexpr auto UpCheck = std::make_pair(-Board::RowSize, TopEdge);
-constexpr auto DownCheck = std::make_pair(Board::RowSize, BottomEdge);
+constexpr auto UpCheck = std::make_pair(-Board::Rows, TopEdge);
+constexpr auto DownCheck = std::make_pair(Board::Rows, BottomEdge);
 // LeftCheck must also check >= 0 to avoid 'mod -1' so use same lambda for both Left and UpLeft cases
 constexpr auto LeftCheck = std::make_pair(-OneColumn, UpLeft);
 constexpr auto UpLeftCheck = std::make_pair(-Board::RowSizePlusOne, UpLeft);
@@ -51,8 +51,8 @@ constexpr auto Border = "\
 }  // namespace
 
 Board::Board(const std::string& str, int initialEmpty) {
-  assert(initialEmpty >= 0 && initialEmpty <= BoardSize);
-  assert(initialEmpty + str.length() <= BoardSize);
+  assert(initialEmpty >= 0 && initialEmpty <= Size);
+  assert(initialEmpty + str.length() <= Size);
   int i = initialEmpty;
   for (auto c : str) {
     if (c == BlackCell)
@@ -64,8 +64,8 @@ Board::Board(const std::string& str, int initialEmpty) {
 }
 
 std::string Board::toString() const {
-  std::string result(BoardSize, EmptyCell);
-  for (int i = 0; i < BoardSize; ++i)
+  std::string result(Size, EmptyCell);
+  for (int i = 0; i < Size; ++i)
     if (black_.test(i)) {
       assert(!white_.test(i));
       result[i] = BlackCell;
@@ -76,10 +76,10 @@ std::string Board::toString() const {
 
 std::vector<std::string> Board::validMoves(Color c) const {
   std::vector<std::string> result;
-  const Set& myValues = c == Color::Black ? black_ : white_;
-  const Set& opValues = c == Color::Black ? white_ : black_;
-  for (int i = 0; i < BoardSize; ++i)
-    if (!occupied(i) && validMove(i, myValues, opValues))
+  const Set& myVals = c == Color::Black ? black_ : white_;
+  const Set& opVals = c == Color::Black ? white_ : black_;
+  for (int i = 0; i < Size; ++i)
+    if (!occupied(i) && validMove(i, myVals, opVals))
       result.emplace_back(posToString(i));
   return result;
 }
@@ -87,7 +87,7 @@ std::vector<std::string> Board::validMoves(Color c) const {
 int Board::validMoves(Color c, Moves& moves, Boards& boards) const {
   int count = 0;
   Board board(*this);
-  for (int i = 0; i < BoardSize; ++i)
+  for (int i = 0; i < Size; ++i)
     if (!occupied(i) && board.set(i, c)) {
       assert(count < MaxValidMoves);
       moves[count] = i;
@@ -98,21 +98,21 @@ int Board::validMoves(Color c, Moves& moves, Boards& boards) const {
 }
 
 bool Board::hasValidMoves(Color c) const {
-  const Set& myValues = c == Color::Black ? black_ : white_;
-  const Set& opValues = c == Color::Black ? white_ : black_;
-  for (int i = 0; i < BoardSize; ++i)
-    if (!occupied(i) && validMove(i, myValues, opValues))
+  const Set& myVals = c == Color::Black ? black_ : white_;
+  const Set& opVals = c == Color::Black ? white_ : black_;
+  for (int i = 0; i < Size; ++i)
+    if (!occupied(i) && validMove(i, myVals, opVals))
       return true;
   return false;
 }
 
-bool Board::validMove(int pos, const Set& myValues, const Set& opValues) const {
+bool Board::validMove(int pos, const Set& myVals, const Set& opVals) const {
   const auto valid = [&](const auto& c) {
-    if (int x = pos + c.first; opValues.test(x)) {
+    if (int x = pos + c.first; opVals.test(x)) {
       x += c.first;
       do {
-        if (myValues.test(x)) return true;
-        if (!opValues.test(x)) break;
+        if (myVals.test(x)) return true;
+        if (!opVals.test(x)) break;
         x += c.first;
       } while (c.second(x));
     }
@@ -136,28 +136,28 @@ int Board::set(const std::string& pos, Color c) {
   if (!rowSizeCheck(col)) return BadColumn;
   const int row = pos[1] - '1';
   if (!rowSizeCheck(row)) return BadRow;
-  const int x = row * RowSize + col;
+  const int x = row * Rows + col;
   if (occupied(x)) return BadCell;
   return set(x, c);
 }
 
-int Board::set(int pos, Set& myValues, Set& opValues) {
+int Board::set(int pos, Set& myVals, Set& opVals) {
   int totalFlipped = 0;
   // bounds are already checked before calling 'flip' so can use do-while
   const auto flip = [&](const auto& c) {
-    if (int x = pos + c.first; opValues.test(x)) {
+    if (int x = pos + c.first; opVals.test(x)) {
       x += c.first;
       do {
-        if (myValues.test(x)) {  // found 'op-vals' + 'my-val' so flip backwards
+        if (myVals.test(x)) {  // found 'op-vals' + 'my-val' so flip backwards
           for (x -= c.first; x != pos; x -= c.first) {
-            assert(!myValues.test(x));
-            assert(opValues.test(x));
+            assert(!myVals.test(x));
+            assert(opVals.test(x));
             ++totalFlipped;
-            myValues.set(x);
-            opValues.reset(x);
+            myVals.set(x);
+            opVals.reset(x);
           }
           break;
-        } else if (!opValues.test(x)) break;  // found a space in the chain so nothing to flip
+        } else if (!opVals.test(x)) break;  // found a space in the chain so nothing to flip
         x += c.first;
       } while (c.second(x));
     }
@@ -178,7 +178,7 @@ int Board::set(int pos, Set& myValues, Set& opValues) {
     if (flipDown) flip(DownRightCheck);
   }
   // set 'pos' cell (passed into this function) if it resulted in flips
-  if (totalFlipped > 0) myValues.set(pos);
+  if (totalFlipped > 0) myVals.set(pos);
   return totalFlipped;
 }
 
@@ -200,8 +200,8 @@ std::ostream& operator<<(std::ostream& os, const Board& b) {
   static auto blackScore = std::string("  ") + toString(Board::Color::Black) + '(' + Board::BlackCell + "): ";
   static auto whiteScore = std::string(", ") + toString(Board::Color::White) + '(' + Board::WhiteCell + "): ";
   os << Border;
-  for (int i = 0; i < Board::BoardSize; ++i) {
-    if (i % Board::RowSize == 0) os << "\n" << i / Board::RowSize + 1 << '|';
+  for (int i = 0; i < Board::Size; ++i) {
+    if (i % Board::Rows == 0) os << "\n" << i / Board::Rows + 1 << '|';
     if (b.black().test(i)) {
       assert(!b.white().test(i));
       os << black;

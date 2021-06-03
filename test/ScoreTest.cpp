@@ -53,4 +53,65 @@ TEST_F(ScoreTest, Corners) {
   }
 }
 
+TEST_F(ScoreTest, SafeHorizontalEdge) {
+  set("\
+oo......\
+........\
+..*o");
+  EXPECT_EQ(Score::score(board, Board::Color::White), Score::Corner + Score::SafeEdge);
+  set("\
+oo....oo\
+........\
+..*o");
+  EXPECT_EQ(Score::score(board, Board::Color::White), 2 * (Score::Corner + Score::SafeEdge));
+  set("\
+oooo****\
+........\
+..*o");
+  EXPECT_EQ(Score::score(board, Board::Color::White), 0);
+  set(5, "\
+....o*..\
+........\
+*o*o*o*o");
+  EXPECT_EQ(Score::score(board, Board::Color::White), 0);
+}
+
+TEST_F(ScoreTest, SafeVerticalEdge) {
+  set("\
+.......o\
+.......o\
+..*o");
+  EXPECT_EQ(Score::score(board, Board::Color::White), Score::Corner + Score::SafeEdge);
+  set("\
+.......o\
+.......o\
+........\
+........\
+..*o....\
+........\
+.......o\
+.......o");
+  EXPECT_EQ(Score::score(board, Board::Color::White), 2 * (Score::Corner + Score::SafeEdge));
+  set("\
+.......*\
+.......*\
+.......*\
+.......*\
+.......o\
+.......o\
+.......o\
+..*o...o");
+  EXPECT_EQ(Score::score(board, Board::Color::White), 0);
+  set("\
+o.......\
+o.......\
+*.......\
+*...*o..\
+o.......\
+o.......\
+*.......\
+*");
+  EXPECT_EQ(Score::score(board, Board::Color::White), 0);
+}
+
 }  // namespace othello

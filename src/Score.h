@@ -15,7 +15,7 @@ class Score {
   // the opposite color has more pieces (or zero for a draw). Otherwise, each cell is examined and a total
   // calculated score is returned. The calculated score takes into account things like:
   //   Corner: most valuable location since it can't be flipped
-  //   SafeEdge: edge position that can't be flipped, i.e., same color extends to a corner
+  //   SafeEdge: edge position that can't be flipped, i.e., same color extends to a corner or edge is full
   //   NextToCorner: 'bad location' if the adjacent corner is unoccupied
   //   Edge: edge position that isn't one of the positions already mentioned
   //   NextToEdge: 'bad location' if any of the adjacent edge positions are unoccupied
@@ -27,7 +27,7 @@ class Score {
   }
  private:
   static int scoreBoard(const Board&, const Board::Set&, const Board::Set&);
-  static int scoreCell(const Board&, int, int, const Board::Set&, const Board::Set&);
+  static int scoreCell(const Board&, int, int, int, const Board::Set&, const Board::Set&);
 };
 
 }  // namespace othello

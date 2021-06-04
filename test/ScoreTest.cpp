@@ -133,27 +133,27 @@ TEST_F(ScoreTest, EdgeNextToTopEmptyCorners) {
 .*......\
 ........\
 ..*o");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set("\
 ......*.\
 ........\
 ..*o");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set("\
 ........\
 *.......\
 ..*o");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set("\
 ........\
 .......*\
 ..*o");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set("\
 .*......\
 .......*\
 ..*o");
-  check(2 * Score::BesideEmptyCorner);
+  check(2 * Score::EmptyCorner);
 }
 
 TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
@@ -161,25 +161,25 @@ TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
 ..*o....\
 ........\
 .*");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set(5, "\
 ..*o....\
 ........\
 ......*");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set(5, "\
 ..*o....\
 *");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set(5, "\
 ..*o....\
 .......*");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set(5, "\
 ..*o....\
 .......*\
 ......*.");
-  check(2 * Score::BesideEmptyCorner);
+  check(2 * Score::EmptyCorner);
 }
 
 TEST_F(ScoreTest, Edges) {
@@ -205,20 +205,20 @@ TEST_F(ScoreTest, NonEdgeNextToEmptyCorners) {
 ........\
 .*......\
 ....*o");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set("\
 ........\
 ......*.\
 ..*o");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set(5, "\
 ....*o..\
 .*");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
   set(5, "\
 ..*o....\
 ......*");
-  check(Score::BesideEmptyCorner);
+  check(Score::EmptyCorner);
 }
 
 } // namespace othello

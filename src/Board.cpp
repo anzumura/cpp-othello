@@ -18,11 +18,11 @@ inline auto canFlipDown(int x) { return x < SeventhRowStart; };
 // must be > 2rd column to flip left
 inline auto canFlipLeft(int x) { return x % Board::Rows > OneColumn; };
 // must be < 7th column to flip right
-inline auto canFlipRight(int x) { return x % Board::Rows < Board::RowsMinusTwo; };
+inline auto canFlipRight(int x) { return x % Board::Rows < Board::RowMinusTwo; };
 
 constexpr auto TopEdge = [](int x) { return x >= FirstPos; };
 constexpr auto BottomEdge = [](int x) { return x < Board::Size; };
-constexpr auto LeftEdge = [](int x) { return x % Board::Rows != Board::RowsMinusOne; };
+constexpr auto LeftEdge = [](int x) { return x % Board::Rows != Board::RowMinusOne; };
 constexpr auto RightEdge = [](int x) { return x % Board::Rows != FirstPos; };
 
 constexpr auto UpLeft = [](int x) { return TopEdge(x) && LeftEdge(x); };
@@ -35,11 +35,11 @@ constexpr auto UpCheck = std::make_pair(-Board::Rows, TopEdge);
 constexpr auto DownCheck = std::make_pair(Board::Rows, BottomEdge);
 // LeftCheck must also check >= 0 to avoid 'mod -1' so use same lambda for both Left and UpLeft cases
 constexpr auto LeftCheck = std::make_pair(-OneColumn, UpLeft);
-constexpr auto UpLeftCheck = std::make_pair(-Board::RowsPlusOne, UpLeft);
-constexpr auto DownLeftCheck = std::make_pair(Board::RowsMinusOne, DownLeft);
+constexpr auto UpLeftCheck = std::make_pair(-Board::RowPlusOne, UpLeft);
+constexpr auto DownLeftCheck = std::make_pair(Board::RowMinusOne, DownLeft);
 constexpr auto RightCheck = std::make_pair(OneColumn, RightEdge);
-constexpr auto UpRightCheck = std::make_pair(-Board::RowsMinusOne, UpRight);
-constexpr auto DownRightCheck = std::make_pair(Board::RowsPlusOne, DownRight);
+constexpr auto UpRightCheck = std::make_pair(-Board::RowMinusOne, UpRight);
+constexpr auto DownRightCheck = std::make_pair(Board::RowPlusOne, DownRight);
 
 // for printing to stream
 constexpr auto Border = "\
@@ -64,10 +64,10 @@ Board::Board(const std::string& str, int initialEmpty) {
 std::string Board::toString() const {
   std::string result(Size, EmptyCell);
   for (int i = 0; i < Size; ++i)
-    if (black_.test(i)) {
-      assert(!white_.test(i));
+    if (black_[i]) {
+      assert(!white_[i]);
       result[i] = BlackCell;
-    } else if (white_.test(i))
+    } else if (white_[i])
       result[i] = WhiteCell;
   return result;
 }
@@ -107,8 +107,8 @@ bool Board::validMove(int pos, const Set& myVals, const Set& opVals) const {
     if (int x = pos + c.first; opVals.test(x)) {
       x += c.first;
       do {
-        if (myVals.test(x)) return true;
-        if (!opVals.test(x)) break;
+        if (myVals[x]) return true;
+        if (!opVals[x]) break;
         x += c.first;
       } while (c.second(x));
     }
@@ -142,16 +142,16 @@ int Board::set(int pos, Set& myVals, Set& opVals) {
     if (int x = pos + c.first; opVals.test(x)) {
       x += c.first;
       do {
-        if (myVals.test(x)) { // found 'op-vals' + 'my-val' so flip backwards
+        if (myVals[x]) { // found 'op-vals' + 'my-val' so flip backwards
           for (x -= c.first; x != pos; x -= c.first) {
-            assert(!myVals.test(x));
-            assert(opVals.test(x));
+            assert(!myVals[x]);
+            assert(opVals[x]);
             ++totalFlipped;
             myVals.set(x);
             opVals.reset(x);
           }
           break;
-        } else if (!opVals.test(x))
+        } else if (!opVals[x])
           break; // found a space in the chain so nothing to flip
         x += c.first;
       } while (c.second(x));
@@ -197,11 +197,11 @@ std::ostream& operator<<(std::ostream& os, const Board& b) {
   os << Border;
   for (int i = 0; i < Board::Size; ++i) {
     if (i % Board::Rows == 0) os << "\n" << i / Board::Rows + 1 << '|';
-    if (b.black().test(i)) {
-      assert(!b.white().test(i));
+    if (b.black(i)) {
+      assert(!b.white(i));
       os << black;
     } else
-      os << (b.white().test(i) ? white : empty);
+      os << (b.white(i) ? white : empty);
   }
   return os << blackScore << b.blackCount() << whiteScore << b.whiteCount() << '\n';
 }

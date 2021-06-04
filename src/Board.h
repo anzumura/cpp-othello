@@ -18,10 +18,10 @@ public:
     BadColumn,
     BadRow,
     BadCell, // see 'set' function for details on error conditions
-    RowsMinusTwo = 6,
-    RowsMinusOne,
+    RowMinusTwo = 6,
+    RowMinusOne,
     Rows,
-    RowsPlusOne,
+    RowPlusOne,
     MaxValidMoves = 32,
     Size = 64
   };
@@ -51,9 +51,8 @@ public:
   // methods used by Score function
   auto blackCount() const { return black_.count(); }
   auto whiteCount() const { return white_.count(); }
-  const Set& black() const { return black_; }
-  const Set& white() const { return white_; }
-  bool occupied(int pos) const { return black_.test(pos) || white_.test(pos); }
+  auto black() const { return black_; }
+  auto white() const { return white_; }
 
   // get list of valid moves for a given color
   std::vector<std::string> validMoves(Color) const;
@@ -65,6 +64,8 @@ public:
   bool hasValidMoves(Color) const;
   bool hasValidMoves() const { return hasValidMoves(Color::Black) || hasValidMoves(Color::White); }
   void printGameResult() const;
+  auto black(int i) const { return black_[i]; }
+  auto white(int i) const { return white_[i]; }
 
   // Set updates Board to reflect the new position (including performing flips)
   // and returns the number of disks that were flipped. If no disks would be
@@ -87,6 +88,7 @@ private:
   }
 
   bool validMove(int pos, const Set& myVals, const Set& opVals) const;
+  bool occupied(int pos) const { return black_[pos] || white_[pos]; }
   int set(int pos, Color c) {
     if (c == Color::Black) return set(pos, black_, white_);
     return set(pos, white_, black_);

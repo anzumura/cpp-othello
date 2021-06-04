@@ -7,9 +7,7 @@ namespace othello {
 
 namespace {
 
-enum BoardValues {
-  FirstPos, OneColumn, SecondRowEnd = 15, SeventhRowStart = 48
-};
+enum BoardValues { FirstPos, OneColumn, SecondRowEnd = 15, SeventhRowStart = 48 };
 
 inline auto rowSizeCheck(int x) { return x >= FirstPos && x < Board::Rows; };
 
@@ -48,7 +46,7 @@ constexpr auto Border = "\
    a b c d e f g h\n\
  +----------------";
 
-}  // namespace
+} // namespace
 
 Board::Board(const std::string& str, int initialEmpty) {
   assert(initialEmpty >= 0 && initialEmpty <= Size);
@@ -79,8 +77,7 @@ std::vector<std::string> Board::validMoves(Color c) const {
   const Set& myVals = c == Color::Black ? black_ : white_;
   const Set& opVals = c == Color::Black ? white_ : black_;
   for (int i = 0; i < Size; ++i)
-    if (!occupied(i) && validMove(i, myVals, opVals))
-      result.emplace_back(posToString(i));
+    if (!occupied(i) && validMove(i, myVals, opVals)) result.emplace_back(posToString(i));
   return result;
 }
 
@@ -101,8 +98,7 @@ bool Board::hasValidMoves(Color c) const {
   const Set& myVals = c == Color::Black ? black_ : white_;
   const Set& opVals = c == Color::Black ? white_ : black_;
   for (int i = 0; i < Size; ++i)
-    if (!occupied(i) && validMove(i, myVals, opVals))
-      return true;
+    if (!occupied(i) && validMove(i, myVals, opVals)) return true;
   return false;
 }
 
@@ -123,11 +119,9 @@ bool Board::validMove(int pos, const Set& myVals, const Set& opVals) const {
   const bool flipDown = canFlipDown(pos);
   return (flipDown && valid(DownCheck)) ||
          (canFlipLeft(pos) &&
-          (valid(LeftCheck) || (flipUp && valid(UpLeftCheck)) ||
-           (flipDown && valid(DownLeftCheck)))) ||
+          (valid(LeftCheck) || (flipUp && valid(UpLeftCheck)) || (flipDown && valid(DownLeftCheck)))) ||
          (canFlipRight(pos) &&
-          (valid(RightCheck) || (flipUp && valid(UpRightCheck)) ||
-           (flipDown && valid(DownRightCheck))));
+          (valid(RightCheck) || (flipUp && valid(UpRightCheck)) || (flipDown && valid(DownRightCheck))));
 }
 
 int Board::set(const std::string& pos, Color c) {
@@ -148,7 +142,7 @@ int Board::set(int pos, Set& myVals, Set& opVals) {
     if (int x = pos + c.first; opVals.test(x)) {
       x += c.first;
       do {
-        if (myVals.test(x)) {  // found 'op-vals' + 'my-val' so flip backwards
+        if (myVals.test(x)) { // found 'op-vals' + 'my-val' so flip backwards
           for (x -= c.first; x != pos; x -= c.first) {
             assert(!myVals.test(x));
             assert(opVals.test(x));
@@ -157,7 +151,8 @@ int Board::set(int pos, Set& myVals, Set& opVals) {
             opVals.reset(x);
           }
           break;
-        } else if (!opVals.test(x)) break;  // found a space in the chain so nothing to flip
+        } else if (!opVals.test(x))
+          break; // found a space in the chain so nothing to flip
         x += c.first;
       } while (c.second(x));
     }
@@ -194,9 +189,9 @@ void Board::printGameResult() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const Board& b) {
-  static char black[] = { ' ', Board::BlackCell, '\0' };
-  static char white[] = { ' ', Board::WhiteCell, '\0' };
-  static char empty[] = { ' ', Board::EmptyCell, '\0' };
+  static char black[] = {' ', Board::BlackCell, '\0'};
+  static char white[] = {' ', Board::WhiteCell, '\0'};
+  static char empty[] = {' ', Board::EmptyCell, '\0'};
   static auto blackScore = std::string("  ") + toString(Board::Color::Black) + '(' + Board::BlackCell + "): ";
   static auto whiteScore = std::string(", ") + toString(Board::Color::White) + '(' + Board::WhiteCell + "): ";
   os << Border;
@@ -205,9 +200,10 @@ std::ostream& operator<<(std::ostream& os, const Board& b) {
     if (b.black().test(i)) {
       assert(!b.white().test(i));
       os << black;
-    } else os << (b.white().test(i) ? white : empty);
+    } else
+      os << (b.white().test(i) ? white : empty);
   }
   return os << blackScore << b.blackCount() << whiteScore << b.whiteCount() << '\n';
 }
 
-}  // namespace othello
+} // namespace othello

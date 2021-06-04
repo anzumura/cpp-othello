@@ -90,5 +90,6 @@
     "stop_token": "cpp",
     "cinttypes": "cpp"
   },
-  "C_Cpp.errorSquiggles": "Disabled"
+  "C_Cpp.errorSquiggles": "Disabled",
+  "C_Cpp.clang_format_fallbackStyle": "{ ColumnLimit: 120, PointerAlignment: Left, AllowShortIfStatementsOnASingleLine: true, SpaceAfterTemplateKeyword: false }"
 }

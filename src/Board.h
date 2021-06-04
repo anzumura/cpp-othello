@@ -10,12 +10,20 @@
 namespace othello {
 
 class Board {
- public:
+public:
   enum class Color { Black, White };
-  static constexpr std::array Colors = { Color::Black, Color::White };
+  static constexpr std::array Colors = {Color::Black, Color::White};
   enum Values {
-    BadLength = -4, BadColumn, BadRow, BadCell,  // see 'set' function for details on error conditions
-    RowsMinusTwo = 6, RowsMinusOne, Rows, RowsPlusOne, MaxValidMoves = 32, Size = 64
+    BadLength = -4,
+    BadColumn,
+    BadRow,
+    BadCell, // see 'set' function for details on error conditions
+    RowsMinusTwo = 6,
+    RowsMinusOne,
+    Rows,
+    RowsPlusOne,
+    MaxValidMoves = 32,
+    Size = 64
   };
   using Moves = std::array<int, MaxValidMoves>;
   using Boards = std::array<Board, MaxValidMoves>;
@@ -40,10 +48,12 @@ class Board {
   // simple toString function to help with testing (returns a 64 length string)
   std::string toString() const;
 
+  // methods used by Score function
   auto blackCount() const { return black_.count(); }
   auto whiteCount() const { return white_.count(); }
   const Set& black() const { return black_; }
   const Set& white() const { return white_; }
+  bool occupied(int pos) const { return black_.test(pos) || white_.test(pos); }
 
   // get list of valid moves for a given color
   std::vector<std::string> validMoves(Color) const;
@@ -67,7 +77,8 @@ class Board {
   //   BadRow: pos string second character was not a value from '1' to '8'
   //   BadCell: the cell represented by pos is already occupied
   int set(const std::string& pos, Color);
- private:
+
+private:
   enum PrivateValues { PosD4 = 27, PosE4, PosD5 = 35, PosE5 };
   static auto posToString(int pos) {
     std::string result(1, 'a' + pos % Rows);
@@ -75,7 +86,6 @@ class Board {
     return result;
   }
 
-  bool occupied(int pos) const { return black_.test(pos) || white_.test(pos); }
   bool validMove(int pos, const Set& myVals, const Set& opVals) const;
   int set(int pos, Color c) {
     if (c == Color::Black) return set(pos, black_, white_);
@@ -87,15 +97,11 @@ class Board {
   Set white_;
 };
 
-inline constexpr const char* toString(Board::Color c) {
-  return c == Board::Color::Black ? "Black" : "White";
-}
-inline std::ostream& operator<<(std::ostream& os, const Board::Color& c) {
-  return os << toString(c);
-}
+inline constexpr const char* toString(Board::Color c) { return c == Board::Color::Black ? "Black" : "White"; }
+inline std::ostream& operator<<(std::ostream& os, const Board::Color& c) { return os << toString(c); }
 // output friendly printing including borders with letters and numbers
 std::ostream& operator<<(std::ostream&, const Board&);
 
-}  // namespace othello
+} // namespace othello
 
-#endif  // OTHELLO_BOARD_H
+#endif // OTHELLO_BOARD_H

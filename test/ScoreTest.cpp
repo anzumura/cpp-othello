@@ -1,15 +1,15 @@
-#include "Board.h"
 #include "Score.h"
+#include "Board.h"
 
+#include "gtest/gtest.h"
 #include <array>
 #include <string>
 #include <utility>
-#include "gtest/gtest.h"
 
 namespace othello {
 
 class ScoreTest : public ::testing::Test {
- protected:
+protected:
   void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * Board::Rows); }
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
   void check(int s) {
@@ -32,7 +32,7 @@ TEST_F(ScoreTest, Win) {
 }
 
 TEST_F(ScoreTest, Draw) {
-  set("");  // board with no valid moves and equal counts
+  set(""); // board with no valid moves and equal counts
   check(0);
   set("*.o");
   check(0);
@@ -45,24 +45,22 @@ TEST_F(ScoreTest, AfterOneFlip) {
 
 TEST_F(ScoreTest, Corners) {
   // use boards with at least one valid move in order to avoid 'Win' scores
-  std::array corners {
-    std::make_pair(0, "\
+  std::array corners{std::make_pair(0, "\
 *.......\
 ........\
 ..*o"),
-    std::make_pair(0, "\
+                     std::make_pair(0, "\
 .......*\
 ........\
 ..*o"),
-    std::make_pair(5, "\
+                     std::make_pair(5, "\
 ..*o....\
 ........\
 *"),
-    std::make_pair(5, "\
+                     std::make_pair(5, "\
 ..*o....\
 ........\
-.......*")
-  };
+.......*")};
   for (auto c : corners) {
     set(c.first, c.second);
     check(Score::Corner);
@@ -207,20 +205,20 @@ TEST_F(ScoreTest, NonEdgeNextToEmptyCorners) {
 ........\
 .*......\
 ....*o");
- check(Score::BesideEmptyCorner);
+  check(Score::BesideEmptyCorner);
   set("\
 ........\
 ......*.\
 ..*o");
- check(Score::BesideEmptyCorner);
+  check(Score::BesideEmptyCorner);
   set(5, "\
 ....*o..\
 .*");
- check(Score::BesideEmptyCorner);
+  check(Score::BesideEmptyCorner);
   set(5, "\
 ..*o....\
 ......*");
- check(Score::BesideEmptyCorner);
+  check(Score::BesideEmptyCorner);
 }
 
-}  // namespace othello
+} // namespace othello

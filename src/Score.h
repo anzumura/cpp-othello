@@ -6,10 +6,15 @@
 namespace othello {
 
 class Score {
- public:
+public:
   enum Values {
-    BesideEmptyCorner = -16, BesideEmptyEdge = -4,
-    Center = 1, Edge = 16, SafeEdge = 64, Corner = 2048, Win = 1'000'000
+    BesideEmptyCorner = -16,
+    BesideEmptyEdge = -4,
+    Center = 1,
+    Edge = 16,
+    SafeEdge = 64,
+    Corner = 2048,
+    Win = 1'000'000
   };
   // If there are no valid moves then return 'Win' if the given color has more pieces or '-Win' if the
   // opposite color has more pieces (or zero for a draw). Otherwise, each cell is examined and a total
@@ -25,11 +30,12 @@ class Score {
       return scoreBoard(board, board.black(), board.white());
     return scoreBoard(board, board.white(), board.black());
   }
- private:
+
+private:
   static int scoreBoard(const Board&, const Board::Set&, const Board::Set&);
   static int scoreCell(const Board&, int, int, int, const Board::Set&, const Board::Set&);
 };
 
-}  // namespace othello
+} // namespace othello
 
-#endif  // OTHELLO_SCORE_H
+#endif // OTHELLO_SCORE_H

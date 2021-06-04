@@ -12,10 +12,10 @@ namespace othello {
 
 std::unique_ptr<Player> Player::createPlayer(Board::Color color) {
   char x = getChar(std::string("Choose type for ") + othello::toString(color) + " player (h=human, c=computer)",
-    [](char x){ return x == 'h' || x == 'c'; });
-  if (x == 'h') return std::make_unique<HumanPlayer>(color);
-  x = getChar("  Enter computer type (0=random, 1-9=moves to search)",
-    [](char x){ return x >= '0' && x <= '9'; });
+                   [](char x) { return x == 'h' || x == 'c'; });
+  if (x == 'h')
+    return std::make_unique<HumanPlayer>(color);
+  x = getChar("  Enter computer type (0=random, 1-9=moves to search)", [](char x) { return x >= '0' && x <= '9'; });
   return std::make_unique<ComputerPlayer>(color, x - '0');
 }
 
@@ -24,7 +24,7 @@ char Player::getChar(const std::string& msg, bool pred(char)) {
   do {
     std::cout << msg << ": ";
     std::getline(std::cin, line);
-  } while(line.length() != 1 || !pred(line[0]));
+  } while (line.length() != 1 || !pred(line[0]));
   return line[0];
 }
 
@@ -39,7 +39,7 @@ bool Player::move(Board& board) const {
 
 void Player::printTotalTime() const {
   std::cout << "Total time for " << toString() << ": " << std::fixed << std::setprecision(6)
-    << totalTime.count() / 1'000'000'000.0 << " seconds\n";
+            << totalTime.count() / 1'000'000'000.0 << " seconds\n";
 }
 
 bool HumanPlayer::makeMove(Board& board) const {
@@ -48,28 +48,35 @@ bool HumanPlayer::makeMove(Board& board) const {
     std::string line;
     std::getline(std::cin, line);
     if (line.length() == 1) {
-      if (line[0] == 'q') return false;
+      if (line[0] == 'q')
+        return false;
       if (line[0] == 'v') {
         auto moves = board.validMoves(color);
         std::cout << "  valid moves are:";
-        for (const auto& m : moves) std::cout << " " << m;
+        for (const auto& m : moves)
+          std::cout << " " << m;
         std::cout << std::endl;
       }
     } else {
       auto result = board.set(line, color);
-      if (result > 0) return true;
+      if (result > 0)
+        return true;
       std::cout << "  invalid move: '" << line << "' - " << errorToString(result)
-        << "\n  please enter a location (eg 'a1' or 'h8'), 'q' to quit or 'v' to print valid moves\n";
+                << "\n  please enter a location (eg 'a1' or 'h8'), 'q' to quit or 'v' to print valid moves\n";
     }
   } while (true);
 }
 
 const char* HumanPlayer::errorToString(int result) {
   switch (result) {
-    case Board::BadLength: return "location must be 2 characters";
-    case Board::BadColumn: return "column must be a value from 'a' to 'h'";
-    case Board::BadRow: return "row must be a value from '1' to '8'";
-    case Board::BadCell: return "cell already occupied";
+  case Board::BadLength:
+    return "location must be 2 characters";
+  case Board::BadColumn:
+    return "column must be a value from 'a' to 'h'";
+  case Board::BadRow:
+    return "row must be a value from '1' to '8'";
+  case Board::BadCell:
+    return "cell already occupied";
   }
   return "must flip at least one piece";
 }
@@ -86,13 +93,10 @@ bool ComputerPlayer::makeMove(Board& board) const {
     move = dis(gen);
   }
   int result = board.set(moves[move], color);
-  std::cout << color << " played at: " << moves[move] << " (" << result
-    << " flip" << (result > 1 ? "s" : "") << ")\n";
+  std::cout << color << " played at: " << moves[move] << " (" << result << " flip" << (result > 1 ? "s" : "") << ")\n";
   return true;
 }
 
-std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
-  return board.validMoves(color);
-}
+std::vector<std::string> ComputerPlayer::findMove(const Board& board) const { return board.validMoves(color); }
 
-}  // namespace othello
+} // namespace othello

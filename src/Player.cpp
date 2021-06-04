@@ -13,8 +13,7 @@ namespace othello {
 std::unique_ptr<Player> Player::createPlayer(Board::Color color) {
   char x = getChar(std::string("Choose type for ") + othello::toString(color) + " player (h=human, c=computer)",
                    [](char x) { return x == 'h' || x == 'c'; });
-  if (x == 'h')
-    return std::make_unique<HumanPlayer>(color);
+  if (x == 'h') return std::make_unique<HumanPlayer>(color);
   x = getChar("  Enter computer type (0=random, 1-9=moves to search)", [](char x) { return x >= '0' && x <= '9'; });
   return std::make_unique<ComputerPlayer>(color, x - '0');
 }
@@ -48,8 +47,7 @@ bool HumanPlayer::makeMove(Board& board) const {
     std::string line;
     std::getline(std::cin, line);
     if (line.length() == 1) {
-      if (line[0] == 'q')
-        return false;
+      if (line[0] == 'q') return false;
       if (line[0] == 'v') {
         auto moves = board.validMoves(color);
         std::cout << "  valid moves are:";
@@ -59,8 +57,7 @@ bool HumanPlayer::makeMove(Board& board) const {
       }
     } else {
       auto result = board.set(line, color);
-      if (result > 0)
-        return true;
+      if (result > 0) return true;
       std::cout << "  invalid move: '" << line << "' - " << errorToString(result)
                 << "\n  please enter a location (eg 'a1' or 'h8'), 'q' to quit or 'v' to print valid moves\n";
     }

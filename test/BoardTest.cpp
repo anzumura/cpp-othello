@@ -133,9 +133,11 @@ TEST_F(BoardTest, FlipDown) {
   // test flip down boundry position
   auto moves = std::array{std::make_pair("o", 1), std::make_pair("*", 0)};
   for (const auto& m : moves) {
-    set(6, std::string("\
+    set(6,
+        std::string("\
 .......*\
-.......") + m.first);
+.......") +
+          m.first);
     ASSERT_EQ(board.set("h6", Board::Color::White), m.second);
   }
 }
@@ -201,7 +203,7 @@ TEST_F(BoardTest, FlipDownRight) {
 }
 
 TEST_F(BoardTest, MultipleFlipsDown) {
-  for (int i = 0; i < Board::RowMinusTwo; ++i) {
+  for (int i = 0; i < Board::RowSub2; ++i) {
     set(i + 1, "\
 ...***..\
 ..ooooo");
@@ -218,7 +220,7 @@ TEST_F(BoardTest, MultipleFlipsDown) {
 }
 
 TEST_F(BoardTest, MultipleFlipsUp) {
-  for (int i = 0; i < Board::RowMinusTwo; ++i) {
+  for (int i = 0; i < Board::RowSub2; ++i) {
     set(i, "\
 ..*****.\
 ...ooo");
@@ -235,15 +237,15 @@ TEST_F(BoardTest, MultipleFlipsUp) {
 }
 
 TEST_F(BoardTest, MultipleFlipsLeft) {
-  for (int i = 0; i < Board::RowMinusTwo; ++i) {
+  for (int i = 0; i < Board::RowSub2; ++i) {
     auto f = [i](const char* s) {
       std::string result(i, '.');
       result.append(s);
-      return result + std::string(Board::RowMinusTwo - 1 - i, '.');
+      return result + std::string(Board::RowSub2 - 1 - i, '.');
     };
     set(f("o..") + f("o*.") + f("o*.") + f("o*.") + f("o"));
     std::vector<std::string> moves;
-    for (int j = 1; j < Board::RowMinusTwo; ++j)
+    for (int j = 1; j < Board::RowSub2; ++j)
       moves.emplace_back(std::string(1, 'c' + i) + std::to_string(j));
     ASSERT_EQ(board.validMoves(Board::Color::White), moves);
     ASSERT_EQ(board.set(moves[2], Board::Color::White), 3);
@@ -252,15 +254,15 @@ TEST_F(BoardTest, MultipleFlipsLeft) {
 }
 
 TEST_F(BoardTest, MultipleFlipsRight) {
-  for (int i = 0; i < Board::RowMinusTwo; ++i) {
+  for (int i = 0; i < Board::RowSub2; ++i) {
     auto f = [i](const char* s) {
       std::string result(i, '.');
       result.append(s);
-      return result + std::string(Board::RowMinusTwo - 1 - i, '.');
+      return result + std::string(Board::RowSub2 - 1 - i, '.');
     };
     set(f("..*") + f(".o*") + f(".o*") + f(".o*") + f("..*"));
     std::vector<std::string> moves;
-    for (int j = 1; j < Board::RowMinusTwo; ++j)
+    for (int j = 1; j < Board::RowSub2; ++j)
       moves.emplace_back(std::string(1, 'a' + i) + std::to_string(j));
     ASSERT_EQ(board.validMoves(Board::Color::Black), moves);
     ASSERT_EQ(board.set(moves[2], Board::Color::Black), 3);

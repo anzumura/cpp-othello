@@ -91,5 +91,5 @@
     "cinttypes": "cpp"
   },
   "C_Cpp.errorSquiggles": "Disabled",
-  "C_Cpp.clang_format_fallbackStyle": "{ ColumnLimit: 120, PointerAlignment: Left, AllowShortIfStatementsOnASingleLine: true, SpaceAfterTemplateKeyword: false }"
+  "C_Cpp.clang_format_fallbackStyle": "{ ColumnLimit: 120, PointerAlignment: Left, AllowShortIfStatementsOnASingleLine: true, SpaceAfterTemplateKeyword: false, AlignOperands: false, ContinuationIndentWidth: 2  }"
 }

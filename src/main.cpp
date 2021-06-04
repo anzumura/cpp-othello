@@ -17,8 +17,7 @@ void playGame() {
         std::cout << std::endl << players[player ^ 1]->color << " has no valid moves - skipping turn\n";
         skippedTurns = 0;
       }
-      if (!players[player]->move(board))
-        return;
+      if (!players[player]->move(board)) return;
     } else
       ++skippedTurns;
   };

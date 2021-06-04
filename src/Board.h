@@ -18,12 +18,14 @@ public:
     BadColumn,
     BadRow,
     BadCell, // see 'set' function for details on error conditions
-    RowMinusTwo = 6,
-    RowMinusOne,
+    RowSub2 = 6,
+    RowSub1,
     Rows,
-    RowPlusOne,
+    RowAdd1,
     MaxValidMoves = 32,
-    Size = 64
+    SizeSubRows = 56,
+    SizeSub1 = 63,
+    Size
   };
   using Moves = std::array<int, MaxValidMoves>;
   using Boards = std::array<Board, MaxValidMoves>;

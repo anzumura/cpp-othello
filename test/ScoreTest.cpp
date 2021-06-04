@@ -133,27 +133,27 @@ TEST_F(ScoreTest, EdgeNextToTopEmptyCorners) {
 .*......\
 ........\
 ..*o");
-  check(Score::EmptyCorner);
+  check(Score::EmptyCornerEdge);
   set("\
 ......*.\
 ........\
 ..*o");
-  check(Score::EmptyCorner);
+  check(Score::EmptyCornerEdge);
   set("\
 ........\
 *.......\
 ..*o");
-  check(Score::EmptyCorner);
+  check(Score::EmptyCornerEdge);
   set("\
 ........\
 .......*\
 ..*o");
-  check(Score::EmptyCorner);
+  check(Score::EmptyCornerEdge);
   set("\
 .*......\
 .......*\
 ..*o");
-  check(2 * Score::EmptyCorner);
+  check(2 * Score::EmptyCornerEdge);
 }
 
 TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
@@ -161,25 +161,25 @@ TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
 ..*o....\
 ........\
 .*");
-  check(Score::EmptyCorner);
+  check(Score::EmptyCornerEdge);
   set(5, "\
 ..*o....\
 ........\
 ......*");
-  check(Score::EmptyCorner);
+  check(Score::EmptyCornerEdge);
   set(5, "\
 ..*o....\
 *");
-  check(Score::EmptyCorner);
+  check(Score::EmptyCornerEdge);
   set(5, "\
 ..*o....\
 .......*");
-  check(Score::EmptyCorner);
+  check(Score::EmptyCornerEdge);
   set(5, "\
 ..*o....\
 .......*\
 ......*.");
-  check(2 * Score::EmptyCorner);
+  check(2 * Score::EmptyCornerEdge);
 }
 
 TEST_F(ScoreTest, Edges) {

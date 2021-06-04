@@ -2,7 +2,8 @@
 
 namespace othello {
 
-using Set = const Board::Set&;
+using B = Board;
+using Set = const B::Set&;
 
 namespace {
 
@@ -30,7 +31,7 @@ template<int INC> inline bool safeEdge(int pos, int low, int high, Set myVals, S
 }
 
 template<int DEC, int INC> inline bool emptyCorner(Set opVals, int x, int pos) {
-  return (x == 1 && !opVals[pos - DEC]) || (x == Board::RowMinusTwo && !opVals[pos + INC]);
+  return (x == 1 && !opVals[pos - DEC]) || (x == B::RowSub2 && !opVals[pos + INC]);
 }
 
 // Return true if any of the edge positions are empty (based on T1, T2 and T3
@@ -50,15 +51,21 @@ inline bool emptyEdge(Set empty, int pos) {
   if (y == HIGH) return empty[x] || empty[pos + 1] || empty[pos + HIGH_INC];
   return empty[x] || empty[y];
 }
+inline auto emptyUp(Set empty, int pos) {
+  return emptyEdge<-B::RowAdd1, -B::Rows, -B::RowSub1, 0, B::RowSub1, B::RowSub1, B::RowAdd1>(empty, pos);
+}
+inline auto emptyDown(Set empty, int pos) {
+  return emptyEdge<B::RowSub1, B::Rows, B::RowAdd1, B::SizeSubRows, -B::RowAdd1, B::SizeSub1, -B::RowSub1>(empty, pos);
+}
 
 } // namespace
 
 int Score::scoreBoard(const Board& board, Set myVals, Set opVals) {
   if (board.hasValidMoves()) {
-    const Board::Set empty = (myVals | opVals).flip();
+    const B::Set empty = (myVals | opVals).flip();
     int result = 0, pos = 0;
-    for (int row = 0; row < Board::Rows; ++row)
-      for (int col = 0; col < Board::Rows; ++col, ++pos)
+    for (int row = 0; row < B::Rows; ++row)
+      for (int col = 0; col < B::Rows; ++col, ++pos)
         if (myVals[pos])
           result += scoreCell(board, row, col, pos, myVals, opVals, empty);
         else if (opVals[pos])
@@ -72,32 +79,26 @@ int Score::scoreBoard(const Board& board, Set myVals, Set opVals) {
 
 int Score::scoreCell(const Board& board, int row, int col, int pos, Set myVals, Set opVals, Set empty) {
   // process edges
-  if (const bool sideEdge = col == 0 || col == Board::RowMinusOne; row == 0 || row == Board::RowMinusOne) {
+  if (const bool sideEdge = col == 0 || col == B::RowSub1; row == 0 || row == B::RowSub1) {
     const int rowStart = pos - col;
-    return sideEdge                                                             ? Corner
-           : safeEdge<1>(pos, rowStart, rowStart + Board::Rows, myVals, opVals) ? SafeEdge
-           : emptyCorner<1, 1>(opVals, col, pos)                                ? EmptyCorner
-                                                                                : Edge;
+    return sideEdge                                                    ? Corner
+      : safeEdge<1>(pos, rowStart, rowStart + B::Rows, myVals, opVals) ? SafeEdge
+      : emptyCorner<1, 1>(opVals, col, pos)                            ? EmptyCornerEdge
+                                                                       : Edge;
   } else if (sideEdge)
-    return safeEdge<Board::Rows>(pos, 0, Board::Size, myVals, opVals) ? SafeEdge
-           : emptyCorner<Board::Rows, Board::Rows>(opVals, row, pos)  ? EmptyCorner
-                                                                      : Edge;
+    return safeEdge<B::Rows>(pos, 0, B::Size, myVals, opVals) ? SafeEdge
+      : emptyCorner<B::Rows, B::Rows>(opVals, row, pos)       ? EmptyCornerEdge
+                                                              : Edge;
   // process non-edges
-  return (row == 1) ? (emptyCorner<Board::RowPlusOne, -Board::RowMinusOne>(opVals, row, pos) ? EmptyCorner
-                       : emptyEdge<-Board::RowPlusOne, -Board::Rows, -Board::RowMinusOne, 0, Board::RowMinusOne,
-                                   Board::RowMinusOne, Board::RowPlusOne>(empty, pos)
-                           ? EmptyEdge
-                           : Center)
-         : (row == Board::RowMinusTwo)
-             ? (emptyCorner<-Board::RowMinusOne, Board::RowPlusOne>(opVals, row, pos) ? EmptyCorner
-                : emptyEdge<Board::RowMinusOne, Board::Rows, Board::RowPlusOne, Board::Size - Board::Rows,
-                            -Board::RowPlusOne, Board::Size - 1, -Board::RowMinusOne>(empty, pos)
-                    ? EmptyEdge
-                    : Center)
-         : (col == 1) ? (emptySide<-Board::RowPlusOne, -1, Board::RowMinusOne>(empty, pos) ? EmptyEdge : Center)
-         : (col == Board::RowMinusTwo)
-             ? (emptySide<-Board::RowMinusOne, 1, Board::RowPlusOne>(empty, pos) ? EmptyEdge : Center)
-             : Center;
+  return (row == 1)       ? (emptyCorner<B::RowAdd1, -B::RowSub1>(opVals, row, pos) ? EmptyCorner
+                               : emptyUp(empty, pos)                                ? EmptyEdge
+                                                                                    : CenterEdge)
+    : (row == B::RowSub2) ? (emptyCorner<-B::RowSub1, B::RowAdd1>(opVals, row, pos) ? EmptyCorner
+                               : emptyDown(empty, pos)                              ? EmptyEdge
+                                                                                    : CenterEdge)
+    : (col == 1)          ? (emptySide<-B::RowAdd1, -1, B::RowSub1>(empty, pos) ? EmptyEdge : CenterEdge)
+    : (col == B::RowSub2) ? (emptySide<-B::RowSub1, 1, B::RowAdd1>(empty, pos) ? EmptyEdge : CenterEdge)
+                          : Center;
 }
 
 } // namespace othello

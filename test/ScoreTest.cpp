@@ -221,4 +221,93 @@ TEST_F(ScoreTest, NonEdgeNextToEmptyCorners) {
   check(Score::EmptyCorner);
 }
 
+TEST_F(ScoreTest, NextToEmptyTopEdges) {
+  set(1, "\
+..*.....\
+....*o");
+  check(Score::EmptyEdge);
+  set(1, "\
+..****..\
+....*o");
+  check(4 * Score::EmptyEdge);
+  // not next to empty edge
+  set("\
+...***..\
+....*...\
+..*o");
+  check(3 * Score::Edge);
+  set("\
+***.....\
+*.......\
+*...*o");
+  auto score = Score::Corner + 4 * Score::SafeEdge;
+  check(score);
+  set("\
+***.....\
+**......\
+*...*o");
+  check(score + Score::CenterEdge);
+  // next to empty
+  set("\
+****....\
+**......\
+....*o");
+  check(score + Score::EmptyEdge);
+  set("\
+***.....\
+.*......\
+*...*o");
+  check(Score::Corner + 2 * Score::SafeEdge + Score::Edge + Score::EmptyEdge);
+}
+
+TEST_F(ScoreTest, NextToEmptyLeftEdges) {
+  set(2, "\
+.*..*o");
+  check(Score::EmptyEdge);
+  set(2, "\
+.*..*o..\
+.*......\
+.*......\
+.*");
+  check(4 * Score::EmptyEdge);
+  set(2, "\
+*...*o..\
+.*......\
+*");
+  check(2 * Score::Edge + Score::EmptyEdge);
+}
+
+TEST_F(ScoreTest, NextToEmptyRightEdges) {
+  set(2, "\
+..*o..*");
+  check(Score::EmptyEdge);
+  set(2, "\
+..*o..*.\
+......*.\
+......*.\
+......*");
+  check(4 * Score::EmptyEdge);
+  set(2, "\
+..*o....\
+.......*\
+......**");
+  check(2 * Score::Edge + Score::EmptyEdge);
+}
+
+TEST_F(ScoreTest, NextToEmptyBottomEdges) {
+  set(5, "\
+..*o....\
+.....*");
+  check(Score::EmptyEdge);
+  set(5, "\
+..*o....\
+..****");
+  check(4 * Score::EmptyEdge);
+  set(5, "\
+..*o....\
+....*...\
+....**");
+  check(2 * Score::Edge + Score::EmptyEdge);
+}
+
 } // namespace othello

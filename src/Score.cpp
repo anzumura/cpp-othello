@@ -30,8 +30,8 @@ template<int INC> inline bool safeEdge(int pos, int low, int high, Set myVals, S
   return i < low; // if entire row is occupied consider safe
 }
 
-template<int DEC, int INC> inline bool emptyCorner(Set opVals, int x, int pos) {
-  return (x == 1 && !opVals[pos - DEC]) || (x == B::RowSub2 && !opVals[pos + INC]);
+template<int DEC, int INC> inline bool emptyCorner(Set empty, int x, int pos) {
+  return (x == 1 && empty[pos - DEC]) || (x == B::RowSub2 && empty[pos + INC]);
 }
 
 // Return true if any of the edge positions are empty (based on T1, T2 and T3
@@ -63,8 +63,8 @@ inline auto emptyDown(Set empty, int pos) {
 int Score::scoreBoard(const Board& board, Set myVals, Set opVals) {
   if (board.hasValidMoves()) {
     const B::Set empty = (myVals | opVals).flip();
-    int result = 0, pos = 0;
-    for (int row = 0; row < B::Rows; ++row)
+    int result = 0;
+    for (int row = 0, pos = 0; row < B::Rows; ++row)
       for (int col = 0; col < B::Rows; ++col, ++pos)
         if (myVals[pos])
           result += scoreCell(board, row, col, pos, myVals, opVals, empty);
@@ -83,19 +83,19 @@ int Score::scoreCell(const Board& board, int row, int col, int pos, Set myVals, 
     const int rowStart = pos - col;
     return sideEdge                                                    ? Corner
       : safeEdge<1>(pos, rowStart, rowStart + B::Rows, myVals, opVals) ? SafeEdge
-      : emptyCorner<1, 1>(opVals, col, pos)                            ? EmptyCornerEdge
+      : emptyCorner<1, 1>(empty, col, pos)                             ? EmptyCornerEdge
                                                                        : Edge;
   } else if (sideEdge)
     return safeEdge<B::Rows>(pos, 0, B::Size, myVals, opVals) ? SafeEdge
-      : emptyCorner<B::Rows, B::Rows>(opVals, row, pos)       ? EmptyCornerEdge
+      : emptyCorner<B::Rows, B::Rows>(empty, row, pos)        ? EmptyCornerEdge
                                                               : Edge;
   // process non-edges
-  return (row == 1)       ? (emptyCorner<B::RowAdd1, -B::RowSub1>(opVals, row, pos) ? EmptyCorner
-                               : emptyUp(empty, pos)                                ? EmptyEdge
-                                                                                    : CenterEdge)
-    : (row == B::RowSub2) ? (emptyCorner<-B::RowSub1, B::RowAdd1>(opVals, row, pos) ? EmptyCorner
-                               : emptyDown(empty, pos)                              ? EmptyEdge
-                                                                                    : CenterEdge)
+  return (row == 1)       ? (emptyCorner<B::RowAdd1, -B::RowSub1>(empty, col, pos) ? EmptyCorner
+                               : emptyUp(empty, pos)                               ? EmptyEdge
+                                                                                   : CenterEdge)
+    : (row == B::RowSub2) ? (emptyCorner<-B::RowSub1, B::RowAdd1>(empty, col, pos) ? EmptyCorner
+                               : emptyDown(empty, pos)                             ? EmptyEdge
+                                                                                   : CenterEdge)
     : (col == 1)          ? (emptySide<-B::RowAdd1, -1, B::RowSub1>(empty, pos) ? EmptyEdge : CenterEdge)
     : (col == B::RowSub2) ? (emptySide<-B::RowSub1, 1, B::RowAdd1>(empty, pos) ? EmptyEdge : CenterEdge)
                           : Center;

@@ -43,12 +43,12 @@ class HumanPlayer : public Player {
 
 class ComputerPlayer : public Player {
  public:
-  ComputerPlayer(Board::Color c, int s) : Player(c), search(s) {};
-  std::string toString() const override { return Player::toString() + " with search=" + std::to_string(search); }
+  ComputerPlayer(Board::Color c, int s) : Player(c), _search(s) {};
+  std::string toString() const override { return Player::toString() + " with search=" + std::to_string(_search); }
  private:
   bool makeMove(Board&) const override;
   std::vector<std::string> findMove(const Board&) const;
-  const int search;
+  const int _search;
 };
 
 }  // namespace othello

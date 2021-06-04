@@ -8,6 +8,8 @@
 #include <random>
 #include <string>
 
+#include "Score.h"
+
 namespace othello {
 
 std::unique_ptr<Player> Player::createPlayer(Board::Color color) {
@@ -82,7 +84,7 @@ bool ComputerPlayer::makeMove(Board& board) const {
   static std::random_device rd;
   static std::mt19937 gen(rd());
 
-  auto moves = findMove(board);
+  auto moves = _search == 0 ? board.validMoves(color) : findMove(board);
   assert(!moves.empty());
   int move = 0;
   if (moves.size() > 1) {
@@ -94,6 +96,25 @@ bool ComputerPlayer::makeMove(Board& board) const {
   return true;
 }
 
-std::vector<std::string> ComputerPlayer::findMove(const Board& board) const { return board.validMoves(color); }
+std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
+  Board::Moves moves;
+  Board::Boards boards;
+  auto total = board.validMoves(color, moves, boards);
+  int bestScore = -Score::Win - 1;
+  std::vector<int> bestPositions;
+  for (int i = 0; i < total; ++i) {
+    int score = Score::score(boards[i], color);
+    if (score > bestScore) {
+      bestScore = score;
+      bestPositions.clear();
+      bestPositions.push_back(moves[i]);
+    } else if (score == bestScore)
+      bestPositions.push_back(moves[i]);
+  }
+  std::vector<std::string> results;
+  for (auto p : bestPositions)
+    results.push_back(Board::posToString(p));
+  return results;
+}
 
 } // namespace othello

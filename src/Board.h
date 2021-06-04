@@ -35,7 +35,7 @@ public:
   static constexpr char EmptyCell = '.';
 
   // construct a Board with initial '4 disk' position
-  Board() : black_((1LL << PosE4) | (1LL << PosD5)), white_((1LL << PosD4) | (1LL << PosE5)) {}
+  Board() : _black((1LL << PosE4) | (1LL << PosD5)), _white((1LL << PosD4) | (1LL << PosE5)) {}
 
   // construct a Board from a 64 length char representation where:
   //   . = empty cell
@@ -51,10 +51,10 @@ public:
   std::string toString() const;
 
   // methods used by Score function
-  auto blackCount() const { return black_.count(); }
-  auto whiteCount() const { return white_.count(); }
-  auto black() const { return black_; }
-  auto white() const { return white_; }
+  auto blackCount() const { return _black.count(); }
+  auto whiteCount() const { return _white.count(); }
+  auto black() const { return _black; }
+  auto white() const { return _white; }
 
   // get list of valid moves for a given color
   std::vector<std::string> validMoves(Color) const;
@@ -66,8 +66,8 @@ public:
   bool hasValidMoves(Color) const;
   bool hasValidMoves() const { return hasValidMoves(Color::Black) || hasValidMoves(Color::White); }
   void printGameResult() const;
-  auto black(int i) const { return black_[i]; }
-  auto white(int i) const { return white_[i]; }
+  auto black(int i) const { return _black[i]; }
+  auto white(int i) const { return _white[i]; }
 
   // Set updates Board to reflect the new position (including performing flips)
   // and returns the number of disks that were flipped. If no disks would be
@@ -80,25 +80,24 @@ public:
   //   BadRow: pos string second character was not a value from '1' to '8'
   //   BadCell: the cell represented by pos is already occupied
   int set(const std::string& pos, Color);
-
-private:
-  enum PrivateValues { PosD4 = 27, PosE4, PosD5 = 35, PosE5 };
   static auto posToString(int pos) {
     std::string result(1, 'a' + pos % Rows);
     result.push_back('1' + pos / Rows);
     return result;
   }
 
+private:
+  enum PrivateValues { PosD4 = 27, PosE4, PosD5 = 35, PosE5 };
   bool validMove(int pos, const Set& myVals, const Set& opVals) const;
-  bool occupied(int pos) const { return black_[pos] || white_[pos]; }
+  bool occupied(int pos) const { return _black[pos] || _white[pos]; }
   int set(int pos, Color c) {
-    if (c == Color::Black) return set(pos, black_, white_);
-    return set(pos, white_, black_);
+    if (c == Color::Black) return set(pos, _black, _white);
+    return set(pos, _white, _black);
   }
   int set(int pos, Set& myVals, Set& opVals);
 
-  Set black_;
-  Set white_;
+  Set _black;
+  Set _white;
 };
 
 inline constexpr const char* toString(Board::Color c) { return c == Board::Color::Black ? "Black" : "White"; }

@@ -54,9 +54,9 @@ Board::Board(const std::string& str, int initialEmpty) {
   int i = initialEmpty;
   for (auto c : str) {
     if (c == BlackCell)
-      black_.set(i);
+      _black.set(i);
     else if (c == WhiteCell)
-      white_.set(i);
+      _white.set(i);
     ++i;
   }
 }
@@ -64,18 +64,18 @@ Board::Board(const std::string& str, int initialEmpty) {
 std::string Board::toString() const {
   std::string result(Size, EmptyCell);
   for (int i = 0; i < Size; ++i)
-    if (black_[i]) {
-      assert(!white_[i]);
+    if (_black[i]) {
+      assert(!_white[i]);
       result[i] = BlackCell;
-    } else if (white_[i])
+    } else if (_white[i])
       result[i] = WhiteCell;
   return result;
 }
 
 std::vector<std::string> Board::validMoves(Color c) const {
   std::vector<std::string> result;
-  const Set& myVals = c == Color::Black ? black_ : white_;
-  const Set& opVals = c == Color::Black ? white_ : black_;
+  const Set& myVals = c == Color::Black ? _black : _white;
+  const Set& opVals = c == Color::Black ? _white : _black;
   for (int i = 0; i < Size; ++i)
     if (!occupied(i) && validMove(i, myVals, opVals)) result.emplace_back(posToString(i));
   return result;
@@ -95,8 +95,8 @@ int Board::validMoves(Color c, Moves& moves, Boards& boards) const {
 }
 
 bool Board::hasValidMoves(Color c) const {
-  const Set& myVals = c == Color::Black ? black_ : white_;
-  const Set& opVals = c == Color::Black ? white_ : black_;
+  const Set& myVals = c == Color::Black ? _black : _white;
+  const Set& opVals = c == Color::Black ? _white : _black;
   for (int i = 0; i < Size; ++i)
     if (!occupied(i) && validMove(i, myVals, opVals)) return true;
   return false;

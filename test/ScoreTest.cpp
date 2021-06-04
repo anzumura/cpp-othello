@@ -275,6 +275,11 @@ TEST_F(ScoreTest, NextToEmptyLeftEdges) {
 .*......\
 *");
   check(2 * Score::Edge + Score::EmptyEdge);
+  set(5, "\
+*.......\
+.*..*o..\
+***");
+  check(Score::Corner + 2 * Score::SafeEdge + Score::Edge + Score::EmptyEdge);
 }
 
 TEST_F(ScoreTest, NextToEmptyRightEdges) {
@@ -292,6 +297,11 @@ TEST_F(ScoreTest, NextToEmptyRightEdges) {
 .......*\
 ......**");
   check(2 * Score::Edge + Score::EmptyEdge);
+  set(5, "\
+..*o....\
+......**\
+.....***");
+  check(Score::Corner + 3 * Score::SafeEdge + Score::EmptyEdge);
 }
 
 TEST_F(ScoreTest, NextToEmptyBottomEdges) {
@@ -308,6 +318,12 @@ TEST_F(ScoreTest, NextToEmptyBottomEdges) {
 ....*...\
 ....**");
   check(2 * Score::Edge + Score::EmptyEdge);
+  // no empty edges
+  set(5, "\
+..*o....\
+..****..\
+****oooo");
+  check(4 * Score::CenterEdge);
 }
 
 } // namespace othello

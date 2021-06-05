@@ -75,6 +75,22 @@ inline auto emptyDown(Set empty, int pos) {
   return emptyEdge<B::RowSub1, B::Rows, B::RowAdd1, B::SizeSubRows, -B::RowAdd1, B::SizeSub1, -B::RowSub1>(empty, pos);
 }
 
+constexpr std::array ScoreValuesRow1 = { 4, -3, 2, 2, 2, 2, -3, 4 };
+constexpr std::array ScoreValuesRow2 = { -3, -4, -1, -1, -1, -1, -4, -3 };
+constexpr std::array ScoreValuesRow3 = { 2, -1, 1, 0, 0, 1, -1, 2 };
+constexpr std::array ScoreValuesRow4 = { 2, -1, 0, 1, 1, 0, -1, 2 };
+
+constexpr std::array WeightedScoreValues = {
+  ScoreValuesRow1,
+  ScoreValuesRow2,
+  ScoreValuesRow3,
+  ScoreValuesRow4,
+  ScoreValuesRow4,
+  ScoreValuesRow3,
+  ScoreValuesRow2,
+  ScoreValuesRow1
+};
+
 } // namespace
 
 int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set empty) const {
@@ -101,8 +117,8 @@ int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set 
                           : Center;
 }
 
-int WeightedScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set empty) const {
-  return 0;
+int WeightedScore::scoreCell(int row, int col, int, Set, Set, Set) const {
+  return WeightedScoreValues[row][col];
 }
 
 } // namespace othello

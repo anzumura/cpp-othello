@@ -14,33 +14,46 @@ protected:
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
   void check(int s) {
     for (auto c : Board::Colors)
-      ASSERT_EQ(score->score(board, c), c == Board::Color::Black ? s : -s) << "Color: " << c;
+      ASSERT_EQ(score->score(board, c), c == Board::Color::Black ? s : -s) << "FullScore for: " << c;
+  }
+  void checkWeighted(int s) {
+    for (auto c : Board::Colors)
+      ASSERT_EQ(weightedScore->score(board, c), c == Board::Color::Black ? s : -s) << "WeightedScore for: " << c;
   }
   Board board;
   std::unique_ptr<Score> score = std::move(std::make_unique<FullScore>());
+  std::unique_ptr<Score> weightedScore = std::move(std::make_unique<WeightedScore>());
 };
 
 TEST_F(ScoreTest, InitialPosition) {
   check(0);
+  checkWeighted(0);
 }
 
 TEST_F(ScoreTest, Win) {
   set("*");
   check(Score::Win);
+  checkWeighted(Score::Win);
   set(std::string(64, '*'));
   check(Score::Win);
+  checkWeighted(Score::Win);
 }
 
 TEST_F(ScoreTest, Draw) {
   set(""); // board with no valid moves and equal counts
   check(0);
+  checkWeighted(0);
   set("*.o");
   check(0);
+  checkWeighted(0);
 }
 
 TEST_F(ScoreTest, AfterOneFlip) {
   board.set("d3", Board::Color::Black); // flips 1 resulting in 4 black and 1 white
   check(3);
+  // for WeightedScore, black now has 3 (of the initial 4 pieces) and white has 1 - each of these is worth 1
+  // and the new location 'd3' is worth 0 for a total score of 2 for black
+  checkWeighted(2);
 }
 
 TEST_F(ScoreTest, Corners) {
@@ -48,22 +61,23 @@ TEST_F(ScoreTest, Corners) {
   std::array corners{std::make_pair(0, "\
 *.......\
 ........\
-..*o"),
+...*o"),
                      std::make_pair(0, "\
 .......*\
 ........\
-..*o"),
+...*o"),
                      std::make_pair(5, "\
-..*o....\
+...*o...\
 ........\
 *"),
                      std::make_pair(5, "\
-..*o....\
+...*o...\
 ........\
 .......*")};
   for (auto c : corners) {
     set(c.first, c.second);
     check(FullScore::Corner);
+    checkWeighted(4);
   }
 }
 

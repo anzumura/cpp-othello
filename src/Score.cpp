@@ -5,6 +5,23 @@ namespace othello {
 using B = Board;
 using Set = const B::Set&;
 
+int Score::scoreBoard(const Board& board, Set myVals, Set opVals) const {
+  if (board.hasValidMoves()) {
+    const B::Set empty = (myVals | opVals).flip();
+    int result = 0;
+    for (int row = 0, pos = 0; row < B::Rows; ++row)
+      for (int col = 0; col < B::Rows; ++col, ++pos)
+        if (myVals[pos])
+          result += scoreCell(row, col, pos, myVals, opVals, empty);
+        else if (opVals[pos])
+          result -= scoreCell(row, col, pos, opVals, myVals, empty);
+    return result;
+  }
+  int myCount = myVals.count();
+  int opCount = opVals.count();
+  return myCount > opCount ? Win : myCount < opCount ? -Win : 0;
+}
+
 namespace {
 
 // see comments in Score.h for definition of a 'SafeEdge' position
@@ -60,24 +77,7 @@ inline auto emptyDown(Set empty, int pos) {
 
 } // namespace
 
-int Score::scoreBoard(const Board& board, Set myVals, Set opVals) {
-  if (board.hasValidMoves()) {
-    const B::Set empty = (myVals | opVals).flip();
-    int result = 0;
-    for (int row = 0, pos = 0; row < B::Rows; ++row)
-      for (int col = 0; col < B::Rows; ++col, ++pos)
-        if (myVals[pos])
-          result += scoreCell(board, row, col, pos, myVals, opVals, empty);
-        else if (opVals[pos])
-          result -= scoreCell(board, row, col, pos, opVals, myVals, empty);
-    return result;
-  }
-  int myCount = myVals.count();
-  int opCount = opVals.count();
-  return myCount > opCount ? Win : myCount < opCount ? -Win : 0;
-}
-
-int Score::scoreCell(const Board& board, int row, int col, int pos, Set myVals, Set opVals, Set empty) {
+int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set empty) const {
   // process edges
   if (const bool sideEdge = col == 0 || col == B::RowSub1; row == 0 || row == B::RowSub1) {
     const int rowStart = pos - col;
@@ -99,6 +99,10 @@ int Score::scoreCell(const Board& board, int row, int col, int pos, Set myVals, 
     : (col == 1)          ? (emptySide<-B::RowAdd1, -1, B::RowSub1>(empty, pos) ? EmptyEdge : CenterEdge)
     : (col == B::RowSub2) ? (emptySide<-B::RowSub1, 1, B::RowAdd1>(empty, pos) ? EmptyEdge : CenterEdge)
                           : Center;
+}
+
+int WeightedScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set empty) const {
+  return 0;
 }
 
 } // namespace othello

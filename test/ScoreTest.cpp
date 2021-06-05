@@ -14,14 +14,14 @@ protected:
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
   void check(int s) {
     for (auto c : Board::Colors)
-      ASSERT_EQ(Score::score(board, c), c == Board::Color::Black ? s : -s) << "Color: " << c;
+      ASSERT_EQ(score->score(board, c), c == Board::Color::Black ? s : -s) << "Color: " << c;
   }
   Board board;
+  std::unique_ptr<Score> score = std::move(std::make_unique<FullScore>());
 };
 
 TEST_F(ScoreTest, InitialPosition) {
-  for (auto c : Board::Colors)
-    EXPECT_EQ(Score::score(board, c), 0);
+  check(0);
 }
 
 TEST_F(ScoreTest, Win) {
@@ -63,7 +63,7 @@ TEST_F(ScoreTest, Corners) {
 .......*")};
   for (auto c : corners) {
     set(c.first, c.second);
-    check(Score::Corner);
+    check(FullScore::Corner);
   }
 }
 
@@ -72,12 +72,12 @@ TEST_F(ScoreTest, SafeHorizontalEdge) {
 **......\
 ........\
 ..*o");
-  check(Score::Corner + Score::SafeEdge);
+  check(FullScore::Corner + FullScore::SafeEdge);
   set("\
 **....**\
 ........\
 ..*o");
-  check(2 * (Score::Corner + Score::SafeEdge));
+  check(2 * (FullScore::Corner + FullScore::SafeEdge));
   set("\
 oooo****\
 ........\
@@ -95,7 +95,7 @@ TEST_F(ScoreTest, SafeVerticalEdge) {
 .......*\
 .......*\
 ..*o");
-  check(Score::Corner + Score::SafeEdge);
+  check(FullScore::Corner + FullScore::SafeEdge);
   set("\
 .......*\
 .......*\
@@ -105,7 +105,7 @@ TEST_F(ScoreTest, SafeVerticalEdge) {
 ........\
 .......*\
 .......*");
-  check(2 * (Score::Corner + Score::SafeEdge));
+  check(2 * (FullScore::Corner + FullScore::SafeEdge));
   set("\
 .......*\
 .......*\
@@ -133,27 +133,27 @@ TEST_F(ScoreTest, EdgeNextToTopEmptyCorners) {
 .*......\
 ........\
 ..*o");
-  check(Score::EmptyCornerEdge);
+  check(FullScore::EmptyCornerEdge);
   set("\
 ......*.\
 ........\
 ..*o");
-  check(Score::EmptyCornerEdge);
+  check(FullScore::EmptyCornerEdge);
   set("\
 ........\
 *.......\
 ..*o");
-  check(Score::EmptyCornerEdge);
+  check(FullScore::EmptyCornerEdge);
   set("\
 ........\
 .......*\
 ..*o");
-  check(Score::EmptyCornerEdge);
+  check(FullScore::EmptyCornerEdge);
   set("\
 .*......\
 .......*\
 ..*o");
-  check(2 * Score::EmptyCornerEdge);
+  check(2 * FullScore::EmptyCornerEdge);
 }
 
 TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
@@ -161,43 +161,43 @@ TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
 ..*o....\
 ........\
 .*");
-  check(Score::EmptyCornerEdge);
+  check(FullScore::EmptyCornerEdge);
   set(5, "\
 ..*o....\
 ........\
 ......*");
-  check(Score::EmptyCornerEdge);
+  check(FullScore::EmptyCornerEdge);
   set(5, "\
 ..*o....\
 *");
-  check(Score::EmptyCornerEdge);
+  check(FullScore::EmptyCornerEdge);
   set(5, "\
 ..*o....\
 .......*");
-  check(Score::EmptyCornerEdge);
+  check(FullScore::EmptyCornerEdge);
   set(5, "\
 ..*o....\
 .......*\
 ......*.");
-  check(2 * Score::EmptyCornerEdge);
+  check(2 * FullScore::EmptyCornerEdge);
 }
 
 TEST_F(ScoreTest, Edges) {
   set("\
 ..***o");
-  check(2 * Score::Edge);
+  check(2 * FullScore::Edge);
   set("\
 ........\
 ........\
 *......*\
 *......*\
 o......o");
-  check(2 * Score::Edge);
+  check(2 * FullScore::Edge);
   set(5, "\
 *......*\
 ........\
 ..o***");
-  check(4 * Score::Edge);
+  check(4 * FullScore::Edge);
 }
 
 TEST_F(ScoreTest, NonEdgeNextToEmptyCorners) {
@@ -205,125 +205,125 @@ TEST_F(ScoreTest, NonEdgeNextToEmptyCorners) {
 ........\
 .*......\
 ....*o");
-  check(Score::EmptyCorner);
+  check(FullScore::EmptyCorner);
   set("\
 ........\
 ......*.\
 ..*o");
-  check(Score::EmptyCorner);
+  check(FullScore::EmptyCorner);
   set(5, "\
 ....*o..\
 .*");
-  check(Score::EmptyCorner);
+  check(FullScore::EmptyCorner);
   set(5, "\
 ..*o....\
 ......*");
-  check(Score::EmptyCorner);
+  check(FullScore::EmptyCorner);
 }
 
 TEST_F(ScoreTest, NextToEmptyTopEdges) {
   set(1, "\
 ..*.....\
 ....*o");
-  check(Score::EmptyEdge);
+  check(FullScore::EmptyEdge);
   set(1, "\
 ..****..\
 ....*o");
-  check(4 * Score::EmptyEdge);
+  check(4 * FullScore::EmptyEdge);
   // not next to empty edge
   set("\
 ...***..\
 ....*...\
 ..*o");
-  check(3 * Score::Edge);
+  check(3 * FullScore::Edge);
   set("\
 ***.....\
 *.......\
 *...*o");
-  auto score = Score::Corner + 4 * Score::SafeEdge;
+  auto score = FullScore::Corner + 4 * FullScore::SafeEdge;
   check(score);
   set("\
 ***.....\
 **......\
 *...*o");
-  check(score + Score::CenterEdge);
+  check(score + FullScore::CenterEdge);
   // next to empty
   set("\
 ****....\
 **......\
 ....*o");
-  check(score + Score::EmptyEdge);
+  check(score + FullScore::EmptyEdge);
   set("\
 ***.....\
 .*......\
 *...*o");
-  check(Score::Corner + 2 * Score::SafeEdge + Score::Edge + Score::EmptyEdge);
+  check(FullScore::Corner + 2 * FullScore::SafeEdge + FullScore::Edge + FullScore::EmptyEdge);
 }
 
 TEST_F(ScoreTest, NextToEmptyLeftEdges) {
   set(2, "\
 .*..*o");
-  check(Score::EmptyEdge);
+  check(FullScore::EmptyEdge);
   set(2, "\
 .*..*o..\
 .*......\
 .*......\
 .*");
-  check(4 * Score::EmptyEdge);
+  check(4 * FullScore::EmptyEdge);
   set(2, "\
 *...*o..\
 .*......\
 *");
-  check(2 * Score::Edge + Score::EmptyEdge);
+  check(2 * FullScore::Edge + FullScore::EmptyEdge);
   set(5, "\
 *.......\
 .*..*o..\
 ***");
-  check(Score::Corner + 2 * Score::SafeEdge + Score::Edge + Score::EmptyEdge);
+  check(FullScore::Corner + 2 * FullScore::SafeEdge + FullScore::Edge + FullScore::EmptyEdge);
 }
 
 TEST_F(ScoreTest, NextToEmptyRightEdges) {
   set(2, "\
 ..*o..*");
-  check(Score::EmptyEdge);
+  check(FullScore::EmptyEdge);
   set(2, "\
 ..*o..*.\
 ......*.\
 ......*.\
 ......*");
-  check(4 * Score::EmptyEdge);
+  check(4 * FullScore::EmptyEdge);
   set(2, "\
 ..*o....\
 .......*\
 ......**");
-  check(2 * Score::Edge + Score::EmptyEdge);
+  check(2 * FullScore::Edge + FullScore::EmptyEdge);
   set(5, "\
 ..*o....\
 ......**\
 .....***");
-  check(Score::Corner + 3 * Score::SafeEdge + Score::EmptyEdge);
+  check(FullScore::Corner + 3 * FullScore::SafeEdge + FullScore::EmptyEdge);
 }
 
 TEST_F(ScoreTest, NextToEmptyBottomEdges) {
   set(5, "\
 ..*o....\
 .....*");
-  check(Score::EmptyEdge);
+  check(FullScore::EmptyEdge);
   set(5, "\
 ..*o....\
 ..****");
-  check(4 * Score::EmptyEdge);
+  check(4 * FullScore::EmptyEdge);
   set(5, "\
 ..*o....\
 ....*...\
 ....**");
-  check(2 * Score::Edge + Score::EmptyEdge);
+  check(2 * FullScore::Edge + FullScore::EmptyEdge);
   // no empty edges
   set(5, "\
 ..*o....\
 ..****..\
 ****oooo");
-  check(4 * Score::CenterEdge);
+  check(4 * FullScore::CenterEdge);
 }
 
 } // namespace othello

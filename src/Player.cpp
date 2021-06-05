@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <random>
 #include <string>
 
@@ -13,18 +14,32 @@
 namespace othello {
 
 std::unique_ptr<Player> Player::createPlayer(Board::Color color) {
-  char x = getChar(std::string("Choose type for ") + othello::toString(color) + " player (h=human, c=computer)",
-                   [](char x) { return x == 'h' || x == 'c'; });
-  if (x == 'h') return std::make_unique<HumanPlayer>(color);
-  x = getChar("  Enter computer type (0=random, 1-9=moves to search)", [](char x) { return x >= '0' && x <= '9'; });
-  return std::make_unique<ComputerPlayer>(color, x - '0');
+  char type = getChar(
+    std::string("Choose type for ") + othello::toString(color) + " player (h=human, c=computer)",
+    [](char x) { return x == 'h' || x == 'c'; }, 'c');
+  if (type == 'h') return std::make_unique<HumanPlayer>(color);
+  char search = getChar(
+    "  Enter computer search (0=no search, 1-9=moves)", [](char x) { return x >= '0' && x <= '9'; }, '1');
+  char random = getChar(
+    "  Allow randomized results (y/n)", [](char x) { return x == 'y' || x == 'n'; }, 'y');
+  std::unique_ptr<Score> score = nullptr;
+  if (search != '0') {
+    type = getChar(
+      "  Enter computer type (f=full heuristic, w=weighted cells)", [](char x) { return x >= 'f' && x <= 'w'; }, 'f');
+    if (type == 'f')
+      score = std::make_unique<FullScore>();
+    else
+      score = std::make_unique<WeightedScore>();
+  }
+  return std::make_unique<ComputerPlayer>(color, search - '0', random == 'y', score);
 }
 
-char Player::getChar(const std::string& msg, bool pred(char)) {
+char Player::getChar(const std::string& msg, bool pred(char), char def) {
   std::string line;
   do {
-    std::cout << msg << ": ";
+    std::cout << msg << " default '" << def << "': ";
     std::getline(std::cin, line);
+    if (line.empty()) return def;
   } while (line.length() != 1 || !pred(line[0]));
   return line[0];
 }
@@ -87,7 +102,7 @@ bool ComputerPlayer::makeMove(Board& board) const {
   auto moves = _search == 0 ? board.validMoves(color) : findMove(board);
   assert(!moves.empty());
   int move = 0;
-  if (moves.size() > 1) {
+  if (_random && moves.size() > 1) {
     std::uniform_int_distribution<> dis(0, moves.size() - 1);
     move = dis(gen);
   }
@@ -103,7 +118,7 @@ std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
   int bestScore = -Score::Win - 1;
   std::vector<int> bestPositions;
   for (int i = 0; i < total; ++i) {
-    int score = Score::score(boards[i], color);
+    int score = _score->score(boards[i], color);
     if (score > bestScore) {
       bestScore = score;
       bestPositions.clear();

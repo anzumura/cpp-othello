@@ -13,40 +13,10 @@
 
 namespace othello {
 
-std::unique_ptr<Player> Player::createPlayer(Board::Color color) {
-  char type = getChar(
-    std::string("Choose type for ") + othello::toString(color) + " player (h=human, c=computer)",
-    [](char x) { return x == 'h' || x == 'c'; }, 'c');
-  if (type == 'h') return std::make_unique<HumanPlayer>(color);
-  char search = getChar(
-    "  Enter computer search (0=no search, 1-9=moves)", [](char x) { return x >= '0' && x <= '9'; }, '1');
-  char random = getChar(
-    "  Allow randomized results (y/n)", [](char x) { return x == 'y' || x == 'n'; }, 'y');
-  std::unique_ptr<Score> score = nullptr;
-  if (search != '0') {
-    type = getChar(
-      "  Enter computer type (f=full heuristic, w=weighted cells)", [](char x) { return x >= 'f' && x <= 'w'; }, 'f');
-    if (type == 'f')
-      score = std::make_unique<FullScore>();
-    else
-      score = std::make_unique<WeightedScore>();
-  }
-  return std::make_unique<ComputerPlayer>(color, search - '0', random == 'y', score);
-}
-
-char Player::getChar(const std::string& msg, bool pred(char), char def) {
-  std::string line;
-  do {
-    std::cout << msg << " default '" << def << "': ";
-    std::getline(std::cin, line);
-    if (line.empty()) return def;
-  } while (line.length() != 1 || !pred(line[0]));
-  return line[0];
-}
-
-bool Player::move(Board& board) const {
+bool Player::move(Board& board, bool tournament) const {
   assert(board.hasValidMoves(color));
-  std::cout << std::endl << board << std::endl;
+  if (!tournament)
+    std::cout << std::endl << board << std::endl;
   auto start = std::chrono::high_resolution_clock::now();
   auto result = makeMove(board);
   totalTime += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start);
@@ -107,7 +77,9 @@ bool ComputerPlayer::makeMove(Board& board) const {
     move = dis(gen);
   }
   int result = board.set(moves[move], color);
-  std::cout << color << " played at: " << moves[move] << " (" << result << " flip" << (result > 1 ? "s" : "") << ")\n";
+  assert(result > 0);
+  if (!_tournament)
+    std::cout << color << " played at: " << moves[move] << " (" << result << " flip" << (result > 1 ? "s" : "") << ")\n";
   return true;
 }
 

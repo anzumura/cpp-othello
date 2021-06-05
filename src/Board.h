@@ -65,7 +65,7 @@ public:
 
   bool hasValidMoves(Color) const;
   bool hasValidMoves() const { return hasValidMoves(Color::Black) || hasValidMoves(Color::White); }
-  void printGameResult() const;
+  void printGameResult(bool tournament = false) const;
   auto black(int i) const { return _black[i]; }
   auto white(int i) const { return _white[i]; }
 

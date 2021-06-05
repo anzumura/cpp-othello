@@ -1,6 +1,7 @@
 #include "Board.h"
 
 #include <cassert>
+#include <iomanip>
 #include <utility>
 
 namespace othello {
@@ -176,11 +177,19 @@ int Board::set(int pos, Set& myVals, Set& opVals) {
   return totalFlipped;
 }
 
-void Board::printGameResult() const {
-  std::cout << std::endl << *this;
+void Board::printGameResult(bool tournament) const {
   const auto bc = blackCount();
   const auto wc = whiteCount();
-  std::cout << "\nGame Over - ";
+  if (tournament)
+    std::cout << std::setw(2) << bc << "," << std::setw(2) << wc;
+  else {
+    std::cout << std::endl << *this << std::endl;
+    if (hasValidMoves(Color::Black) || hasValidMoves(Color::White))
+      std::cout << "Game Stopped";
+    else
+      std::cout << "Game Over";
+  }
+  std::cout << " - ";
   if (bc == wc)
     std::cout << "draw!\n";
   else

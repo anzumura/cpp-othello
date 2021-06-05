@@ -12,25 +12,26 @@ namespace othello {
 
 class Player {
  public:
-  static std::unique_ptr<Player> createPlayer(Board::Color);
+  static std::unique_ptr<Player> createPlayer(Board::Color, bool computerOnly = false);
 
   Player(const Player&) = delete;
   virtual ~Player() = default;
 
   // 'move' returns true once a move has been made or false if player wants to end the game
+  // setting tournament to 'true' suppresses printing board each time
   // note: move is only called if valid moves exist for this player's color
-  bool move(Board&) const;
+  bool move(Board&, bool tournament) const;
   // 'printTotalTime' prints the total time taken in seconds to make moves by this player
   // note: time is internally measured in nanoseconds, but rounded to nearest microsecond when printing
   void printTotalTime() const;
 
   const Board::Color color;
   virtual std::string toString() const { return othello::toString(color); }
+
  protected:
   explicit Player(Board::Color c) : color(c), totalTime(0) {};
  private:
   virtual bool makeMove(Board&) const = 0;
-  static char getChar(const std::string&, bool(char), char);
   mutable std::chrono::nanoseconds totalTime;
 };
 
@@ -44,8 +45,8 @@ class HumanPlayer : public Player {
 
 class ComputerPlayer : public Player {
  public:
-  ComputerPlayer(Board::Color c, int search, bool random, std::unique_ptr<Score>& score)
-   : Player(c), _search(search), _random(random), _score(std::move(score)) {};
+  ComputerPlayer(Board::Color c, int search, bool random, std::unique_ptr<Score>& score, bool tournament)
+   : Player(c), _search(search), _random(random), _score(std::move(score)), _tournament(tournament) {};
   std::string toString() const override {
      return Player::toString() + (_score ? std::string(" (") + _score->toString() + ")" : "") +
       " with" + (_random ? " randomized" : "") + " search=" + std::to_string(_search);
@@ -56,6 +57,7 @@ class ComputerPlayer : public Player {
   const int _search;
   const bool _random;
   const std::unique_ptr<Score> _score;
+  const bool _tournament; // suppresses printing when true
 };
 
 }  // namespace othello

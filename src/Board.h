@@ -42,7 +42,7 @@ public:
   //   * = black cell
   //   o = white cell
   // 'initialEmpty' can be used to allow shorted stings when making boards (helpful for testing), i.e.:
-  //   Board(63, "o") creates a board with just a single whith cell in the bottom right corner
+  //   Board(63, "o") creates a board with just a single white cell in the bottom right corner
   // partial boards are also fine: any cells beyond the end of the string are assumed to be empty, i.e.:
   //   Board(".xo....o") creates a board with some values in the first row, but the rest empty
   explicit Board(const std::string&, int initialEmpty = 0);
@@ -74,8 +74,8 @@ public:
   // flipped by the move then Board is not be updated (since the move is
   // illegal). pos should be a value like 'a1' or 'h8' (column letter followed
   // by row number)
-  // Negtive numbers are returned for error conditions:
-  //   BadLenght: pos string was not length 2
+  // Negative numbers are returned for error conditions:
+  //   BadLength: pos string was not length 2
   //   BadColumn: pos string first character was not a value from 'a' to 'f'
   //   BadRow: pos string second character was not a value from '1' to '8'
   //   BadCell: the cell represented by pos is already occupied

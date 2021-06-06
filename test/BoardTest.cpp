@@ -116,7 +116,7 @@ TEST_F(BoardTest, FlipUp) {
 ...o*...\
 ...oo...\
 ...o");
-  // test flip up boundry position
+  // test flip up boundary position
   auto moves = std::array{std::make_pair("o", 1), std::make_pair("*", 0)};
   for (const auto& m : moves) {
     set(std::string("*.......") + m.first);
@@ -130,7 +130,7 @@ TEST_F(BoardTest, FlipDown) {
 ...*....\
 ...**...\
 ...*o");
-  // test flip down boundry position
+  // test flip down boundary position
   auto moves = std::array{std::make_pair("o", 1), std::make_pair("*", 0)};
   for (const auto& m : moves) {
     set(6,
@@ -147,7 +147,7 @@ TEST_F(BoardTest, FlipLeft) {
   check(3, "\
 ...ooo..\
 ...*o");
-  // test flip left boundry position
+  // test flip left boundary position
   set("*o");
   ASSERT_EQ(board.set("c1", Board::Color::Black), 1);
   set("oo");
@@ -159,7 +159,7 @@ TEST_F(BoardTest, FlipRight) {
   check(3, "\
 ...o*...\
 ..ooo");
-  // test flip right boundry position
+  // test flip right boundary position
   set(7, "......o*");
   ASSERT_EQ(board.set("f8", Board::Color::Black), 1);
   set(7, "......oo");

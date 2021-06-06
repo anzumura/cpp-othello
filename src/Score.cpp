@@ -7,59 +7,50 @@ namespace othello {
 using B = Board;
 using Set = const B::Set&;
 
-int Score::scoreBoard(const Board& board, Set myVals, Set opVals, bool debugPrint) const {
-  if (board.hasValidMoves()) {
-    const B::Set empty = (myVals | opVals).flip();
-    int myScore = 0, opScore = 0;
-    for (int row = 0, pos = 0; row < B::Rows; ++row) {
-      for (int col = 0; col < B::Rows; ++col, ++pos)
-        if (myVals[pos]) {
-          int s = scoreCell(row, col, pos, myVals, opVals, empty);
-          myScore += s;
-          if (debugPrint) std::cout << std::setw(8) << s << " ";
-        } else if (opVals[pos]) {
-          int s = scoreCell(row, col, pos, opVals, myVals, empty);
-          opScore += s;
-          if (debugPrint) std::cout << "   (" << std::setw(4) << s << ")";
-        } else if (debugPrint)
-          std::cout << "    .... ";
-      if (debugPrint) std::cout << std::endl;
-    }
-    if (debugPrint) std::cout << "Score: " << myScore << " - (" << opScore << ") = " << myScore - opScore << std::endl;
-    return myScore - opScore;
+int Score::printScoreCells(Set myVals, Set opVals, Set empty) const {
+  int myScore = 0, opScore = 0;
+  for (int row = 0, pos = 0; row < B::Rows; ++row) {
+    for (int col = 0; col < B::Rows; ++col, ++pos)
+      if (myVals[pos]) {
+        int s = scoreCell(row, col, pos, myVals, opVals, empty);
+        myScore += s;
+        std::cout << std::setw(8) << s << " ";
+      } else if (opVals[pos]) {
+        int s = scoreCell(row, col, pos, opVals, myVals, empty);
+        opScore += s;
+        std::cout << "   (" << std::setw(4) << s << ")";
+      } else
+        std::cout << "    .... ";
+    std::cout << std::endl;
   }
-  const int myCount = myVals.count();
-  const int opCount = opVals.count();
-  return myCount > opCount ? Win : myCount < opCount ? -Win : 0;
+  std::cout << "Score: " << myScore << " - (" << opScore << ") = " << myScore - opScore << std::endl;
+  // make sure the score calculated in this function matches the 'non-debug' scoreCells function
+  // will need to remove this assertion if a non-deterministic version of 'scoreCell' is created
+  assert(scoreCells(myVals, opVals, empty) == myScore - opScore);
+  return myScore - opScore;
 }
 
 namespace {
 
 // see comments in Score.h for definition of a 'SafeEdge' position
-template<int INC> inline bool safeEdge(int pos, int low, int high, Set myVals, Set opVals) {
+template<int INC> inline bool safeEdge(int pos, int low, int high, Set myVals, Set opVals, Set empty) {
   bool allMine = true;
   int i = pos + INC;
-  // check to the right (or down), break if we hit a space
+  // check to the right (or down) and break if we hit a space
   for (; i < high; i += INC)
     if (opVals[i])
       allMine = false;
     else if (!myVals[i])
       break;
-  // allMine is true if all cells to the right are my color (and we may stopped because of a space)
-  if (allMine) {
-    if (i >= high) return true; // no spaces so return true, i.e., all my color to the right
-    // we hit a space going forward so check backwards
-    for (i = pos - INC; i >= low; i -= INC)
-      if (opVals[i] || !myVals[i]) return false; // hit opposite color or space so not safe
-    return true;                                 // all my color to the left
-  }
-  // there were opposite colors going forward, but no spaces
+  // didn't hit a space to the right
   if (i >= high) {
+    if (allMine) return true; // all my color to the right
+    // there were opposite colors to the right so check left
     for (i = pos - INC; i >= low; i -= INC)
-      if (!opVals[i] && !myVals[i]) return false; // hit a space so not safe
-    return true;                                  // return safe since entire row is occupied
+      if (empty[i]) return false; // hit a space so not safe
+    return true;                  // return safe since entire row is occupied
   }
-  // there were opposite colors going forward plus hit a space
+  // hit a space to the right so check left
   for (i = pos - INC; i >= low; i -= INC)
     if (opVals[i] || !myVals[i]) return false; // hit an opposite value or a space so return false
   return true;                                 // all my color to the left
@@ -80,7 +71,7 @@ inline bool emptyEdge(Set empty, int pos) {
   if (empty[pos + T2]) return true;
   const int x = pos + T1;
   const int y = pos + T3;
-  // special cases for positions diagially next to corners (check 4 edges, but
+  // special cases for positions diagonally next to corners (check 4 edges, but
   // can skip checking corner)
   if (x == LOW) return empty[y] || empty[pos - 1] || empty[pos + LOW_INC];
   if (y == HIGH) return empty[x] || empty[pos + 1] || empty[pos + HIGH_INC];
@@ -93,13 +84,13 @@ inline auto emptyDown(Set empty, int pos) {
   return emptyEdge<B::RowSub1, B::Rows, B::RowAdd1, B::SizeSubRows, -B::RowAdd1, B::SizeSub1, -B::RowSub1>(empty, pos);
 }
 
-constexpr std::array ScoreValuesRow1 = {4, -3, 2, 2, 2, 2, -3, 4};
-constexpr std::array ScoreValuesRow2 = {-3, -4, -1, -1, -1, -1, -4, -3};
-constexpr std::array ScoreValuesRow3 = {2, -1, 1, 0, 0, 1, -1, 2};
-constexpr std::array ScoreValuesRow4 = {2, -1, 0, 1, 1, 0, -1, 2};
-
-constexpr std::array WeightedScoreValues = {ScoreValuesRow1, ScoreValuesRow2, ScoreValuesRow3, ScoreValuesRow4,
-                                            ScoreValuesRow4, ScoreValuesRow3, ScoreValuesRow2, ScoreValuesRow1};
+// Static weights from 'An Analysis of Heuristics in Othello'
+using W = WeightedScore;
+constexpr std::array Score1 = {W::Corner, W::BadCorner, W::Edge, W::Edge, W::Edge, W::Edge, W::BadCorner, W::Corner};
+constexpr std::array Score2 = {W::BadCorner, W::BadCenter, W::Bad, W::Bad, W::Bad, W::Bad, W::BadCenter, W::BadCorner};
+constexpr std::array Score3 = {W::Edge, W::Bad, W::Center, W::CenterEdge, W::CenterEdge, W::Center, W::Bad, W::Edge};
+constexpr std::array Score4 = {W::Edge, W::Bad, W::CenterEdge, W::Center, W::Center, W::CenterEdge, W::Bad, W::Edge};
+constexpr std::array WeightedScoreValues = {Score1, Score2, Score3, Score4, Score4, Score3, Score2, Score1};
 
 } // namespace
 
@@ -107,23 +98,23 @@ int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set 
   // process edges
   if (const bool sideEdge = col == 0 || col == B::RowSub1; row == 0 || row == B::RowSub1) {
     const int rowStart = pos - col;
-    return sideEdge                                                    ? Corner
-      : safeEdge<1>(pos, rowStart, rowStart + B::Rows, myVals, opVals) ? SafeEdge
-      : emptyCorner<1, 1>(empty, col, pos)                             ? EmptyCornerEdge
-                                                                       : Edge;
+    return sideEdge                                                           ? Corner
+      : safeEdge<1>(pos, rowStart, rowStart + B::Rows, myVals, opVals, empty) ? SafeEdge
+      : emptyCorner<1, 1>(empty, col, pos)                                    ? BadCorner
+                                                                              : Edge;
   } else if (sideEdge)
-    return safeEdge<B::Rows>(pos, 0, B::Size, myVals, opVals) ? SafeEdge
-      : emptyCorner<B::Rows, B::Rows>(empty, row, pos)        ? EmptyCornerEdge
-                                                              : Edge;
+    return safeEdge<B::Rows>(pos, 0, B::Size, myVals, opVals, empty) ? SafeEdge
+      : emptyCorner<B::Rows, B::Rows>(empty, row, pos)               ? BadCorner
+                                                                     : Edge;
   // process non-edges
-  return (row == 1)       ? (emptyCorner<B::RowAdd1, -B::RowSub1>(empty, col, pos) ? EmptyCorner
-                               : emptyUp(empty, pos)                               ? EmptyEdge
+  return (row == 1)       ? (emptyCorner<B::RowAdd1, -B::RowSub1>(empty, col, pos) ? BadCenter
+                               : emptyUp(empty, pos)                               ? Bad
                                                                                    : CenterEdge)
-    : (row == B::RowSub2) ? (emptyCorner<-B::RowSub1, B::RowAdd1>(empty, col, pos) ? EmptyCorner
-                               : emptyDown(empty, pos)                             ? EmptyEdge
+    : (row == B::RowSub2) ? (emptyCorner<-B::RowSub1, B::RowAdd1>(empty, col, pos) ? BadCenter
+                               : emptyDown(empty, pos)                             ? Bad
                                                                                    : CenterEdge)
-    : (col == 1)          ? (emptySide<-B::RowAdd1, -1, B::RowSub1>(empty, pos) ? EmptyEdge : CenterEdge)
-    : (col == B::RowSub2) ? (emptySide<-B::RowSub1, 1, B::RowAdd1>(empty, pos) ? EmptyEdge : CenterEdge)
+    : (col == 1)          ? (emptySide<-B::RowAdd1, -1, B::RowSub1>(empty, pos) ? Bad : CenterEdge)
+    : (col == B::RowSub2) ? (emptySide<-B::RowSub1, 1, B::RowAdd1>(empty, pos) ? Bad : CenterEdge)
                           : Center;
 }
 

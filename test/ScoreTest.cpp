@@ -1,5 +1,5 @@
-#include "Board.h"
 #include "Score.h"
+#include "Board.h"
 
 #include "gtest/gtest.h"
 #include <array>
@@ -9,6 +9,7 @@
 namespace othello {
 
 using S = FullScore;
+using W = WeightedScore;
 
 class ScoreTest : public ::testing::Test {
 protected:
@@ -154,27 +155,27 @@ TEST_F(ScoreTest, EdgeNextToTopEmptyCorners) {
 .*......\
 ........\
 ..*o");
-  check(S::EmptyCornerEdge);
+  check(S::BadCorner);
   set("\
 ......*.\
 ........\
 ..*o");
-  check(S::EmptyCornerEdge);
+  check(S::BadCorner);
   set("\
 ........\
 *.......\
 ..*o");
-  check(S::EmptyCornerEdge);
+  check(S::BadCorner);
   set("\
 ........\
 .......*\
 ..*o");
-  check(S::EmptyCornerEdge);
+  check(S::BadCorner);
   set("\
 .*......\
 .......*\
 ..*o");
-  check(2 * S::EmptyCornerEdge);
+  check(2 * S::BadCorner);
 }
 
 TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
@@ -182,25 +183,25 @@ TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
 ..*o....\
 ........\
 .*");
-  check(S::EmptyCornerEdge);
+  check(S::BadCorner);
   set(5, "\
 ..*o....\
 ........\
 ......*");
-  check(S::EmptyCornerEdge);
+  check(S::BadCorner);
   set(5, "\
 ..*o....\
 *");
-  check(S::EmptyCornerEdge);
+  check(S::BadCorner);
   set(5, "\
 ..*o....\
 .......*");
-  check(S::EmptyCornerEdge);
+  check(S::BadCorner);
   set(5, "\
 ..*o....\
 .......*\
 ......*.");
-  check(2 * S::EmptyCornerEdge);
+  check(2 * S::BadCorner);
 }
 
 TEST_F(ScoreTest, Edges) {
@@ -226,31 +227,31 @@ TEST_F(ScoreTest, NonEdgeNextToEmptyCorners) {
 ........\
 .*......\
 ....*o");
-  check(S::EmptyCorner);
+  check(S::BadCenter);
   set("\
 ........\
 ......*.\
 ..*o");
-  check(S::EmptyCorner);
+  check(S::BadCenter);
   set(5, "\
 ....*o..\
 .*");
-  check(S::EmptyCorner);
+  check(S::BadCenter);
   set(5, "\
 ..*o....\
 ......*");
-  check(S::EmptyCorner);
+  check(S::BadCenter);
 }
 
 TEST_F(ScoreTest, NextToEmptyTopEdges) {
   set(1, "\
 ..*.....\
 ....*o");
-  check(S::EmptyEdge);
+  check(S::Bad);
   set(1, "\
 ..****..\
 ....*o");
-  check(4 * S::EmptyEdge);
+  check(4 * S::Bad);
   // not next to empty edge
   set("\
 ...***..\
@@ -273,72 +274,72 @@ TEST_F(ScoreTest, NextToEmptyTopEdges) {
 ****....\
 **......\
 ....*o");
-  check(score + S::EmptyEdge);
+  check(score + S::Bad);
   set("\
 ***.....\
 .*......\
 *...*o");
-  check(S::Corner + 2 * S::SafeEdge + S::Edge + S::EmptyEdge);
+  check(S::Corner + 2 * S::SafeEdge + S::Edge + S::Bad);
 }
 
 TEST_F(ScoreTest, NextToEmptyLeftEdges) {
   set(2, "\
 .*..*o");
-  check(S::EmptyEdge);
+  check(S::Bad);
   set(2, "\
 .*..*o..\
 .*......\
 .*......\
 .*");
-  check(4 * S::EmptyEdge);
+  check(4 * S::Bad);
   set(2, "\
 *...*o..\
 .*......\
 *");
-  check(2 * S::Edge + S::EmptyEdge);
+  check(2 * S::Edge + S::Bad);
   set(5, "\
 *.......\
 .*..*o..\
 ***");
-  check(S::Corner + 2 * S::SafeEdge + S::Edge + S::EmptyEdge);
+  check(S::Corner + 2 * S::SafeEdge + S::Edge + S::Bad);
 }
 
 TEST_F(ScoreTest, NextToEmptyRightEdges) {
   set(2, "\
 ..*o..*");
-  check(S::EmptyEdge);
+  check(S::Bad);
   set(2, "\
 ..*o..*.\
 ......*.\
 ......*.\
 ......*");
-  check(4 * S::EmptyEdge);
+  check(4 * S::Bad);
   set(2, "\
 ..*o....\
 .......*\
 ......**");
-  check(2 * S::Edge + S::EmptyEdge);
+  check(2 * S::Edge + S::Bad);
   set(5, "\
 ..*o....\
 ......**\
 .....***");
-  check(S::Corner + 3 * S::SafeEdge + S::EmptyEdge);
+  check(S::Corner + 3 * S::SafeEdge + S::Bad);
 }
 
 TEST_F(ScoreTest, NextToEmptyBottomEdges) {
   set(5, "\
 ..*o....\
 .....*");
-  check(S::EmptyEdge);
+  check(S::Bad);
   set(5, "\
 ..*o....\
 ..****");
-  check(4 * S::EmptyEdge);
+  check(4 * S::Bad);
   set(5, "\
 ..*o....\
 ....*...\
 ....**");
-  check(2 * S::Edge + S::EmptyEdge);
+  check(2 * S::Edge + S::Bad);
   // no empty edges
   set(5, "\
 ..*o....\
@@ -357,10 +358,16 @@ oo*o****\
 ooooo***\
 *oo*o*..\
 oo*****.");
-  int black = 12 * S::Edge + 4 * S::CenterEdge + 8 * S::Center + S::EmptyCornerEdge + 3 * S::EmptyEdge;
-  int white = S::Corner + S::SafeEdge + 4 * S::Edge + 7 * S::CenterEdge + 8 * S::Center + 3 * S::EmptyEdge;
+  ASSERT_EQ(board.blackCount(), 28);
+  ASSERT_EQ(board.whiteCount(), 24);
+  int black = 12 * S::Edge + 4 * S::CenterEdge + 8 * S::Center + S::BadCorner + 3 * S::Bad;
+  int white = S::Corner + S::SafeEdge + 4 * S::Edge + 7 * S::CenterEdge + 8 * S::Center + 3 * S::Bad;
   score->score(board, Board::Color::Black, true);
   check(black - white);
+  black = 11 * W::Edge + 2 * W::BadCorner + 7 * W::Bad + 4 * W::CenterEdge + 4 * W::Center;
+  white = W::Corner + W::BadCorner + W::BadCenter + 4 * W::Edge + 9 * W::Bad + 4 * W::CenterEdge + 4 * W::Center;
+  weightedScore->score(board, Board::Color::Black, true);
+  checkWeighted(black - white);
 }
 
 } // namespace othello

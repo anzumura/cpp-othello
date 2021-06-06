@@ -155,27 +155,27 @@ TEST_F(ScoreTest, EdgeNextToTopEmptyCorners) {
 .*......\
 ........\
 ..*o");
-  check(S::BadCorner);
+  check(S::BadEdge);
   set("\
 ......*.\
 ........\
 ..*o");
-  check(S::BadCorner);
+  check(S::BadEdge);
   set("\
 ........\
 *.......\
 ..*o");
-  check(S::BadCorner);
+  check(S::BadEdge);
   set("\
 ........\
 .......*\
 ..*o");
-  check(S::BadCorner);
+  check(S::BadEdge);
   set("\
 .*......\
 .......*\
 ..*o");
-  check(2 * S::BadCorner);
+  check(2 * S::BadEdge);
 }
 
 TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
@@ -183,25 +183,25 @@ TEST_F(ScoreTest, EdgeNextToBottomEmptyCorners) {
 ..*o....\
 ........\
 .*");
-  check(S::BadCorner);
+  check(S::BadEdge);
   set(5, "\
 ..*o....\
 ........\
 ......*");
-  check(S::BadCorner);
+  check(S::BadEdge);
   set(5, "\
 ..*o....\
 *");
-  check(S::BadCorner);
+  check(S::BadEdge);
   set(5, "\
 ..*o....\
 .......*");
-  check(S::BadCorner);
+  check(S::BadEdge);
   set(5, "\
 ..*o....\
 .......*\
 ......*.");
-  check(2 * S::BadCorner);
+  check(2 * S::BadEdge);
 }
 
 TEST_F(ScoreTest, Edges) {
@@ -360,12 +360,12 @@ ooooo***\
 oo*****.");
   ASSERT_EQ(board.blackCount(), 28);
   ASSERT_EQ(board.whiteCount(), 24);
-  int black = 12 * S::Edge + 4 * S::CenterEdge + 8 * S::Center + S::BadCorner + 3 * S::Bad;
+  int black = 12 * S::Edge + 4 * S::CenterEdge + 8 * S::Center + S::BadEdge + 3 * S::Bad;
   int white = S::Corner + S::SafeEdge + 4 * S::Edge + 7 * S::CenterEdge + 8 * S::Center + 3 * S::Bad;
   score->score(board, Board::Color::Black, true);
   check(black - white);
-  black = 11 * W::Edge + 2 * W::BadCorner + 7 * W::Bad + 4 * W::CenterEdge + 4 * W::Center;
-  white = W::Corner + W::BadCorner + W::BadCenter + 4 * W::Edge + 9 * W::Bad + 4 * W::CenterEdge + 4 * W::Center;
+  black = 11 * W::Edge + 2 * W::BadEdge + 7 * W::Bad + 4 * W::CenterEdge + 4 * W::Center;
+  white = W::Corner + W::BadEdge + W::BadCenter + 4 * W::Edge + 9 * W::Bad + 4 * W::CenterEdge + 4 * W::Center;
   weightedScore->score(board, Board::Color::Black, true);
   checkWeighted(black - white);
 }

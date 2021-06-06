@@ -86,8 +86,8 @@ inline auto emptyDown(Set empty, int pos) {
 
 // Static weights from 'An Analysis of Heuristics in Othello'
 using W = WeightedScore;
-constexpr std::array Score1 = {W::Corner, W::BadCorner, W::Edge, W::Edge, W::Edge, W::Edge, W::BadCorner, W::Corner};
-constexpr std::array Score2 = {W::BadCorner, W::BadCenter, W::Bad, W::Bad, W::Bad, W::Bad, W::BadCenter, W::BadCorner};
+constexpr std::array Score1 = {W::Corner, W::BadEdge, W::Edge, W::Edge, W::Edge, W::Edge, W::BadEdge, W::Corner};
+constexpr std::array Score2 = {W::BadEdge, W::BadCenter, W::Bad, W::Bad, W::Bad, W::Bad, W::BadCenter, W::BadEdge};
 constexpr std::array Score3 = {W::Edge, W::Bad, W::Center, W::CenterEdge, W::CenterEdge, W::Center, W::Bad, W::Edge};
 constexpr std::array Score4 = {W::Edge, W::Bad, W::CenterEdge, W::Center, W::Center, W::CenterEdge, W::Bad, W::Edge};
 constexpr std::array WeightedScoreValues = {Score1, Score2, Score3, Score4, Score4, Score3, Score2, Score1};
@@ -100,11 +100,11 @@ int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set 
     const int rowStart = pos - col;
     return sideEdge                                                           ? Corner
       : safeEdge<1>(pos, rowStart, rowStart + B::Rows, myVals, opVals, empty) ? SafeEdge
-      : emptyCorner<1, 1>(empty, col, pos)                                    ? BadCorner
+      : emptyCorner<1, 1>(empty, col, pos)                                    ? BadEdge
                                                                               : Edge;
   } else if (sideEdge)
     return safeEdge<B::Rows>(pos, 0, B::Size, myVals, opVals, empty) ? SafeEdge
-      : emptyCorner<B::Rows, B::Rows>(empty, row, pos)               ? BadCorner
+      : emptyCorner<B::Rows, B::Rows>(empty, row, pos)               ? BadEdge
                                                                      : Edge;
   // process non-edges
   return (row == 1)       ? (emptyCorner<B::RowAdd1, -B::RowSub1>(empty, col, pos) ? BadCenter

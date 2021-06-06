@@ -71,14 +71,14 @@ public:
   // The score of a cell will be one of the following values:
   //   Corner: most valuable location since it can't be flipped
   //   SafeEdge: edge location that can't be flipped, i.e., same color extends to a corner or edge is full
-  //   BadCorner: edge 'bad' location since the adjacent corner is empty
+  //   BadEdge: edge 'bad' location since the adjacent corner is empty
   //   Edge: edge location that isn't one of the locations already mentioned
   //   BadCenter: non-edge 'bad' location since the adjacent corner is empty, i.e.: b2, g2, b6, g6
   //   Bad: non-edge 'bad' location since at least one of the adjacent edges is empty
   //   CenterEdge: adjacent-to-edge location that isn't one of the locations already mentioned
   //   Center: location not in the outer two rows or columns
   enum Values {
-    BadCorner = -32,
+    BadEdge = -32,
     BadCenter = -16,
     Bad = -4,
     CenterEdge = 0,
@@ -98,7 +98,7 @@ public:
   std::string toString() const override { return "WeightedScore"; }
   // Meanings are similar to FullScore, but since there is no functionality for 'checking for empty or safe'
   // less overall values are needed to populate 'WeightedScoreValues' matrix (see Score.cpp for more details)
-  enum Values { BadCenter = -4, BadCorner, Bad = -1, CenterEdge = 0, Center, Edge, Corner = 4 };
+  enum Values { BadCenter = -4, BadEdge, Bad = -1, CenterEdge = 0, Center, Edge, Corner = 4 };
 
 private:
   int scoreCell(int, int, int, const Board::Set&, const Board::Set&, const Board::Set&) const override;

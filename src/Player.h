@@ -54,6 +54,7 @@ class ComputerPlayer : public Player {
  private:
   bool makeMove(Board&) const override;
   std::vector<std::string> findMove(const Board&) const;
+  int minmax(const Board&, int, Board::Color) const;
   const int _search;
   const bool _random;
   const std::unique_ptr<Score> _score;

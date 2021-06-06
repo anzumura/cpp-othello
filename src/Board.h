@@ -13,6 +13,7 @@ class Board {
 public:
   enum class Color { Black, White };
   static constexpr std::array Colors = {Color::Black, Color::White};
+  static Color opColor(Color c) { return c == Color::Black ? Color::White : Color::Black; }
   enum Values {
     BadLength = -4,
     BadColumn,
@@ -62,6 +63,18 @@ public:
   // fill 'moves' with positions of valid moves and 'boards' with the corresponding new board for each move
   // and return the total number of valid moves (method used by ComputerPlayer)
   int validMoves(Color, Moves& moves, Boards& boards) const;
+  // only need to fill moves for first level for search algorithms
+  int validMoves(Color c, Boards& boards) const {
+    int count = 0;
+    Board board(*this);
+    for (int i = 0; i < Size; ++i)
+      if (!occupied(i) && board.set(i, c)) {
+        assert(count < MaxValidMoves);
+        boards[count++] = board;
+        board = *this;
+      }
+    return count;
+  }
 
   bool hasValidMoves(Color) const;
   bool hasValidMoves() const { return hasValidMoves(Color::Black) || hasValidMoves(Color::White); }

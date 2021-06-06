@@ -15,8 +15,7 @@ namespace othello {
 
 bool Player::move(Board& board, bool tournament) const {
   assert(board.hasValidMoves(color));
-  if (!tournament)
-    std::cout << std::endl << board << std::endl;
+  if (!tournament) std::cout << std::endl << board << std::endl;
   auto start = std::chrono::high_resolution_clock::now();
   auto result = makeMove(board);
   totalTime += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start);
@@ -79,29 +78,70 @@ bool ComputerPlayer::makeMove(Board& board) const {
   int result = board.set(moves[move], color);
   assert(result > 0);
   if (!_tournament)
-    std::cout << color << " played at: " << moves[move] << " (" << result << " flip" << (result > 1 ? "s" : "") << ")\n";
+    std::cout << color << " played at: " << moves[move] << " (" << result << " flip" << (result > 1 ? "s" : "")
+              << ")\n";
   return true;
 }
 
 std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
   Board::Moves moves;
   Board::Boards boards;
-  auto total = board.validMoves(color, moves, boards);
-  int bestScore = -Score::Win - 1;
-  std::vector<int> bestPositions;
-  for (int i = 0; i < total; ++i) {
-    int score = _score->score(boards[i], color);
-    if (score > bestScore) {
-      bestScore = score;
-      bestPositions.clear();
-      bestPositions.push_back(moves[i]);
-    } else if (score == bestScore)
-      bestPositions.push_back(moves[i]);
+  auto totalMoves = board.validMoves(color, moves, boards);
+  // return more than one position if moves have the same score
+  std::vector<int> bestMoves;
+  int best = -Score::Win;
+  for (int i = 0; i < totalMoves; ++i) {
+    int score = _search == 1 ? _score->score(boards[i], color) : minmax(boards[i], _search - 1, Board::opColor(color));
+    if (score > best) {
+      best = score;
+      bestMoves.clear();
+      bestMoves.push_back(moves[i]);
+    } else if (score == best)
+      bestMoves.push_back(moves[i]);
   }
   std::vector<std::string> results;
-  for (auto p : bestPositions)
+  for (auto p : bestMoves)
     results.push_back(Board::posToString(p));
   return results;
+}
+
+int ComputerPlayer::minmax(const Board& board, int depth, Board::Color turnColor) const {
+  Board::Boards boards;
+  auto totalMoves = board.validMoves(turnColor, boards);
+  // if no valid moves then return score of the given board
+  if (totalMoves == 0) return _score->score(board, color);
+  // special case for depth 1 since we already calculated all the child boards when checking for valid moves
+  if (depth == 1) {
+    if (turnColor == color) {
+      int best = -Score::Win;
+      for (int i = 0; i < totalMoves; ++i) {
+        int score = _score->score(boards[i], color);
+        if (score > best) best = score;
+      }
+      return best;
+    }
+    int best = Score::Win;
+    for (int i = 0; i < totalMoves; ++i) {
+      int score = _score->score(boards[i], color);
+      if (score < best) best = score;
+    }
+    return best;
+  }
+  // usual minmax algorithm, call recursively with depth -1 and opposite color
+  if (turnColor == color) {
+    int best = -Score::Win;
+    for (int i = 0; i < totalMoves; ++i) {
+      int score = minmax(boards[i], depth - 1, Board::opColor(color));
+      if (score > best) best = score;
+    }
+    return best;
+  }
+  int best = Score::Win;
+  for (int i = 0; i < totalMoves; ++i) {
+    int score = minmax(boards[i], depth - 1, color);
+    if (score < best) best = score;
+  }
+  return best;
 }
 
 } // namespace othello

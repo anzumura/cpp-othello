@@ -18,13 +18,13 @@ public:
   enum Values {
     Win = 1'000'000
   };
-  int score(const Board& board, Board::Color c) const {
-    if (c == Board::Color::Black) return scoreBoard(board, board.black(), board.white());
-    return scoreBoard(board, board.white(), board.black());
+  int score(const Board& board, Board::Color c, bool debugPrint = false) const {
+    if (c == Board::Color::Black) return scoreBoard(board, board.black(), board.white(), debugPrint);
+    return scoreBoard(board, board.white(), board.black(), debugPrint);
   }
   virtual std::string toString() const = 0;
 private:
-  int scoreBoard(const Board&, const Board::Set&, const Board::Set&) const;
+  int scoreBoard(const Board&, const Board::Set&, const Board::Set&, bool) const;
   // scoreCell is called for each non-empty cell and is passed the following values:
   //   row: row of the cell (from 0 to 7)
   //   col: column of the cell (from 0 to 7)

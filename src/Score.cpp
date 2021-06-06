@@ -1,24 +1,35 @@
 #include "Score.h"
 
+#include <iomanip>
+
 namespace othello {
 
 using B = Board;
 using Set = const B::Set&;
 
-int Score::scoreBoard(const Board& board, Set myVals, Set opVals) const {
+int Score::scoreBoard(const Board& board, Set myVals, Set opVals, bool debugPrint) const {
   if (board.hasValidMoves()) {
     const B::Set empty = (myVals | opVals).flip();
-    int result = 0;
-    for (int row = 0, pos = 0; row < B::Rows; ++row)
+    int myScore = 0, opScore = 0;
+    for (int row = 0, pos = 0; row < B::Rows; ++row) {
       for (int col = 0; col < B::Rows; ++col, ++pos)
-        if (myVals[pos])
-          result += scoreCell(row, col, pos, myVals, opVals, empty);
-        else if (opVals[pos])
-          result -= scoreCell(row, col, pos, opVals, myVals, empty);
-    return result;
+        if (myVals[pos]) {
+          int s = scoreCell(row, col, pos, myVals, opVals, empty);
+          myScore += s;
+          if (debugPrint) std::cout << std::setw(8) << s << " ";
+        } else if (opVals[pos]) {
+          int s = scoreCell(row, col, pos, opVals, myVals, empty);
+          opScore += s;
+          if (debugPrint) std::cout << "   (" << std::setw(4) << s << ")";
+        } else if (debugPrint)
+          std::cout << "    .... ";
+      if (debugPrint) std::cout << std::endl;
+    }
+    if (debugPrint) std::cout << "Score: " << myScore << " - (" << opScore << ") = " << myScore - opScore << std::endl;
+    return myScore - opScore;
   }
-  int myCount = myVals.count();
-  int opCount = opVals.count();
+  const int myCount = myVals.count();
+  const int opCount = opVals.count();
   return myCount > opCount ? Win : myCount < opCount ? -Win : 0;
 }
 
@@ -28,23 +39,30 @@ namespace {
 template<int INC> inline bool safeEdge(int pos, int low, int high, Set myVals, Set opVals) {
   bool allMine = true;
   int i = pos + INC;
+  // check to the right (or down), break if we hit a space
   for (; i < high; i += INC)
     if (opVals[i])
       allMine = false;
     else if (!myVals[i])
       break;
+  // allMine is true if all cells to the right are my color (and we may stopped because of a space)
   if (allMine) {
-    if (i >= high) return true; // all cells contain myValue to right (or bottom) corner
+    if (i >= high) return true; // no spaces so return true, i.e., all my color to the right
+    // we hit a space going forward so check backwards
     for (i = pos - INC; i >= low; i -= INC)
-      if (opVals[i])
-        allMine = false;
-      else if (!myVals[i])
-        return false;
-    return allMine; // all cells contain myValue to left (or top) corner
-  } else if (i >= high)
+      if (opVals[i] || !myVals[i]) return false; // hit opposite color or space so not safe
+    return true;                                 // all my color to the left
+  }
+  // there were opposite colors going forward, but no spaces
+  if (i >= high) {
     for (i = pos - INC; i >= low; i -= INC)
-      if (!opVals[i] && !myVals[i]) return false;
-  return i < low; // if entire row is occupied consider safe
+      if (!opVals[i] && !myVals[i]) return false; // hit a space so not safe
+    return true;                                  // return safe since entire row is occupied
+  }
+  // there were opposite colors going forward plus hit a space
+  for (i = pos - INC; i >= low; i -= INC)
+    if (opVals[i] || !myVals[i]) return false; // hit an opposite value or a space so return false
+  return true;                                 // all my color to the left
 }
 
 template<int DEC, int INC> inline bool emptyCorner(Set empty, int x, int pos) {
@@ -75,21 +93,13 @@ inline auto emptyDown(Set empty, int pos) {
   return emptyEdge<B::RowSub1, B::Rows, B::RowAdd1, B::SizeSubRows, -B::RowAdd1, B::SizeSub1, -B::RowSub1>(empty, pos);
 }
 
-constexpr std::array ScoreValuesRow1 = { 4, -3, 2, 2, 2, 2, -3, 4 };
-constexpr std::array ScoreValuesRow2 = { -3, -4, -1, -1, -1, -1, -4, -3 };
-constexpr std::array ScoreValuesRow3 = { 2, -1, 1, 0, 0, 1, -1, 2 };
-constexpr std::array ScoreValuesRow4 = { 2, -1, 0, 1, 1, 0, -1, 2 };
+constexpr std::array ScoreValuesRow1 = {4, -3, 2, 2, 2, 2, -3, 4};
+constexpr std::array ScoreValuesRow2 = {-3, -4, -1, -1, -1, -1, -4, -3};
+constexpr std::array ScoreValuesRow3 = {2, -1, 1, 0, 0, 1, -1, 2};
+constexpr std::array ScoreValuesRow4 = {2, -1, 0, 1, 1, 0, -1, 2};
 
-constexpr std::array WeightedScoreValues = {
-  ScoreValuesRow1,
-  ScoreValuesRow2,
-  ScoreValuesRow3,
-  ScoreValuesRow4,
-  ScoreValuesRow4,
-  ScoreValuesRow3,
-  ScoreValuesRow2,
-  ScoreValuesRow1
-};
+constexpr std::array WeightedScoreValues = {ScoreValuesRow1, ScoreValuesRow2, ScoreValuesRow3, ScoreValuesRow4,
+                                            ScoreValuesRow4, ScoreValuesRow3, ScoreValuesRow2, ScoreValuesRow1};
 
 } // namespace
 
@@ -117,8 +127,6 @@ int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set 
                           : Center;
 }
 
-int WeightedScore::scoreCell(int row, int col, int, Set, Set, Set) const {
-  return WeightedScoreValues[row][col];
-}
+int WeightedScore::scoreCell(int row, int col, int, Set, Set, Set) const { return WeightedScoreValues[row][col]; }
 
 } // namespace othello

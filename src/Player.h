@@ -47,10 +47,8 @@ class ComputerPlayer : public Player {
  public:
   ComputerPlayer(Board::Color c, int search, bool random, std::unique_ptr<Score>& score, bool tournament)
    : Player(c), _search(search), _random(random), _score(std::move(score)), _tournament(tournament) {};
-  std::string toString() const override {
-     return Player::toString() + (_score ? std::string(" (") + _score->toString() + ")" : "") +
-      " with" + (_random ? " randomized" : "") + " search=" + std::to_string(_search);
-  }
+  std::string toString() const override;
+
  private:
   bool makeMove(Board&) const override;
   std::vector<std::string> findMove(const Board&) const;
@@ -59,6 +57,7 @@ class ComputerPlayer : public Player {
   const bool _random;
   const std::unique_ptr<Score> _score;
   const bool _tournament; // suppresses printing when true
+  mutable long long _totalScoreCalls = 0;
 };
 
 }  // namespace othello

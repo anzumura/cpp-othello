@@ -1,4 +1,5 @@
 {
+  "editor.rulers": [80,120],
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "files.associations": {
     "array": "cpp",

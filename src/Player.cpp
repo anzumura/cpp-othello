@@ -5,9 +5,11 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <locale>
 #include <memory>
 #include <random>
 #include <string>
+#include <sstream>
 
 #include "Score.h"
 
@@ -64,6 +66,18 @@ const char* HumanPlayer::errorToString(int result) {
   return "must flip at least one piece";
 }
 
+std::string ComputerPlayer::toString() const {
+  std::stringstream ss;
+  ss << Player::toString();
+  if (_score) ss << " (" << _score->toString() << ")";
+  ss << " with";
+  if (_random) ss << " randomized";
+  std::locale loc("en_US.UTF-8");
+  ss.imbue(loc);
+  ss << " search=" << _search << " (score called " << _totalScoreCalls << ")";
+  return ss.str();
+}
+
 bool ComputerPlayer::makeMove(Board& board) const {
   static std::random_device rd;
   static std::mt19937 gen(rd());
@@ -91,7 +105,7 @@ std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
   std::vector<int> bestMoves;
   int best = -Score::Win;
   for (int i = 0; i < totalMoves; ++i) {
-    int score = _search == 1 ? _score->score(boards[i], color) : minmax(boards[i], _search - 1, Board::opColor(color));
+    int score = minmax(boards[i], _search - 1, Board::opColor(color));
     if (score > best) {
       best = score;
       bestMoves.clear();
@@ -106,41 +120,25 @@ std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
 }
 
 int ComputerPlayer::minmax(const Board& board, int depth, Board::Color turnColor) const {
+  if (depth == 0) {
+    ++_totalScoreCalls;
+    return _score->score(board, color);
+  }
   Board::Boards boards;
   auto totalMoves = board.validMoves(turnColor, boards);
-  // if no valid moves then return score of the given board
-  if (totalMoves == 0) return _score->score(board, color);
-  // special case for depth 1 since we already calculated all the child boards when checking for valid moves
-  if (depth == 1) {
-    if (turnColor == color) {
-      int best = -Score::Win;
-      for (int i = 0; i < totalMoves; ++i) {
-        int score = _score->score(boards[i], color);
-        if (score > best) best = score;
-      }
-      return best;
-    }
-    int best = Score::Win;
-    for (int i = 0; i < totalMoves; ++i) {
-      int score = _score->score(boards[i], color);
-      if (score < best) best = score;
-    }
-    return best;
-  }
-  // usual minmax algorithm, call recursively with depth -1 and opposite color
+  // if no valid moves for current player then move to next level
+  if (totalMoves == 0) return minmax(board, depth -1, Board::opColor(turnColor));
+  // maximizing player
   if (turnColor == color) {
     int best = -Score::Win;
-    for (int i = 0; i < totalMoves; ++i) {
-      int score = minmax(boards[i], depth - 1, Board::opColor(color));
-      if (score > best) best = score;
-    }
+    for (int i = 0; i < totalMoves; ++i)
+      best = std::max(best, minmax(boards[i], depth - 1, Board::opColor(color)));
     return best;
   }
+  // minimizing player
   int best = Score::Win;
-  for (int i = 0; i < totalMoves; ++i) {
-    int score = minmax(boards[i], depth - 1, color);
-    if (score < best) best = score;
-  }
+  for (int i = 0; i < totalMoves; ++i)
+    best = std::min(best, minmax(boards[i], depth - 1, color));
   return best;
 }
 

@@ -13,7 +13,7 @@ class Board {
 public:
   enum class Color { Black, White };
   static constexpr std::array Colors = {Color::Black, Color::White};
-  static Color opColor(Color c) { return c == Color::Black ? Color::White : Color::Black; }
+  static constexpr Color opColor(Color c) { return c == Color::Black ? Color::White : Color::Black; }
   enum Values {
     BadLength = -4,
     BadColumn,
@@ -78,7 +78,8 @@ public:
 
   bool hasValidMoves(Color) const;
   bool hasValidMoves() const { return hasValidMoves(Color::Black) || hasValidMoves(Color::White); }
-  void printGameResult(bool tournament = false) const;
+  enum class GameResults { White, Black, Draw };
+  GameResults printGameResult(bool tournament = false) const;
   auto black(int i) const { return _black[i]; }
   auto white(int i) const { return _white[i]; }
 

@@ -8,8 +8,8 @@
 #include <locale>
 #include <memory>
 #include <random>
-#include <string>
 #include <sstream>
+#include <string>
 
 #include "Score.h"
 
@@ -100,12 +100,13 @@ bool ComputerPlayer::makeMove(Board& board) const {
 std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
   Board::Moves moves;
   Board::Boards boards;
-  auto totalMoves = board.validMoves(color, moves, boards);
+  const int totalMoves = board.validMoves(color, moves, boards);
+  const int nextLevel = _search - 1;
   // return more than one position if moves have the same score
   std::vector<int> bestMoves;
   int best = -Score::Win;
   for (int i = 0; i < totalMoves; ++i) {
-    int score = minmax(boards[i], _search - 1, Board::opColor(color));
+    int score = callMinMax(boards[i], nextLevel, opColor, totalMoves);
     if (score > best) {
       best = score;
       bestMoves.clear();
@@ -119,26 +120,24 @@ std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
   return results;
 }
 
-int ComputerPlayer::minmax(const Board& board, int depth, Board::Color turnColor) const {
-  if (depth == 0) {
-    ++_totalScoreCalls;
-    return _score->score(board, color);
-  }
+int ComputerPlayer::minMax(const Board& board, int depth, Board::Color turnColor, int previousTotalMoves) const {
   Board::Boards boards;
-  auto totalMoves = board.validMoves(turnColor, boards);
-  // if no valid moves for current player then move to next level
-  if (totalMoves == 0) return minmax(board, depth -1, Board::opColor(turnColor));
+  const int totalMoves = board.validMoves(turnColor, boards);
+  const int nextLevel = depth - 1;
+  // if no valid moves for current player then go to next level unless there were no valid moves
+  // for previous level - in this case stop traversing and return the score (by setting depth to 0)
+  if (totalMoves == 0) return callMinMax(board, previousTotalMoves ? nextLevel : 0, Board::opColor(turnColor), 0);
   // maximizing player
   if (turnColor == color) {
     int best = -Score::Win;
     for (int i = 0; i < totalMoves; ++i)
-      best = std::max(best, minmax(boards[i], depth - 1, Board::opColor(color)));
+      best = std::max(best, callMinMax(boards[i], nextLevel, opColor, totalMoves));
     return best;
   }
   // minimizing player
   int best = Score::Win;
   for (int i = 0; i < totalMoves; ++i)
-    best = std::min(best, minmax(boards[i], depth - 1, color));
+    best = std::min(best, callMinMax(boards[i], nextLevel, color, totalMoves));
   return best;
 }
 

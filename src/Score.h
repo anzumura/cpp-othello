@@ -78,14 +78,14 @@ public:
   //   CenterEdge: adjacent-to-edge location that isn't one of the locations already mentioned
   //   Center: location not in the outer two rows or columns
   enum Values {
-    BadEdge = -32,
-    BadCenter = -16,
+    BadEdge = -8,
+    BadCenter = -10,
     Bad = -4,
     CenterEdge = 0,
     Center = 1,
-    Edge = 16,
-    SafeEdge = 64,
-    Corner = 2048
+    Edge = 4,
+    SafeEdge = 12,
+    Corner = 16
   };
   std::string toString() const override { return "FullScore"; }
 

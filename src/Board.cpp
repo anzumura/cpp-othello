@@ -177,7 +177,7 @@ int Board::set(int pos, Set& myVals, Set& opVals) {
   return totalFlipped;
 }
 
-void Board::printGameResult(bool tournament) const {
+Board::GameResults Board::printGameResult(bool tournament) const {
   const auto bc = blackCount();
   const auto wc = whiteCount();
   if (tournament)
@@ -190,10 +190,16 @@ void Board::printGameResult(bool tournament) const {
       std::cout << "Game Over";
   }
   std::cout << " - ";
-  if (bc == wc)
+  if (bc == wc) {
     std::cout << "draw!\n";
-  else
-    std::cout << (bc > wc ? Color::Black : Color::White) << " wins!\n";
+    return GameResults::Draw;
+  }
+  if (bc > wc) {
+    std::cout << Color::Black << " wins!\n";
+    return GameResults::Black;
+  }
+  std::cout << Color::White << " wins!\n";
+  return GameResults::White;
 }
 
 std::ostream& operator<<(std::ostream& os, const Board& b) {

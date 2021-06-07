@@ -11,7 +11,7 @@
 namespace othello {
 
 class Player {
- public:
+public:
   static std::unique_ptr<Player> createPlayer(Board::Color, bool computerOnly = false);
 
   Player(const Player&) = delete;
@@ -28,31 +28,41 @@ class Player {
   const Board::Color color;
   virtual std::string toString() const { return othello::toString(color); }
 
- protected:
-  explicit Player(Board::Color c) : color(c), totalTime(0) {};
- private:
+protected:
+  explicit Player(Board::Color c) : color(c), totalTime(0){};
+
+private:
   virtual bool makeMove(Board&) const = 0;
   mutable std::chrono::nanoseconds totalTime;
 };
 
 class HumanPlayer : public Player {
- public:
-  explicit HumanPlayer(Board::Color c) : Player(c) {};
- private:
+public:
+  explicit HumanPlayer(Board::Color c) : Player(c){};
+
+private:
   bool makeMove(Board&) const override;
   static const char* errorToString(int);
 };
 
 class ComputerPlayer : public Player {
- public:
+public:
   ComputerPlayer(Board::Color c, int search, bool random, std::unique_ptr<Score>& score, bool tournament)
-   : Player(c), _search(search), _random(random), _score(std::move(score)), _tournament(tournament) {};
+      : Player(c), opColor(Board::opColor(c)), _search(search), _random(random), _score(std::move(score)),
+        _tournament(tournament){};
   std::string toString() const override;
 
- private:
+private:
   bool makeMove(Board&) const override;
   std::vector<std::string> findMove(const Board&) const;
-  int minmax(const Board&, int, Board::Color) const;
+  int callMinMax(const Board& board, int depth, Board::Color turnColor, int previousTotalMoves) const {
+    if (depth) return minMax(board, depth, turnColor, previousTotalMoves);
+    ++_totalScoreCalls;
+    return _score->score(board, color);
+  }
+  int minMax(const Board&, int, Board::Color, int) const;
+
+  const Board::Color opColor;
   const int _search;
   const bool _random;
   const std::unique_ptr<Score> _score;
@@ -60,6 +70,6 @@ class ComputerPlayer : public Player {
   mutable long long _totalScoreCalls = 0;
 };
 
-}  // namespace othello
+} // namespace othello
 
-#endif  // OTHELLO_PLAYER_H
+#endif // OTHELLO_PLAYER_H

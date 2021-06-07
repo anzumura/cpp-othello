@@ -33,13 +33,18 @@ char getChar(Board::Color c, const std::string& msg, const std::string& choices,
   return line[0];
 }
 
-std::unique_ptr<Player> createPlayer(Board::Color c, bool& tournament) {
+std::unique_ptr<Player> createPlayer(Board::Color c, bool& tournament, int& matches) {
   char type = tournament ? 'c'
                          : getChar(
-                             c, "player type", "h=human, c=computer, t=computer tournament",
-                             [](char x) { return x == 'h' || x == 'c' || x == 't'; }, 't');
+                             c, "player type", "h=human, c=computer or tournaments: w=1, x=10 games, y=100, z=1000",
+                             [](char x) { return x == 'h' || x == 'c' || (x >= 'w' && x <= 'z'); }, 'y');
   if (type == 'h') return std::make_unique<HumanPlayer>(c);
-  if (type == 't') tournament = true;
+  if (type >= 'w') {
+    tournament = true;
+    if (type == 'x') matches = 10;
+    else if (type == 'y') matches = 100;
+    else if (type == 'z') matches = 1000;
+  }
   char search = getChar(
     c, "search depth", "0=no search, 1-9=moves", [](char x) { return x >= '0' && x <= '9'; }, '1');
   char random = getChar(
@@ -59,10 +64,26 @@ std::unique_ptr<Player> createPlayer(Board::Color c, bool& tournament) {
 int main() {
   std::vector<std::unique_ptr<Player>> players;
   bool tournament = false;
+  int matches = 1, blackWins = 0, whiteWins = 0, draws = 0, blackPieces = 0, whitePieces = 0;
   for (auto c : Board::Colors)
-    players.emplace_back(createPlayer(c, tournament));
-  for (int i = 0; i < (tournament ? 10 : 1); ++i)
-    playGame(players, tournament).printGameResult(tournament);
+    players.emplace_back(createPlayer(c, tournament, matches));
+  for (int i = 0; i < matches; ++i) {
+    if (matches > 10) {
+      std::cout << "Starting Game: " << i + 1 << " ... ";
+      std::cout.flush();
+    }
+    Board board = playGame(players, tournament);
+    switch(board.printGameResult(tournament)) {
+      case Board::GameResults::Black: ++blackWins; break;
+      case Board::GameResults::White: ++whiteWins; break;
+      case Board::GameResults::Draw: ++draws; break;
+    }
+    blackPieces += board.blackCount();
+    whitePieces += board.whiteCount();
+  }
+  if (matches > 1)
+    std::cout << ">>> Black Wins: " << blackWins << ", White Wins: " << whiteWins << ", Draws: " << draws
+      << "\n>>> Black Pieces: " << blackPieces << ", White Pieces: " << whitePieces << '\n';
   for (const auto& p : players)
     p->printTotalTime();
   return 0;

@@ -47,7 +47,7 @@ private:
 
 class ComputerPlayer : public Player {
 public:
-  ComputerPlayer(Board::Color c, int search, bool random, std::unique_ptr<Score>& score, bool tournament)
+  ComputerPlayer(Board::Color c, int search, bool random, std::shared_ptr<Score> score, bool tournament)
       : Player(c), opColor(Board::opColor(c)), _search(search), _random(random), _score(std::move(score)),
         _tournament(tournament){};
   std::string toString() const override;
@@ -65,7 +65,7 @@ private:
   const Board::Color opColor;
   const int _search;
   const bool _random;
-  const std::unique_ptr<Score> _score;
+  const std::shared_ptr<Score> _score;
   const bool _tournament; // suppresses printing when true
   mutable long long _totalScoreCalls = 0;
 };

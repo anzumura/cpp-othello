@@ -24,7 +24,8 @@ public:
 
 private:
   // return a score for the given board which could be Win, -Win (loss), 0 (for a draw) or a total of cell scores
-  int scoreBoard(const Board& board, const Board::Set& myVals, const Board::Set& opVals, bool debugPrint) const {
+  virtual int scoreBoard(const Board& board, const Board::Set& myVals, const Board::Set& opVals,
+                         bool debugPrint) const {
     if (board.hasValidMoves()) {
       const Board::Set empty = (myVals | opVals).flip();
       if (debugPrint) return printScoreCells(myVals, opVals, empty);

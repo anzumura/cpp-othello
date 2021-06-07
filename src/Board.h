@@ -47,6 +47,9 @@ public:
   // partial boards are also fine: any cells beyond the end of the string are assumed to be empty, i.e.:
   //   Board(".xo....o") creates a board with some values in the first row, but the rest empty
   explicit Board(const std::string&, int initialEmpty = 0);
+  Board(int emptyRows, const std::string& stringLayout) : Board(stringLayout, emptyRows * Rows) {}
+  // operator== is needed for gMock tests
+  bool operator==(const Board& rhs) const { return _black == rhs._black && _white == rhs._white; }
 
   // simple toString function to help with testing (returns a 64 length string)
   std::string toString() const;

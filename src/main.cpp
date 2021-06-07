@@ -49,14 +49,14 @@ std::unique_ptr<Player> createPlayer(Board::Color c, bool& tournament, int& matc
     c, "search depth", "0=no search, 1-9=moves", [](char x) { return x >= '0' && x <= '9'; }, '1');
   char random = getChar(
     c, "randomized results", "y/n", [](char x) { return x == 'y' || x == 'n'; }, 'y');
-  std::unique_ptr<Score> score = nullptr;
+  std::shared_ptr<Score> score = nullptr;
   if (search != '0') {
     type = getChar(
       c, "score type", "f=full heuristic, w=weighted cells", [](char x) { return x == 'f' || x == 'w'; }, 'f');
     if (type == 'f')
-      score = std::make_unique<FullScore>();
+      score = std::make_shared<FullScore>();
     else
-      score = std::make_unique<WeightedScore>();
+      score = std::make_shared<WeightedScore>();
   }
   return std::make_unique<ComputerPlayer>(c, search - '0', random == 'y', score, tournament);
 }

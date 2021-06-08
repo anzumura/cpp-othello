@@ -1,4 +1,4 @@
-#include "Score.h"
+#include <othello/Score.h>
 
 #include <iomanip>
 

@@ -1,8 +1,9 @@
-#include "Board.h"
+#include <gtest/gtest.h>
 
-#include "gtest/gtest.h"
+#include <sstream>
 #include <string>
-#include <strstream>
+
+#include <othello/Board.h>
 
 namespace othello {
 
@@ -99,9 +100,9 @@ TEST_F(BoardTest, ToStream) {
 6| . . . . . . . .\n\
 7| . . . . . . . .\n\
 8| . . . . . . . .  Black(*): 2, White(o): 2\n";
-  std::ostrstream os;
-  os << board;
-  EXPECT_STREQ(os.str(), expected);
+  std::stringstream ss;
+  ss << board;
+  EXPECT_EQ(ss.str(), expected);
 }
 
 TEST_F(BoardTest, ToString) {

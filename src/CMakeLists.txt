@@ -1,16 +1,6 @@
-set(BINARY ${CMAKE_PROJECT_NAME})
+file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${othello_SOURCE_DIR}/include/othello/*.h")
+file(GLOB SOURCE_LIST *.cpp)
 
-file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
+add_library(othello_lib ${SOURCE_LIST} ${HEADER_LIST})
 
-set(SOURCES ${SOURCES})
-
-add_executable(${BINARY} ${SOURCES})
-
-add_library(${BINARY}_lib STATIC ${SOURCES})
-
-if(Boost_FOUND)
-  target_link_libraries (${BINARY} ${Boost_LIBRARIES})
-  message("-- Boost link to: ${Boost_VERSION_STRING}")
-else()
-  message(FATAL_ERROR "Boost not found!")
-endif()
+target_include_directories(othello_lib PUBLIC ../include)

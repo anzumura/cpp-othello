@@ -1,4 +1,5 @@
-#include "Player.h"
+#include <othello/Player.h>
+#include <othello/Score.h>
 
 #include <cassert>
 #include <cctype>
@@ -10,8 +11,6 @@
 #include <random>
 #include <sstream>
 #include <string>
-
-#include "Score.h"
 
 namespace othello {
 

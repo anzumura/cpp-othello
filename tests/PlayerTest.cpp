@@ -1,10 +1,10 @@
-#include "Player.h"
-#include "Score.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <string>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <othello/Player.h>
+#include <othello/Score.h>
 
 namespace othello {
 

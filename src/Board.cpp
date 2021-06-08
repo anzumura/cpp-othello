@@ -1,4 +1,4 @@
-#include "Board.h"
+#include <othello/Board.h>
 
 #include <cassert>
 #include <iomanip>

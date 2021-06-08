@@ -1,11 +1,13 @@
-#include "Board.h"
-#include "Player.h"
-#include "Score.h"
-
 #include <memory>
 #include <vector>
 
+#include <othello/Board.h>
+#include <othello/Player.h>
+#include <othello/Score.h>
+
 using namespace othello;
+
+namespace {
 
 Board playGame(const std::vector<std::unique_ptr<Player>>& players, bool tournament) {
   Board board;
@@ -61,6 +63,14 @@ std::unique_ptr<Player> createPlayer(Board::Color c, bool& tournament, int& matc
   return std::make_unique<ComputerPlayer>(c, search - '0', random == 'y', score, tournament);
 }
 
+int testAddressSanitizer() {
+  int* testInt = new int {7};
+  delete testInt;
+  return *testInt - 7;
+}
+
+} // namespace
+
 int main() {
   std::vector<std::unique_ptr<Player>> players;
   bool tournament = false;
@@ -86,5 +96,6 @@ int main() {
       << "\n>>> Black Pieces: " << blackPieces << ", White Pieces: " << whitePieces << '\n';
   for (const auto& p : players)
     p->printTotalTime();
+  // return testAddressSanitizer();
   return 0;
 }

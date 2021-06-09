@@ -4,7 +4,6 @@
 #include <array>
 #include <bitset>
 #include <iostream>
-#include <string>
 #include <vector>
 
 namespace othello {

@@ -1,8 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <sstream>
-#include <string>
-
 #include <othello/Board.h>
 
 namespace othello {

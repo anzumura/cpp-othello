@@ -1,12 +1,7 @@
 #ifndef OTHELLO_PLAYER_H
 #define OTHELLO_PLAYER_H
 
-#include <chrono>
-#include <memory>
-#include <string>
-
-#include "Board.h"
-#include "Score.h"
+#include <othello/Score.h>
 
 namespace othello {
 

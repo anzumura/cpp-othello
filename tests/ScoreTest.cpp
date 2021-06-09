@@ -1,10 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <array>
-#include <string>
-#include <utility>
-
-#include <othello/Board.h>
 #include <othello/Score.h>
 
 namespace othello {

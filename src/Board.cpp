@@ -1,8 +1,6 @@
 #include <othello/Board.h>
 
-#include <cassert>
 #include <iomanip>
-#include <utility>
 
 namespace othello {
 

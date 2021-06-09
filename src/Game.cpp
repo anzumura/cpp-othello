@@ -1,25 +1,21 @@
-#include <othello/Board.h>
 #include <othello/Game.h>
-#include <othello/Player.h>
-#include <othello/Score.h>
 
-#include <memory>
-#include <string>
-#include <vector>
+#include <iomanip>
 
 namespace othello {
 
 void Game::begin() {
-  int blackWins = 0, whiteWins = 0, draws = 0, blackPieces = 0, whitePieces = 0;
+  int gameCount = 1, blackWins = 0, whiteWins = 0, draws = 0, blackPieces = 0, whitePieces = 0;
   for (auto c : Board::Colors)
     _players.emplace_back(createPlayer(c));
-  for (int i = 0; i < _matches; ++i) {
-    if (_matches > 10) {
-      std::cout << "Starting Game: " << i + 1 << " ... ";
+  do {
+    if (_matches) {
+      const int width = _matches < 10 ? 2 : _matches < 100 ? 3 : _matches < 1000 ? 4 : 5;
+      std::cout << "Starting Game: " << std::setw(width) << std::left << gameCount << "... ";
       std::cout.flush();
     }
     Board board = playOneGame();
-    switch (board.printGameResult(_tournament)) {
+    switch (board.printGameResult(_matches)) {
     case Board::GameResults::Black:
       ++blackWins;
       break;
@@ -32,7 +28,7 @@ void Game::begin() {
     }
     blackPieces += board.blackCount();
     whitePieces += board.whiteCount();
-  }
+  } while (++gameCount <= _matches);
   if (_matches > 1)
     std::cout << ">>> Black Wins: " << blackWins << ", White Wins: " << whiteWins << ", Draws: " << draws
               << "\n>>> Black Pieces: " << blackPieces << ", White Pieces: " << whitePieces << '\n';
@@ -45,11 +41,10 @@ Board Game::playOneGame() {
   for (int player = 0, skippedTurns = 0; skippedTurns < 2; player ^= 1) {
     if (board.hasValidMoves(_players[player]->color)) {
       if (skippedTurns) {
-        if (!_tournament)
-          std::cout << std::endl << _players[player ^ 1]->color << " has no valid moves - skipping turn\n";
+        if (!_matches) std::cout << std::endl << _players[player ^ 1]->color << " has no valid moves - skipping turn\n";
         skippedTurns = 0;
       }
-      if (!_players[player]->move(board, _tournament)) break;
+      if (!_players[player]->move(board, _matches)) break;
     } else
       ++skippedTurns;
   };
@@ -67,20 +62,19 @@ char Game::getChar(Board::Color c, const std::string& msg, const std::string& ch
 }
 
 std::unique_ptr<Player> Game::createPlayer(Board::Color c) {
-  char type = _tournament ? 'c'
-                          : getChar(
-                              c, "player type", "h=human, c=computer or tournaments: w=1, x=10 games, y=100, z=1000",
-                              [](char x) { return x == 'h' || x == 'c' || (x >= 'w' && x <= 'z'); }, 'y');
+  char type = _matches ? 'c'
+                       : getChar(
+                           c, "player type", "h=human, c=computer or tournaments: w=1, x=10 games, y=100, z=1000",
+                           [](char x) { return x == 'h' || x == 'c' || (x >= 'w' && x <= 'z'); }, 'y');
   if (type == 'h') return std::make_unique<HumanPlayer>(c);
-  if (type >= 'w') {
-    _tournament = true;
-    if (type == 'x')
-      _matches = 10;
-    else if (type == 'y')
-      _matches = 100;
-    else if (type == 'z')
-      _matches = 1000;
-  }
+  if (type == 'w')
+    _matches = 1;
+  else if (type == 'x')
+    _matches = 10;
+  else if (type == 'y')
+    _matches = 100;
+  else if (type == 'z')
+    _matches = 1000;
   char search = getChar(
     c, "search depth", "0=no search, 1-9=moves", [](char x) { return x >= '0' && x <= '9'; }, '1');
   char random = getChar(
@@ -94,7 +88,7 @@ std::unique_ptr<Player> Game::createPlayer(Board::Color c) {
     else
       score = std::make_shared<WeightedScore>();
   }
-  return std::make_unique<ComputerPlayer>(c, search - '0', random == 'y', score, _tournament);
+  return std::make_unique<ComputerPlayer>(c, search - '0', random == 'y', score, _matches);
 }
 
 } // namespace othello

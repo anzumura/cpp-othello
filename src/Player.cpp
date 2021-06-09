@@ -1,16 +1,9 @@
 #include <othello/Player.h>
 #include <othello/Score.h>
 
-#include <cassert>
-#include <cctype>
-#include <chrono>
 #include <iomanip>
-#include <iostream>
-#include <locale>
-#include <memory>
 #include <random>
 #include <sstream>
-#include <string>
 
 namespace othello {
 

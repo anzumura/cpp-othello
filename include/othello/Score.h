@@ -1,7 +1,7 @@
 #ifndef OTHELLO_SCORE_H
 #define OTHELLO_SCORE_H
 
-#include "Board.h"
+#include <othello/Board.h>
 
 namespace othello {
 

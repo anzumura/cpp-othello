@@ -1,10 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <string>
-
 #include <othello/Player.h>
-#include <othello/Score.h>
 
 namespace othello {
 

@@ -19,6 +19,6 @@ int main() {
   //testAfterStack(); *testAfterStackChar = 'b';
   //return testAfterFree();
 
-  othello::Game::begin();
+  othello::Game().begin();
   return 0;
 }

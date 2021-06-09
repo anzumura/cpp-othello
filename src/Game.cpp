@@ -10,18 +10,16 @@
 namespace othello {
 
 void Game::begin() {
-  std::vector<std::unique_ptr<Player>> players;
-  bool tournament = false;
-  int matches = 1, blackWins = 0, whiteWins = 0, draws = 0, blackPieces = 0, whitePieces = 0;
+  int blackWins = 0, whiteWins = 0, draws = 0, blackPieces = 0, whitePieces = 0;
   for (auto c : Board::Colors)
-    players.emplace_back(createPlayer(c, tournament, matches));
-  for (int i = 0; i < matches; ++i) {
-    if (matches > 10) {
+    _players.emplace_back(createPlayer(c));
+  for (int i = 0; i < _matches; ++i) {
+    if (_matches > 10) {
       std::cout << "Starting Game: " << i + 1 << " ... ";
       std::cout.flush();
     }
-    Board board = playOneGame(players, tournament);
-    switch (board.printGameResult(tournament)) {
+    Board board = playOneGame();
+    switch (board.printGameResult(_tournament)) {
     case Board::GameResults::Black:
       ++blackWins;
       break;
@@ -35,23 +33,23 @@ void Game::begin() {
     blackPieces += board.blackCount();
     whitePieces += board.whiteCount();
   }
-  if (matches > 1)
+  if (_matches > 1)
     std::cout << ">>> Black Wins: " << blackWins << ", White Wins: " << whiteWins << ", Draws: " << draws
               << "\n>>> Black Pieces: " << blackPieces << ", White Pieces: " << whitePieces << '\n';
-  for (const auto& p : players)
+  for (const auto& p : _players)
     p->printTotalTime();
 }
 
-Board Game::playOneGame(const std::vector<std::unique_ptr<Player>>& players, bool tournament) {
+Board Game::playOneGame() {
   Board board;
   for (int player = 0, skippedTurns = 0; skippedTurns < 2; player ^= 1) {
-    if (board.hasValidMoves(players[player]->color)) {
+    if (board.hasValidMoves(_players[player]->color)) {
       if (skippedTurns) {
-        if (!tournament)
-          std::cout << std::endl << players[player ^ 1]->color << " has no valid moves - skipping turn\n";
+        if (!_tournament)
+          std::cout << std::endl << _players[player ^ 1]->color << " has no valid moves - skipping turn\n";
         skippedTurns = 0;
       }
-      if (!players[player]->move(board, tournament)) break;
+      if (!_players[player]->move(board, _tournament)) break;
     } else
       ++skippedTurns;
   };
@@ -68,20 +66,20 @@ char Game::getChar(Board::Color c, const std::string& msg, const std::string& ch
   return line[0];
 }
 
-std::unique_ptr<Player> Game::createPlayer(Board::Color c, bool& tournament, int& matches) {
-  char type = tournament ? 'c'
-                         : getChar(
-                             c, "player type", "h=human, c=computer or tournaments: w=1, x=10 games, y=100, z=1000",
-                             [](char x) { return x == 'h' || x == 'c' || (x >= 'w' && x <= 'z'); }, 'y');
+std::unique_ptr<Player> Game::createPlayer(Board::Color c) {
+  char type = _tournament ? 'c'
+                          : getChar(
+                              c, "player type", "h=human, c=computer or tournaments: w=1, x=10 games, y=100, z=1000",
+                              [](char x) { return x == 'h' || x == 'c' || (x >= 'w' && x <= 'z'); }, 'y');
   if (type == 'h') return std::make_unique<HumanPlayer>(c);
   if (type >= 'w') {
-    tournament = true;
+    _tournament = true;
     if (type == 'x')
-      matches = 10;
+      _matches = 10;
     else if (type == 'y')
-      matches = 100;
+      _matches = 100;
     else if (type == 'z')
-      matches = 1000;
+      _matches = 1000;
   }
   char search = getChar(
     c, "search depth", "0=no search, 1-9=moves", [](char x) { return x >= '0' && x <= '9'; }, '1');
@@ -96,7 +94,7 @@ std::unique_ptr<Player> Game::createPlayer(Board::Color c, bool& tournament, int
     else
       score = std::make_shared<WeightedScore>();
   }
-  return std::make_unique<ComputerPlayer>(c, search - '0', random == 'y', score, tournament);
+  return std::make_unique<ComputerPlayer>(c, search - '0', random == 'y', score, _tournament);
 }
 
 } // namespace othello

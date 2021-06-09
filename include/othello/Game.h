@@ -12,12 +12,18 @@ namespace othello {
 
 class Game {
 public:
-  static void begin();
+  Game() : _tournament(false), _matches(1) {}
+  // begin prompts for number of matches and player types and then start the game(s)
+  void begin();
 
 private:
-  static Board playOneGame(const std::vector<std::unique_ptr<Player>>&, bool);
   static char getChar(Board::Color, const std::string&, const std::string&, bool(char), char);
-  static std::unique_ptr<Player> createPlayer(Board::Color, bool&, int&);
+  Board playOneGame();
+  std::unique_ptr<Player> createPlayer(Board::Color);
+
+  bool _tournament;
+  int _matches;
+  std::vector<std::unique_ptr<Player>> _players;
 };
 
 } // namespace othello

@@ -87,6 +87,21 @@ inline auto emptyDown(Set empty, int pos) {
 inline auto mine(Set myVals, int corner, int cornerEdge1, int cornerEdge2, int otherEdge1, int otherEdge2) {
   return myVals[corner] && myVals[cornerEdge1] && myVals[cornerEdge2] && (myVals[otherEdge1] || myVals[otherEdge2]);
 }
+template<int INC, int EDGE_INC, int HIGH, int LOW> inline bool mineCenter(Set myVals, int pos) {
+  int i = pos + INC;
+  for (; i < HIGH; i += INC)
+    if (!myVals[i]) break;
+  if (i >= HIGH) {
+    for (i = pos + EDGE_INC - INC; i < HIGH + EDGE_INC; i += INC)
+      if (!myVals[i]) break;
+    if (i >= HIGH + EDGE_INC) return true;
+  }
+  for (i = pos - INC; i >= LOW; i -= INC)
+    if (!myVals[i]) return false;
+  for (i = pos + EDGE_INC + INC; i >= LOW + EDGE_INC; i -= INC)
+    if (!myVals[i]) return false;
+  return true;
+}
 
 // Static weights from 'An Analysis of Heuristics in Othello'
 using W = WeightedScore;
@@ -110,9 +125,15 @@ int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set 
     return safeEdge<B::Rows>(pos, 0, B::Size, myVals, opVals, empty) ? SafeEdge
       : emptyCorner<B::Rows, B::Rows>(empty, row, pos)               ? BadEdge
                                                                      : Edge;
-  // special case to consider b2, b6, g2 or g6 as 'SafeEdge' (maybe remove some of the hard-codeing later)
-  if ((row == 1 && (col == 1 && mine(myVals, 0, 1, 8, 2, 16) || col == 6 && mine(myVals, 7, 6, 15, 5, 23))) ||
-      (row == 6 && (col == 1 && mine(myVals, 56, 48, 57, 40, 58) || col == 6 && mine(myVals, 63, 62, 55, 61, 47))))
+  // check 1 row/col in from edges to see if they are 'SafeEdge' (maybe remove some of the hard-codeing later)
+  if ((row == 1 &&
+       (col == 1 && mine(myVals, 0, 1, 8, 2, 16) || col == 6 && mine(myVals, 7, 6, 15, 5, 23) ||
+        mineCenter<1, -B::Rows, 16, 8>(myVals, pos))) ||
+      (row == 6 &&
+       (col == 1 && mine(myVals, 56, 48, 57, 40, 58) || col == 6 && mine(myVals, 63, 62, 55, 61, 47) ||
+        mineCenter<1, B::Rows, 56, 48>(myVals, pos))) ||
+      col == 1 && mineCenter<B::Rows, -1, B::Size, 1>(myVals, pos) ||
+      col == 6 && mineCenter<B::Rows, 1, B::Size, B::RowSub2>(myVals, pos))
     return SafeEdge;
   // process non-edges
   return (row == 1)       ? (emptyCorner<B::RowAdd1, -B::RowSub1>(empty, col, pos) ? BadCenter

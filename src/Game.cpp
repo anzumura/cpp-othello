@@ -11,7 +11,7 @@ void Game::begin() {
   do {
     if (_matches) {
       const int width = _matches < 10 ? 2 : _matches < 100 ? 3 : _matches < 1000 ? 4 : 5;
-      std::cout << "Starting Game: " << std::setw(width) << std::left << gameCount << "... ";
+      std::cout << "Game: " << std::setw(width) << std::left << gameCount << "... ";
       std::cout.flush();
     }
     Board board = playOneGame();

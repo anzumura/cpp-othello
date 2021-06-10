@@ -391,6 +391,94 @@ TEST_F(ScoreTest, NextToEmptyBottomEdges) {
   check(4 * S::CenterEdge);
 }
 
+TEST_F(ScoreTest, SafeCenterEdges) {
+  // top row
+  set("\
+****....\
+***.....\
+....*o");
+  check(S::Corner + 6 * S::SafeEdge);
+  set("\
+****....\
+****....\
+....*o");
+  check(S::Corner + 6 * S::SafeEdge + S::Bad);
+  set("\
+....****\
+.....***\
+....*o");
+  check(S::Corner + 6 * S::SafeEdge);
+  set("\
+....****\
+....****\
+....*o");
+  check(S::Corner + 6 * S::SafeEdge + S::Bad);
+  // left col
+  set("\
+**......\
+**......\
+**..*o..\
+*");
+  check(S::Corner + 6 * S::SafeEdge);
+  set("\
+**......\
+**......\
+**..*o..\
+**......\
+**");
+  check(S::Corner + 8 * S::SafeEdge + S::Bad);
+  set(3, "\
+*.*o....\
+*.......\
+**......\
+**......\
+**");
+  check(S::Corner + 7 * S::SafeEdge);
+  // right col
+  set(4, "\
+.......*\
+..*o..**\
+......**\
+......**");
+  check(S::Corner + 6 * S::SafeEdge);
+  set("\
+......**\
+......**\
+..*o..**\
+......**\
+......**\
+......**\
+......**\
+......**");
+  check(2 * S::Corner + 14 * S::SafeEdge);
+  // bottom row
+  set(5, "\
+..*o....\
+****....\
+******");
+  check(S::Corner + 9 * S::SafeEdge);
+  set(5, "\
+..*o....\
+..******\
+..******");
+  check(S::Corner + 10 * S::SafeEdge + S::Bad);
+  set(5, "\
+..*o....\
+..*****.\
+..******");
+  check(S::Corner + 5 * S::SafeEdge + 2 * S::Bad + 3 * S::CenterEdge);
+  set("\
+********\
+********\
+**....**\
+**.o*.**\
+**....**\
+**....**\
+********\
+********");
+  check(4 * S::Corner + 44 * S::SafeEdge);
+}
+
 TEST_F(ScoreTest, ComplexBoard) {
   set("\
 ..***...\

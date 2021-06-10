@@ -7,11 +7,11 @@
 
 namespace othello {
 
-bool Player::move(Board& board, bool tournament) const {
+Player::Move Player::move(Board& board, bool tournament, Move prevMove) const {
   assert(board.hasValidMoves(color));
   if (!tournament) std::cout << std::endl << board << std::endl;
   auto start = std::chrono::high_resolution_clock::now();
-  auto result = makeMove(board);
+  auto result = makeMove(board, prevMove);
   totalTime += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start);
   return result;
 }
@@ -21,13 +21,13 @@ void Player::printTotalTime() const {
             << totalTime.count() / 1'000'000'000.0 << " seconds\n";
 }
 
-bool HumanPlayer::makeMove(Board& board) const {
+Player::Move HumanPlayer::makeMove(Board& board, Move) const {
   do {
     std::cout << "enter " << color << "'s move: ";
     std::string line;
     std::getline(std::cin, line);
     if (line.length() == 1) {
-      if (line[0] == 'q') return false;
+      if (line[0] == 'q') return std::nullopt;
       if (line[0] == 'v') {
         auto moves = board.validMoves(color);
         std::cout << "  valid moves are:";
@@ -37,7 +37,7 @@ bool HumanPlayer::makeMove(Board& board) const {
       }
     } else {
       auto result = board.set(line, color);
-      if (result > 0) return true;
+      if (result > 0) return line;
       std::cout << "  invalid move: '" << line << "' - " << errorToString(result)
                 << "\n  please enter a location (eg 'a1' or 'h8'), 'q' to quit or 'v' to print valid moves\n";
     }
@@ -70,11 +70,11 @@ std::string ComputerPlayer::toString() const {
   return ss.str();
 }
 
-bool ComputerPlayer::makeMove(Board& board) const {
+Player::Move ComputerPlayer::makeMove(Board& board, Move) const {
   static std::random_device rd;
   static std::mt19937 gen(rd());
 
-  auto moves = _search == 0 ? board.validMoves(color) : findMove(board);
+  auto moves = _search == 0 ? board.validMoves(color) : findMoves(board);
   assert(!moves.empty());
   int move = 0;
   if (_random && moves.size() > 1) {
@@ -86,10 +86,10 @@ bool ComputerPlayer::makeMove(Board& board) const {
   if (!_tournament)
     std::cout << color << " played at: " << moves[move] << " (" << result << " flip" << (result > 1 ? "s" : "")
               << ")\n";
-  return true;
+  return moves[move];
 }
 
-std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
+std::vector<std::string> ComputerPlayer::findMoves(const Board& board) const {
   Board::Boards boards;
   Board::Positions positions;
   const int moves = board.validMoves(color, boards, positions);

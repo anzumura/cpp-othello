@@ -86,8 +86,8 @@ public:
     Bad = -1,
     CenterEdge = 0,
     Center = 1,
-    Edge = 3,
-    SafeEdge = 7,
+    Edge = 2,
+    SafeEdge = 6,
     Corner = 15
   };
   std::string toString() const override { return "FullScore"; }

@@ -38,13 +38,15 @@ void Game::begin() {
 
 Board Game::playOneGame() {
   Board board;
+  Player::Move move = std::nullopt;
   for (int player = 0, skippedTurns = 0; skippedTurns < 2; player ^= 1) {
     if (board.hasValidMoves(_players[player]->color)) {
       if (skippedTurns) {
         if (!_matches) std::cout << std::endl << _players[player ^ 1]->color << " has no valid moves - skipping turn\n";
         skippedTurns = 0;
       }
-      if (!_players[player]->move(board, _matches)) break;
+      move = _players[player]->move(board, _matches, move);
+      if (!move) break;
     } else
       ++skippedTurns;
   };
@@ -62,11 +64,18 @@ char Game::getChar(Board::Color c, const std::string& msg, const std::string& ch
 }
 
 std::unique_ptr<Player> Game::createPlayer(Board::Color c) {
+  static const std::string msg = "player type";
+  static const std::string choices = "h=human, c=computer, r=remote";
+  static auto typePred = [](char x) { return x == 'h' || x == 'c' || x == 'r'; };
+  // if a tournament option is chosen then both players will be 'c' (Computer) type, otherwise the board
+  // is printed each turn and the second player can only be a human, computer or remote player
   char type = _matches ? 'c'
-                       : getChar(
-                           c, "player type", "h=human, c=computer or tournaments: w=1, x=10 games, y=100, z=1000",
-                           [](char x) { return x == 'h' || x == 'c' || (x >= 'w' && x <= 'z'); }, 'y');
+    : _players.empty() ? getChar(
+                           c, msg, choices + " or tournaments: w=1, x=10, y=100, z=1000",
+                           [](char x) { return typePred(x) || (x >= 'w' && x <= 'z'); }, 'y')
+                       : getChar(c, msg, choices, typePred, 'c');
   if (type == 'h') return std::make_unique<HumanPlayer>(c);
+  if (type == 'r') return std::make_unique<RemotePlayer>(c);
   if (type == 'w')
     _matches = 1;
   else if (type == 'x')
@@ -76,7 +85,7 @@ std::unique_ptr<Player> Game::createPlayer(Board::Color c) {
   else if (type == 'z')
     _matches = 1000;
   char search = getChar(
-    c, "search depth", "0=no search, 1-9=moves", [](char x) { return x >= '0' && x <= '9'; }, '1');
+    c, "search depth", "0=no search, 1-9=moves", [](char x) { return x >= '0' && x <= '9'; }, '3');
   char random = getChar(
     c, "randomized results", "y/n", [](char x) { return x == 'y' || x == 'n'; }, 'y');
   std::shared_ptr<Score> score = nullptr;

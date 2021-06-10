@@ -95,19 +95,20 @@ std::vector<std::string> ComputerPlayer::findMove(const Board& board) const {
   const int moves = board.validMoves(color, boards, positions);
   const int nextLevel = _search - 1;
   // return more than one position if moves have the same score
-  std::vector<int> bestMoves;
-  for (int i = 0, best = -Score::Win; i < moves; ++i) {
-    int score = callMinMax(boards[i], nextLevel, opColor, moves, best, Score::Win);
-    if (score > best) {
-      best = score;
-      bestMoves.clear();
-      bestMoves.push_back(positions[i]);
-    } else if (score == best)
-      bestMoves.push_back(positions[i]);
+  Moves bestMoves;
+  for (int i = 0, best = Min; i < moves; ++i)
+    updateMoves(callMinMax(boards[i], nextLevel, opColor, moves, best, Max), i, best, bestMoves);
+  // if there are multiple moves with the same score then only return ones with the best 'first move' score
+  if (bestMoves.size() > 1) {
+    int best = Min;
+    std::vector<int> newBestMoves;
+    for (auto i : bestMoves)
+      updateMoves(callScore(boards[i]), i, best, newBestMoves);
+    bestMoves = newBestMoves;
   }
   std::vector<std::string> results;
-  for (auto p : bestMoves)
-    results.push_back(Board::posToString(p));
+  for (auto i : bestMoves)
+    results.emplace_back(Board::posToString(positions[i]));
   return results;
 }
 
@@ -120,13 +121,13 @@ int ComputerPlayer::minMax(const Board& board, int depth, Board::Color turn, int
   if (moves == 0) return callMinMax(board, prevMoves ? nextLevel : 0, Board::opColor(turn), 0, alpha, beta);
   // maximizing player
   if (turn == color) {
-    int best = -Score::Win;
+    int best = Min;
     for (int i = 0; i < moves && best < beta; ++i, alpha = std::max(alpha, best))
       best = std::max(best, callMinMax(boards[i], nextLevel, opColor, moves, alpha, beta));
     return best;
   }
   // minimizing player
-  int best = Score::Win;
+  int best = Max;
   for (int i = 0; i < moves && best > alpha; ++i, beta = std::min(beta, best))
     best = std::min(best, callMinMax(boards[i], nextLevel, color, moves, alpha, beta));
   return best;

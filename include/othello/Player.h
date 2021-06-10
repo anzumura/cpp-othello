@@ -48,12 +48,25 @@ public:
   std::string toString() const override;
 
 private:
+  using Moves = std::vector<int>;
+  enum Values { Min = -Score::Win - 1, Max = Score::Win + 1 };
   bool makeMove(Board&) const override;
   std::vector<std::string> findMove(const Board&) const;
-  int callMinMax(const Board& board, int depth, Board::Color turn, int prevMoves, int alpha, int beta) const {
-    if (depth) return minMax(board, depth, turn, prevMoves, alpha, beta);
+  static void updateMoves(int score, int move, int& best, Moves& moves) {
+    if (score > best) {
+      best = score;
+      moves.clear();
+      moves.push_back(move);
+    } else if (score == best)
+      moves.push_back(move);
+  }
+  int callScore(const Board& board) const {
     ++_totalScoreCalls;
     return _score->score(board, color);
+  }
+  int callMinMax(const Board& board, int depth, Board::Color turn, int prevMoves, int alpha, int beta) const {
+    if (depth) return minMax(board, depth, turn, prevMoves, alpha, beta);
+    return callScore(board);
   }
   int minMax(const Board&, int, Board::Color, int, int, int) const;
 

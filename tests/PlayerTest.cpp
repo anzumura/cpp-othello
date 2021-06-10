@@ -63,10 +63,10 @@ TEST_F(PlayerTest, MoveDepth1) {
 
 TEST_F(PlayerTest, MultipleMovesDepth1) {
   // make 'b1' and 'b4' have the same high score
-  EXPECT_CALL(*score, scoreBoard(b1, _, _, _)).WillOnce(Return(22));
+  EXPECT_CALL(*score, scoreBoard(b1, _, _, _)).Times(2).WillRepeatedly(Return(22));
   EXPECT_CALL(*score, scoreBoard(b2, _, _, _)).WillOnce(Return(7));
   EXPECT_CALL(*score, scoreBoard(b3, _, _, _)).WillOnce(Return(12));
-  EXPECT_CALL(*score, scoreBoard(b4, _, _, _)).WillOnce(Return(22));
+  EXPECT_CALL(*score, scoreBoard(b4, _, _, _)).Times(2).WillRepeatedly(Return(22));
   playerDepth1->move(board, true);
   // with random 'false' the result will be 'b4' since that valid move is found first, i.e. the
   // location is 'd3' which is found first when calculating valid moves (starting at top left)

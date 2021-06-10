@@ -23,8 +23,10 @@ protected:
   void scoreChildren(const Board& b, C c, int scoreStart, int jump = 1) {
     Board::Boards boards;
     const int moves = b.validMoves(c, boards);
+    // use WillRepeatedly instead of WillOnce because some child nodes may not be scored due to
+    // alpha-beta pruning
     for (int i = 0, j = scoreStart; i < moves; ++i, j += jump)
-      EXPECT_CALL(*score, scoreBoard(boards[i], _, _, _)).WillOnce(Return(j));
+      EXPECT_CALL(*score, scoreBoard(boards[i], _, _, _)).WillRepeatedly(Return(j));
   }
 
   // 4 initial valid moves for Black

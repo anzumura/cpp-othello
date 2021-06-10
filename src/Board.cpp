@@ -80,14 +80,14 @@ std::vector<std::string> Board::validMoves(Color c) const {
   return result;
 }
 
-int Board::validMoves(Color c, Moves& moves, Boards& boards) const {
+int Board::validMoves(Color c, Boards& boards, Positions& positions) const {
   int count = 0;
   Board board(*this);
   for (int i = 0; i < Size; ++i)
     if (!occupied(i) && board.set(i, c)) {
       assert(count < MaxValidMoves);
-      moves[count] = i;
-      boards[count++] = board;
+      boards[count] = board;
+      positions[count++] = i;
       board = *this;
     }
   return count;

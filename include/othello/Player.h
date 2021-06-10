@@ -50,12 +50,12 @@ public:
 private:
   bool makeMove(Board&) const override;
   std::vector<std::string> findMove(const Board&) const;
-  int callMinMax(const Board& board, int depth, Board::Color turnColor, int previousTotalMoves) const {
-    if (depth) return minMax(board, depth, turnColor, previousTotalMoves);
+  int callMinMax(const Board& board, int depth, Board::Color turn, int prevMoves, int alpha, int beta) const {
+    if (depth) return minMax(board, depth, turn, prevMoves, alpha, beta);
     ++_totalScoreCalls;
     return _score->score(board, color);
   }
-  int minMax(const Board&, int, Board::Color, int) const;
+  int minMax(const Board&, int, Board::Color, int, int, int) const;
 
   const Board::Color opColor;
   const int _search;

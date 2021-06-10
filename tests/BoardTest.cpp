@@ -57,14 +57,14 @@ TEST_F(BoardTest, ValidMoves) {
 }
 
 TEST_F(BoardTest, ValidMovesWithArrays) {
-  Board::Moves moves;
   Board::Boards boards;
-  auto result = board.validMoves(Board::Color::Black, moves, boards);
+  Board::Positions positions;
+  auto result = board.validMoves(Board::Color::Black, boards, positions);
   ASSERT_EQ(result, 4);
-  EXPECT_EQ(moves[0], 19);
-  EXPECT_EQ(moves[1], 26);
-  EXPECT_EQ(moves[2], 37);
-  EXPECT_EQ(moves[3], 44);
+  EXPECT_EQ(positions[0], 19);
+  EXPECT_EQ(positions[1], 26);
+  EXPECT_EQ(positions[2], 37);
+  EXPECT_EQ(positions[3], 44);
   board = boards[0];
   check(2, "\
 ...*....\

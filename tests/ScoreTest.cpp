@@ -239,6 +239,53 @@ TEST_F(ScoreTest, NonEdgeNextToEmptyCorners) {
   check(S::BadCenter);
 }
 
+TEST_F(ScoreTest, CenterNextToCornerCanBeSafe) {
+  // top left
+  set("\
+**......\
+**......\
+*..*o");
+  check(S::Corner + 4 * S::SafeEdge);
+  set("\
+***.....\
+**......\
+...*o");
+  check(S::Corner + 4 * S::SafeEdge);
+  // top right
+  set("\
+......**\
+......**\
+..*o...*");
+  check(S::Corner + 4 * S::SafeEdge);
+  set("\
+.....***\
+......**\
+..*o");
+  check(S::Corner + 4 * S::SafeEdge);
+  // bottom left
+  set(5, "\
+*.*o....\
+**......\
+**");
+  check(S::Corner + 4 * S::SafeEdge);
+  set(5, "\
+..*o....\
+**......\
+***");
+  check(S::Corner + 4 * S::SafeEdge);
+  // bottom right
+  set(5, "\
+..*o...*\
+......**\
+......**");
+  check(S::Corner + 4 * S::SafeEdge);
+  set(5, "\
+..*o....\
+......**\
+.....***");
+  check(S::Corner + 4 * S::SafeEdge);
+}
+
 TEST_F(ScoreTest, NextToEmptyTopEdges) {
   set(1, "\
 ..*.....\
@@ -264,13 +311,13 @@ TEST_F(ScoreTest, NextToEmptyTopEdges) {
 ***.....\
 **......\
 *...*o");
-  check(score + S::CenterEdge);
+  check(score + S::SafeEdge);
   // next to empty
   set("\
 ****....\
 **......\
 ....*o");
-  check(score + S::Bad);
+  check(score + S::SafeEdge);
   set("\
 ***.....\
 .*......\
@@ -319,7 +366,7 @@ TEST_F(ScoreTest, NextToEmptyRightEdges) {
 ..*o....\
 ......**\
 .....***");
-  check(S::Corner + 3 * S::SafeEdge + S::Bad);
+  check(S::Corner + 3 * S::SafeEdge + S::SafeEdge);
 }
 
 TEST_F(ScoreTest, NextToEmptyBottomEdges) {

@@ -14,13 +14,13 @@ int Score::printScoreCells(Set myVals, Set opVals, Set empty) const {
       if (myVals[pos]) {
         int s = scoreCell(row, col, pos, myVals, opVals, empty);
         myScore += s;
-        std::cout << std::setw(8) << s << " ";
+        std::cout << std::setw(7) << s << " ";
       } else if (opVals[pos]) {
         int s = scoreCell(row, col, pos, opVals, myVals, empty);
         opScore += s;
-        std::cout << "   (" << std::setw(4) << s << ")";
+        std::cout << "   (" << std::setw(3) << s << ")";
       } else
-        std::cout << "    .... ";
+        std::cout << "    ... ";
     std::cout << std::endl;
   }
   std::cout << "Score: " << myScore << " - (" << opScore << ") = " << myScore - opScore << std::endl;
@@ -83,6 +83,10 @@ inline auto emptyUp(Set empty, int pos) {
 inline auto emptyDown(Set empty, int pos) {
   return emptyEdge<B::RowSub1, B::Rows, B::RowAdd1, B::SizeSubRows, -B::RowAdd1, B::SizeSub1, -B::RowSub1>(empty, pos);
 }
+// return true if corner and edges beside the corner are my color as well as at least on of the other diagonal edges
+inline auto mine(Set myVals, int corner, int cornerEdge1, int cornerEdge2, int otherEdge1, int otherEdge2) {
+  return myVals[corner] && myVals[cornerEdge1] && myVals[cornerEdge2] && (myVals[otherEdge1] || myVals[otherEdge2]);
+}
 
 // Static weights from 'An Analysis of Heuristics in Othello'
 using W = WeightedScore;
@@ -106,6 +110,10 @@ int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set 
     return safeEdge<B::Rows>(pos, 0, B::Size, myVals, opVals, empty) ? SafeEdge
       : emptyCorner<B::Rows, B::Rows>(empty, row, pos)               ? BadEdge
                                                                      : Edge;
+  // special case to consider b2, b6, g2 or g6 as 'SafeEdge' (maybe remove some of the hard-codeing later)
+  if ((row == 1 && (col == 1 && mine(myVals, 0, 1, 8, 2, 16) || col == 6 && mine(myVals, 7, 6, 15, 5, 23))) ||
+      (row == 6 && (col == 1 && mine(myVals, 56, 48, 57, 40, 58) || col == 6 && mine(myVals, 63, 62, 55, 61, 47))))
+    return SafeEdge;
   // process non-edges
   return (row == 1)       ? (emptyCorner<B::RowAdd1, -B::RowSub1>(empty, col, pos) ? BadCenter
                                : emptyUp(empty, pos)                               ? Bad

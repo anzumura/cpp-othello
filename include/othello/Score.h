@@ -75,18 +75,19 @@ public:
   //   BadEdge: edge 'bad' location since the adjacent corner is empty
   //   Edge: edge location that isn't one of the locations already mentioned
   //   BadCenter: non-edge 'bad' location since the adjacent corner is empty, i.e.: b2, g2, b6, g6
+  //     Note, BadEdge, Edge and BadCenter can become SafeEdge if they can't be flipped (surrounded in same color)
   //   Bad: non-edge 'bad' location since at least one of the adjacent edges is empty
   //   CenterEdge: adjacent-to-edge location that isn't one of the locations already mentioned
   //   Center: location not in the outer two rows or columns
   enum Values {
-    BadEdge = -8,
-    BadCenter = -10,
+    BadEdge = -14,
+    BadCenter = -18,
     Bad = -4,
     CenterEdge = 0,
     Center = 1,
-    Edge = 4,
+    Edge = 8,
     SafeEdge = 12,
-    Corner = 16
+    Corner = 96
   };
   std::string toString() const override { return "FullScore"; }
 

@@ -27,8 +27,8 @@ public:
     SizeSub1 = 63,
     Size
   };
-  using Moves = std::array<int, MaxValidMoves>;
   using Boards = std::array<Board, MaxValidMoves>;
+  using Positions = std::array<int, MaxValidMoves>;
   using Set = std::bitset<Size>;
   static constexpr char BlackCell = '*';
   static constexpr char WhiteCell = 'o';
@@ -62,10 +62,10 @@ public:
   // get list of valid moves for a given color
   std::vector<std::string> validMoves(Color) const;
 
-  // fill 'moves' with positions of valid moves and 'boards' with the corresponding new board for each move
-  // and return the total number of valid moves (method used by ComputerPlayer)
-  int validMoves(Color, Moves& moves, Boards& boards) const;
-  // only need to fill moves for first level for search algorithms
+  // fill 'positions' with positions of valid moves and 'boards' with the corresponding new board
+  // for each move and return the total number of valid moves (method used by ComputerPlayer)
+  int validMoves(Color, Boards& boards, Positions& positions) const;
+  // search algorithms only need to fill 'positions' for first level so provide an simpler overload
   int validMoves(Color c, Boards& boards) const {
     int count = 0;
     Board board(*this);

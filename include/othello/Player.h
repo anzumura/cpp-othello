@@ -5,6 +5,8 @@
 
 #include <optional>
 
+#include <boost/asio.hpp>
+
 namespace othello {
 
 class Player {
@@ -29,9 +31,9 @@ public:
 
 protected:
   explicit Player(Board::Color c) : color(c), totalTime(0){};
-
 private:
-  virtual Move makeMove(Board&, Move) const = 0;
+  virtual Move makeMove(Board&, Move prevMove, int& flips) const = 0;
+  virtual void printMove(Move move, int flips, bool tournament) const;
   mutable std::chrono::nanoseconds totalTime;
 };
 
@@ -40,7 +42,9 @@ public:
   explicit HumanPlayer(Board::Color c) : Player(c){};
 
 private:
-  Move makeMove(Board&, Move) const override;
+  Move makeMove(Board&, Move, int&) const override;
+  // no need to print move for human player (since the player would have just typed it in)
+  void printMove(Move, int, bool) const override {}
   static const char* errorToString(int);
 };
 
@@ -58,7 +62,7 @@ private:
   // 'makeMove' gets the set of valid moves if search = 0 or calls 'findMoves' when search > 0
   // and makes either the first move in the list or a randomly chosen one if _random is true
   // Note: ComputerPlayer version of 'makeMove' always returns a move (never empty string)
-  Move makeMove(Board&, Move) const override;
+  Move makeMove(Board&, Move, int&) const override;
 
   // 'findMoves' returns one or more 'best' moves (based on minMax and values returned from '_score')
   std::vector<std::string> findMoves(const Board&) const;
@@ -95,10 +99,16 @@ private:
 
 class RemotePlayer : public Player {
 public:
-  explicit RemotePlayer(Board::Color c) : Player(c){};
+  explicit RemotePlayer(Board::Color);
 
 private:
-  Move makeMove(Board&, Move) const override { return std::nullopt; }
+  enum Values { Port = 1234 };
+  using tcp = boost::asio::ip::tcp;
+  Move makeMove(Board&, Move, int&) const override;
+
+  mutable boost::asio::io_service _service;
+  mutable tcp::acceptor _acceptor;
+  mutable tcp::socket _socket;
 };
 
 } // namespace othello

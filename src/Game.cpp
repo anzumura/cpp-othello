@@ -38,7 +38,7 @@ void Game::begin() {
 
 Board Game::playOneGame() {
   Board board;
-  Player::Move move = std::nullopt;
+  Player::Move move = {};
   for (int player = 0, skippedTurns = 0; skippedTurns < 2; player ^= 1) {
     if (board.hasValidMoves(_players[player]->color)) {
       if (skippedTurns) {

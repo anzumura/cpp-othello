@@ -10,10 +10,18 @@ namespace othello {
 Player::Move Player::move(Board& board, bool tournament, Move prevMove) const {
   assert(board.hasValidMoves(color));
   if (!tournament) std::cout << std::endl << board << std::endl;
+  int flips = 0;
   auto start = std::chrono::high_resolution_clock::now();
-  auto result = makeMove(board, prevMove);
+  auto result = makeMove(board, prevMove, flips);
   totalTime += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start);
+  printMove(result, flips, tournament);
   return result;
+}
+
+void Player::printMove(Move move, int flips, bool tournament) const {
+  assert(flips > 0);
+  if (!tournament)
+    std::cout << color << " played at: " << *move << " (" << flips << " flip" << (flips > 1 ? "s" : "") << ")\n";
 }
 
 void Player::printTotalTime() const {
@@ -21,13 +29,13 @@ void Player::printTotalTime() const {
             << totalTime.count() / 1'000'000'000.0 << " seconds\n";
 }
 
-Player::Move HumanPlayer::makeMove(Board& board, Move) const {
+Player::Move HumanPlayer::makeMove(Board& board, Move, int& flips) const {
   do {
     std::cout << "enter " << color << "'s move: ";
     std::string line;
     std::getline(std::cin, line);
     if (line.length() == 1) {
-      if (line[0] == 'q') return std::nullopt;
+      if (line[0] == 'q') return {};
       if (line[0] == 'v') {
         auto moves = board.validMoves(color);
         std::cout << "  valid moves are:";
@@ -36,16 +44,16 @@ Player::Move HumanPlayer::makeMove(Board& board, Move) const {
         std::cout << std::endl;
       }
     } else {
-      auto result = board.set(line, color);
-      if (result > 0) return line;
-      std::cout << "  invalid move: '" << line << "' - " << errorToString(result)
+      flips = board.set(line, color);
+      if (flips > 0) return line;
+      std::cout << "  invalid move: '" << line << "' - " << errorToString(flips)
                 << "\n  please enter a location (eg 'a1' or 'h8'), 'q' to quit or 'v' to print valid moves\n";
     }
   } while (true);
 }
 
-const char* HumanPlayer::errorToString(int result) {
-  switch (result) {
+const char* HumanPlayer::errorToString(int flips) {
+  switch (flips) {
   case Board::BadLength:
     return "location must be 2 characters";
   case Board::BadColumn:
@@ -70,7 +78,7 @@ std::string ComputerPlayer::toString() const {
   return ss.str();
 }
 
-Player::Move ComputerPlayer::makeMove(Board& board, Move) const {
+Player::Move ComputerPlayer::makeMove(Board& board, Move, int& flips) const {
   static std::random_device rd;
   static std::mt19937 gen(rd());
 
@@ -81,11 +89,7 @@ Player::Move ComputerPlayer::makeMove(Board& board, Move) const {
     std::uniform_int_distribution<> dis(0, moves.size() - 1);
     move = dis(gen);
   }
-  int result = board.set(moves[move], color);
-  assert(result > 0);
-  if (!_tournament)
-    std::cout << color << " played at: " << moves[move] << " (" << result << " flip" << (result > 1 ? "s" : "")
-              << ")\n";
+  flips = board.set(moves[move], color);
   return moves[move];
 }
 
@@ -131,6 +135,25 @@ int ComputerPlayer::minMax(const Board& board, int depth, Board::Color turn, int
   for (int i = 0; i < moves && best > alpha; ++i, beta = std::min(beta, best))
     best = std::min(best, callMinMax(boards[i], nextLevel, color, moves, alpha, beta));
   return best;
+}
+
+RemotePlayer::RemotePlayer(Board::Color c)
+ : Player(c), _acceptor(_service, tcp::endpoint(tcp::v4(), Port)), _socket(_service) {}
+
+Player::Move RemotePlayer::makeMove(Board& board, Move prevMove, int& flips) const {
+  using namespace boost::asio;
+  if (!prevMove) {
+    std::cout << color << ": waiting for initial connection on port " << Port << '\n';
+    _acceptor.accept(_socket);
+  } else {
+    const std::string msg = *prevMove + "\n";
+    write(_socket, buffer(msg));
+  }
+  streambuf buf;
+  read_until(_socket, buf, "\n");
+  const std::string move = buffer_cast<const char*>(buf.data());
+  flips = board.set(move, color);
+  return move;
 }
 
 } // namespace othello

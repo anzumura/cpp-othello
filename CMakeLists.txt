@@ -12,6 +12,7 @@ endif()
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_EXTENSIONS OFF)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem /opt/homebrew/include")
   set(SANITIZER_FLAGS "-fsanitize=address -fno-omit-frame-pointer -O1 -fno-optimize-sibling-calls")
   # need to set env for after stack reporting: ASAN_OPTIONS=detect_stack_use_after_return=1
   # set(SANITIZER_STACK_FLAGS "-fsanitize-address-use-after-scope")
@@ -26,6 +27,14 @@ FetchContent_Declare(
   GIT_TAG HEAD
 )
 FetchContent_MakeAvailable(googletest)
+
+find_package(Boost 1.76.0 REQUIRED COMPONENTS system)
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIR})
+  message("-- Boost found: ${Boost_VERSION_STRING}")
+else()
+  message(FATAL_ERROR "Boost not found!")
+endif()
 
 add_subdirectory(src)
 add_subdirectory(apps)

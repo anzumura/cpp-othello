@@ -57,7 +57,7 @@ TEST_F(PlayerTest, MoveDepth1) {
   EXPECT_CALL(*score, scoreBoard(b2, _, _, _)).WillOnce(Return(7));
   EXPECT_CALL(*score, scoreBoard(b3, _, _, _)).WillOnce(Return(12));
   EXPECT_CALL(*score, scoreBoard(b4, _, _, _)).WillOnce(Return(-5));
-  playerDepth1->move(board, true, std::nullopt);
+  playerDepth1->move(board, true, {});
   EXPECT_EQ(board, b3);
 }
 
@@ -67,7 +67,7 @@ TEST_F(PlayerTest, MultipleMovesDepth1) {
   EXPECT_CALL(*score, scoreBoard(b2, _, _, _)).WillOnce(Return(7));
   EXPECT_CALL(*score, scoreBoard(b3, _, _, _)).WillOnce(Return(12));
   EXPECT_CALL(*score, scoreBoard(b4, _, _, _)).Times(2).WillRepeatedly(Return(22));
-  playerDepth1->move(board, true, std::nullopt);
+  playerDepth1->move(board, true, {});
   // with random 'false' the result will be 'b4' since that valid move is found first, i.e. the
   // location is 'd3' which is found first when calculating valid moves (starting at top left)
   EXPECT_EQ(board, b4);
@@ -81,7 +81,7 @@ TEST_F(PlayerTest, MoveDepth2) {
   scoreChildren(b2, C::White, 11);
   scoreChildren(b3, C::White, -20);
   scoreChildren(b4, C::White, 0);
-  playerDepth2->move(board, true, std::nullopt);
+  playerDepth2->move(board, true, {});
   // result should be b2 because depth 2 is a 'minimizing' level so 'b1' will get a value
   // of 10 (even though it has children with much higher scores) whereas 'b2' will get a
   // value of 11 (the min from that level) and then 11 > 10 for 'maximizing' level 1

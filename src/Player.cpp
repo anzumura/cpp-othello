@@ -12,21 +12,37 @@ Player::Move Player::move(Board& board, bool tournament, Move prevMove) const {
   if (!tournament) std::cout << std::endl << board << std::endl;
   int flips = 0;
   auto start = std::chrono::high_resolution_clock::now();
-  auto result = makeMove(board, prevMove, flips);
+  auto move = makeMove(board, prevMove, flips);
   totalTime += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start);
-  printMove(result, flips, tournament);
-  return result;
+  printMove(move, flips, tournament);
+  return move;
 }
 
 void Player::printMove(Move move, int flips, bool tournament) const {
-  assert(flips > 0);
-  if (!tournament)
-    std::cout << color << " played at: " << *move << " (" << flips << " flip" << (flips > 1 ? "s" : "") << ")\n";
+  if (move) {
+    assert(flips > 0);
+    if (!tournament)
+      std::cout << color << " played at: " << *move << " (" << flips << " flip" << (flips > 1 ? "s" : "") << ")\n";
+  }
 }
 
 void Player::printTotalTime() const {
   std::cout << "Total time for " << toString() << ": " << std::fixed << std::setprecision(6)
             << totalTime.count() / 1'000'000'000.0 << " seconds\n";
+}
+
+const char* Player::errorToString(int flips) {
+  switch (flips) {
+  case Board::BadLength:
+    return "location must be 2 characters";
+  case Board::BadColumn:
+    return "column must be a value from 'a' to 'h'";
+  case Board::BadRow:
+    return "row must be a value from '1' to '8'";
+  case Board::BadCell:
+    return "cell already occupied";
+  }
+  return "must flip at least one piece";
 }
 
 Player::Move HumanPlayer::makeMove(Board& board, Move, int& flips) const {
@@ -50,20 +66,6 @@ Player::Move HumanPlayer::makeMove(Board& board, Move, int& flips) const {
                 << "\n  please enter a location (eg 'a1' or 'h8'), 'q' to quit or 'v' to print valid moves\n";
     }
   } while (true);
-}
-
-const char* HumanPlayer::errorToString(int flips) {
-  switch (flips) {
-  case Board::BadLength:
-    return "location must be 2 characters";
-  case Board::BadColumn:
-    return "column must be a value from 'a' to 'h'";
-  case Board::BadRow:
-    return "row must be a value from '1' to '8'";
-  case Board::BadCell:
-    return "cell already occupied";
-  }
-  return "must flip at least one piece";
 }
 
 std::string ComputerPlayer::toString() const {
@@ -138,22 +140,56 @@ int ComputerPlayer::minMax(const Board& board, int depth, Board::Color turn, int
 }
 
 RemotePlayer::RemotePlayer(Board::Color c)
- : Player(c), _acceptor(_service, tcp::endpoint(tcp::v4(), Port)), _socket(_service) {}
+    : Player(c), _acceptor(_service, tcp::endpoint(tcp::v4(), Port)), _socket(_service) {}
+
+using namespace boost::asio;
 
 Player::Move RemotePlayer::makeMove(Board& board, Move prevMove, int& flips) const {
-  using namespace boost::asio;
-  if (!prevMove) {
-    std::cout << color << ": waiting for initial connection on port " << Port << '\n';
+  if (!_socket.is_open()) {
+    std::cout << color << ": waiting for initial connection on port " << Port << " ... ";
+    std::cout.flush();
     _acceptor.accept(_socket);
-  } else {
-    const std::string msg = *prevMove + "\n";
-    write(_socket, buffer(msg));
+    std::cout << "connected\n\n";
   }
+  send(prevMove.value_or(""));
+  do {
+    if (std::string line = get(); line == "q")
+      return {};
+    else if (line == "v") {
+      auto v = board.validMoves(color);
+      std::string out;
+      for (const auto& s : v)
+        out += (out.empty() ? s : ", " + s);
+      send(out);
+    } else {
+      flips = board.set(line, color);
+      if (flips > 0) {
+        send(std::to_string(flips));
+        return line;
+      }
+      send(errorToString(flips));
+    }
+  } while (true);
+}
+
+std::string RemotePlayer::get() const {
   streambuf buf;
-  read_until(_socket, buf, "\n");
-  const std::string move = buffer_cast<const char*>(buf.data());
-  flips = board.set(move, color);
-  return move;
+  read_until(_socket, buf, "\n", _error);
+  if (_error && _error != error::eof) opFailed("read");
+  std::istream input(&buf);
+  std::string line;
+  std::getline(input, line); // strips final '\n'
+  return line;
+}
+
+void RemotePlayer::send(const std::string& msg) const {
+  write(_socket, buffer(msg + '\n'), _error);
+  if (_error) opFailed("write");
+}
+
+void RemotePlayer::opFailed(const char* msg) const {
+  std::cout << msg << " failed: " << _error.message() << '\n';
+  exit(1);
 }
 
 } // namespace othello

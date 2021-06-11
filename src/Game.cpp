@@ -65,17 +65,23 @@ char Game::getChar(Board::Color c, const std::string& msg, const std::string& ch
 
 std::unique_ptr<Player> Game::createPlayer(Board::Color c) {
   static const std::string msg = "player type";
-  static const std::string choices = "h=human, c=computer, r=remote";
-  static auto typePred = [](char x) { return x == 'h' || x == 'c' || x == 'r'; };
+  static const std::string choices = "h=human, c=computer";
+  static const std::string remoteChoices = choices + ", r=remote";
+  static auto typePred = [](char x) { return x == 'h' || x == 'c'; };
+  static auto typeRemotePred = [](char x) { return typePred(x) || x == 'r'; };
   // if a tournament option is chosen then both players will be 'c' (Computer) type, otherwise the board
-  // is printed each turn and the second player can only be a human, computer or remote player
+  // is printed each turn (currently only one player can be 'remote')
   char type = _matches ? 'c'
+    : _hasRemotePlayer ? getChar(c, msg, choices, typePred, 'c')
     : _players.empty() ? getChar(
-                           c, msg, choices + " or tournaments: w=1, x=10, y=100, z=1000",
-                           [](char x) { return typePred(x) || (x >= 'w' && x <= 'z'); }, 'y')
-                       : getChar(c, msg, choices, typePred, 'c');
+                           c, msg, remoteChoices + " or tournaments: w=1, x=10, y=100, z=1000",
+                           [](char x) { return typeRemotePred(x) || (x >= 'w' && x <= 'z'); }, 'y')
+                       : getChar(c, msg, remoteChoices, typeRemotePred, 'c');
   if (type == 'h') return std::make_unique<HumanPlayer>(c);
-  if (type == 'r') return std::make_unique<RemotePlayer>(c);
+  if (type == 'r') {
+    _hasRemotePlayer = true;
+    return std::make_unique<RemotePlayer>(c);
+  }
   if (type == 'w')
     _matches = 1;
   else if (type == 'x')
@@ -97,7 +103,7 @@ std::unique_ptr<Player> Game::createPlayer(Board::Color c) {
     else
       score = std::make_shared<WeightedScore>();
   }
-  return std::make_unique<ComputerPlayer>(c, search - '0', random == 'y', score, _matches);
+  return std::make_unique<ComputerPlayer>(c, search - '0', random == 'y', score);
 }
 
 } // namespace othello

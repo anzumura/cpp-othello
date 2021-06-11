@@ -31,6 +31,8 @@ public:
 
 protected:
   explicit Player(Board::Color c) : color(c), totalTime(0){};
+  static const char* errorToString(int);
+
 private:
   virtual Move makeMove(Board&, Move prevMove, int& flips) const = 0;
   virtual void printMove(Move move, int flips, bool tournament) const;
@@ -45,14 +47,12 @@ private:
   Move makeMove(Board&, Move, int&) const override;
   // no need to print move for human player (since the player would have just typed it in)
   void printMove(Move, int, bool) const override {}
-  static const char* errorToString(int);
 };
 
 class ComputerPlayer : public Player {
 public:
-  ComputerPlayer(Board::Color c, int search, bool random, std::shared_ptr<Score> score, bool tournament)
-      : Player(c), opColor(Board::opColor(c)), _search(search), _random(random), _score(std::move(score)),
-        _tournament(tournament){};
+  ComputerPlayer(Board::Color c, int search, bool random, std::shared_ptr<Score> score)
+      : Player(c), opColor(Board::opColor(c)), _search(search), _random(random), _score(std::move(score)){};
   std::string toString() const override;
 
 private:
@@ -93,7 +93,6 @@ private:
   const int _search;
   const bool _random;
   const std::shared_ptr<Score> _score;
-  const bool _tournament; // suppresses printing when true
   mutable long long _totalScoreCalls = 0;
 };
 
@@ -104,11 +103,18 @@ public:
 private:
   enum Values { Port = 1234 };
   using tcp = boost::asio::ip::tcp;
+
   Move makeMove(Board&, Move, int&) const override;
+
+  // helper functions for sending and receiving data
+  std::string get() const;
+  void send(const std::string&) const;
+  void opFailed(const char* msg) const;
 
   mutable boost::asio::io_service _service;
   mutable tcp::acceptor _acceptor;
   mutable tcp::socket _socket;
+  mutable boost::system::error_code _error;
 };
 
 } // namespace othello

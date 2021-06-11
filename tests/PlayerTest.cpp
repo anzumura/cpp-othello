@@ -47,8 +47,8 @@ protected:
 
   Board board;
   std::shared_ptr<MockScore> score = std::make_shared<MockScore>();
-  std::unique_ptr<Player> playerDepth1 = std::move(std::make_unique<ComputerPlayer>(C::Black, 1, false, score, true));
-  std::unique_ptr<Player> playerDepth2 = std::move(std::make_unique<ComputerPlayer>(C::Black, 2, false, score, true));
+  std::unique_ptr<Player> playerDepth1 = std::move(std::make_unique<ComputerPlayer>(C::Black, 1, false, score));
+  std::unique_ptr<Player> playerDepth2 = std::move(std::make_unique<ComputerPlayer>(C::Black, 2, false, score));
 };
 
 TEST_F(PlayerTest, MoveDepth1) {

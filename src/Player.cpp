@@ -159,13 +159,19 @@ void RemotePlayer::waitForConnection(const Board& board, const Board::Moves& pre
     send(prevMoves);
 }
 
+void RemotePlayer::gameOver(const Board& board, const Board::Moves& prevMoves) const {
+  send("end");
+  send(prevMoves);
+  if (_printBoards && !prevMoves.empty()) send(board);
+}
+
 Player::Move RemotePlayer::makeMove(Board& board, const Board::Moves& prevMoves, int& flips) const {
   if (!_socket.is_open())
     waitForConnection(board, prevMoves);
   else {
     send(prevMoves);
     // only send board string if other player made a move
-    if (_printBoards && !prevMoves.empty()) send(board.toString());
+    if (_printBoards && !prevMoves.empty()) send(board);
   }
   do {
     if (std::string line = get(); line == "q")

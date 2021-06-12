@@ -24,6 +24,11 @@ public:
   // Note: prevMoves will be empty if the other player had no valid moves and can contain more
   // than one entry if the other player played multiple times in a row.
   Move move(Board&, bool tournament, const Board::Moves& prevMoves) const;
+
+  // 'gameOver' is called when the game is finished and the final board position and any moves made
+  // by the other player are passed in (for communication to RemotePlayer for example)
+  virtual void gameOver(const Board&, const Board::Moves&) const {}
+
   // 'printTotalTime' prints the total time taken in seconds to make moves by this player
   // Mote: time is internally measured in nanoseconds, but rounded to nearest microsecond when printing
   void printTotalTime() const;
@@ -101,6 +106,7 @@ private:
 class RemotePlayer : public Player {
 public:
   explicit RemotePlayer(Board::Color);
+  void gameOver(const Board&, const Board::Moves&) const override;
 
 private:
   enum Values { Port = 1234 };

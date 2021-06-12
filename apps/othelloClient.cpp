@@ -21,13 +21,18 @@ using ip::tcp;
 class OthelloClient {
 public:
   OthelloClient() : _socket(_service) { _socket.connect(tcp::endpoint(ip::address::from_string("127.0.0.1"), 1234)); }
-  void begin(bool printBoards) {
+  void begin(bool printBoards, bool randomMoves) {
     send(printBoards ? "printBoards" : "");
     int turn = 0;
+    bool endGame = false;
     do {
       // print board position after my last move
       if (turn && printBoards) printBoard();
-      const auto moves = get();
+      auto moves = get();
+      if (moves == "end") {
+        endGame = true;
+        moves = get();
+      }
       if (!moves.empty()) {
         // print board position after server's last move
         if (printBoards) printBoard();
@@ -38,18 +43,25 @@ public:
         // print initial board position
         if (printBoards) printBoard();
         setColors(false);
-      } else
+      } else if (!endGame)
         out(_serverColor) << "had no valid moves - skipping turn\n";
-    } while (makeMove(++turn));
+    } while (!endGame && makeMove(++turn, randomMoves));
   }
 
 private:
-  bool makeMove(int turn) {
+  bool makeMove(int turn, bool randomMoves) {
     do {
-      out(_myColor, turn) << "enter move (a1, b2, ... v=show valid moves, q=quit): ";
-      std::cout.flush();
       std::string line;
-      std::getline(std::cin, line);
+      if (randomMoves) {
+        send("v");
+        auto validMoves = get();
+        line = validMoves.substr(0, 2);
+        out(_myColor, turn) << "making random move at: " << line << '\n';
+      } else {
+        out(_myColor, turn) << "enter move (a1, b2, ... v=show valid moves, q=quit): ";
+        std::cout.flush();
+        std::getline(std::cin, line);
+      }
       if (!line.empty()) {
         send(line);
         if (line == "q") return false;
@@ -124,7 +136,7 @@ private:
 void usage(const char* program, const std::string& arg) {
   auto file = std::filesystem::path(program).stem().string();
   std::cerr << file << ": unrecognized option " << arg;
-  std::cerr << "\nusage: " << file << " [-p]\n";
+  std::cerr << "\nusage: " << file << " [-p] [-r]\n";
   exit(1);
 }
 
@@ -134,14 +146,16 @@ int main(int argc, char** argv) {
   // - testAfterFree: seems to work properly, i.e., no errors unless compiled with sanitizer flags
   // testAfterStack(); *testAfterStackChar = 'b';
   // return testAfterFree();
-  bool printBoards = false;
-  if (argc > 1) {
-    std::string arg = argv[1];
+  bool printBoards = false, randomMoves = false;
+  for (int i = 1; i < argc; ++i) {
+    std::string arg = argv[i];
     if (arg == "-p")
       printBoards = true;
+    else if (arg == "-r")
+      randomMoves = true;
     else
       usage(argv[0], arg);
   }
-  OthelloClient().begin(printBoards);
+  OthelloClient().begin(printBoards, randomMoves);
   return 0;
 }

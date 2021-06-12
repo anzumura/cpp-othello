@@ -18,10 +18,12 @@ public:
   virtual ~Player() = default;
 
   // 'move' returns the string representation of the move that was made or empty string if player
-  // wants to end the game. The previous move is passed in to this method so it can be sent to
-  // a remote player if needed. Setting tournament to 'true' suppresses printing board each time
+  // wants to end the game. prevMoves is passed in to this method so it can be sent to a remote
+  // player if needed. Setting tournament to 'true' suppresses printing board each time.
   // Note: move is only called if valid moves exist for this player's color
-  Move move(Board&, bool tournament, Move prevMove) const;
+  // Note: prevMoves will be empty if the other player had no valid moves and can contain more
+  // than one entry if the other player played multiple times in a row.
+  Move move(Board&, bool tournament, const Board::Moves& prevMoves) const;
   // 'printTotalTime' prints the total time taken in seconds to make moves by this player
   // Mote: time is internally measured in nanoseconds, but rounded to nearest microsecond when printing
   void printTotalTime() const;
@@ -34,7 +36,7 @@ protected:
   static const char* errorToString(int);
 
 private:
-  virtual Move makeMove(Board&, Move prevMove, int& flips) const = 0;
+  virtual Move makeMove(Board&, const Board::Moves& prevMoves, int& flips) const = 0;
   virtual void printMove(Move move, int flips, bool tournament) const;
   mutable std::chrono::nanoseconds totalTime;
 };
@@ -44,7 +46,7 @@ public:
   explicit HumanPlayer(Board::Color c) : Player(c){};
 
 private:
-  Move makeMove(Board&, Move, int&) const override;
+  Move makeMove(Board&, const Board::Moves&, int&) const override;
   // no need to print move for human player (since the player would have just typed it in)
   void printMove(Move, int, bool) const override {}
 };
@@ -62,10 +64,10 @@ private:
   // 'makeMove' gets the set of valid moves if search = 0 or calls 'findMoves' when search > 0
   // and makes either the first move in the list or a randomly chosen one if _random is true
   // Note: ComputerPlayer version of 'makeMove' always returns a move (never empty string)
-  Move makeMove(Board&, Move, int&) const override;
+  Move makeMove(Board&, const Board::Moves&, int&) const override;
 
   // 'findMoves' returns one or more 'best' moves (based on minMax and values returned from '_score')
-  std::vector<std::string> findMoves(const Board&) const;
+  Board::Moves findMoves(const Board&) const;
 
   // 'minMax' is the recursize min-max algorithm with alpha-beta pruning
   int minMax(const Board&, int, Board::Color, int, int, int) const;
@@ -104,13 +106,23 @@ private:
   enum Values { Port = 1234 };
   using tcp = boost::asio::ip::tcp;
 
-  Move makeMove(Board&, Move, int&) const override;
+  Move makeMove(Board&, const Board::Moves&, int&) const override;
+
+  void waitForConnection(const Board&, const Board::Moves&) const;
 
   // helper functions for sending and receiving data
   std::string get() const;
   void send(const std::string&) const;
+  void send(const Board& b) const { send(b.toString()); }
+  void send(const Board::Moves& moves) const {
+    std::string out;
+    for (const auto& s : moves)
+      out += s;
+    send(out);
+  }
   void opFailed(const char* msg) const;
 
+  mutable bool _printBoards;
   mutable boost::asio::io_service _service;
   mutable tcp::acceptor _acceptor;
   mutable tcp::socket _socket;

@@ -27,6 +27,7 @@ public:
     SizeSub1 = 63,
     Size
   };
+  using Moves = std::vector<std::string>;
   using Boards = std::array<Board, MaxValidMoves>;
   using Positions = std::array<int, MaxValidMoves>;
   using Set = std::bitset<Size>;
@@ -60,7 +61,7 @@ public:
   auto white() const { return _white; }
 
   // get list of valid moves for a given color
-  std::vector<std::string> validMoves(Color) const;
+  Moves validMoves(Color) const;
 
   // fill 'positions' with positions of valid moves and 'boards' with the corresponding new board
   // for each move and return the total number of valid moves (method used by ComputerPlayer)

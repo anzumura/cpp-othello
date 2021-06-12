@@ -38,15 +38,18 @@ void Game::begin() {
 
 Board Game::playOneGame() {
   Board board;
-  Player::Move move = {};
+  Board::Moves otherPlayerMoves;
   for (int player = 0, skippedTurns = 0; skippedTurns < 2; player ^= 1) {
     if (board.hasValidMoves(_players[player]->color)) {
-      if (skippedTurns) {
-        if (!_matches) std::cout << std::endl << _players[player ^ 1]->color << " has no valid moves - skipping turn\n";
-        skippedTurns = 0;
-      }
-      move = _players[player]->move(board, _matches, move);
+      if (skippedTurns && !_matches)
+       std::cout << std::endl << _players[player ^ 1]->color << " has no valid moves - skipping turn\n";
+      auto move = _players[player]->move(board, _matches, otherPlayerMoves);
       if (!move) break;
+      if (skippedTurns)
+        skippedTurns = 0;
+      else
+        otherPlayerMoves.clear(); // clear when no turns are skipped
+      otherPlayerMoves.emplace_back(*move);
     } else
       ++skippedTurns;
   };

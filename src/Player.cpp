@@ -7,12 +7,12 @@
 
 namespace othello {
 
-Player::Move Player::move(Board& board, bool tournament, Move prevMove) const {
+Player::Move Player::move(Board& board, bool tournament, const Board::Moves& prevMoves) const {
   assert(board.hasValidMoves(color));
   if (!tournament) std::cout << std::endl << board << std::endl;
   int flips = 0;
   auto start = std::chrono::high_resolution_clock::now();
-  auto move = makeMove(board, prevMove, flips);
+  auto move = makeMove(board, prevMoves, flips);
   totalTime += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start);
   printMove(move, flips, tournament);
   return move;
@@ -45,7 +45,7 @@ const char* Player::errorToString(int flips) {
   return "must flip at least one piece";
 }
 
-Player::Move HumanPlayer::makeMove(Board& board, Move, int& flips) const {
+Player::Move HumanPlayer::makeMove(Board& board, const Board::Moves&, int& flips) const {
   do {
     std::cout << "enter " << color << "'s move: ";
     std::string line;
@@ -80,11 +80,11 @@ std::string ComputerPlayer::toString() const {
   return ss.str();
 }
 
-Player::Move ComputerPlayer::makeMove(Board& board, Move, int& flips) const {
+Player::Move ComputerPlayer::makeMove(Board& board, const Board::Moves&, int& flips) const {
   static std::random_device rd;
   static std::mt19937 gen(rd());
 
-  auto moves = _search == 0 ? board.validMoves(color) : findMoves(board);
+  const auto moves = _search == 0 ? board.validMoves(color) : findMoves(board);
   assert(!moves.empty());
   int move = 0;
   if (_random && moves.size() > 1) {
@@ -95,7 +95,7 @@ Player::Move ComputerPlayer::makeMove(Board& board, Move, int& flips) const {
   return moves[move];
 }
 
-std::vector<std::string> ComputerPlayer::findMoves(const Board& board) const {
+Board::Moves ComputerPlayer::findMoves(const Board& board) const {
   Board::Boards boards;
   Board::Positions positions;
   const int moves = board.validMoves(color, boards, positions);
@@ -112,7 +112,7 @@ std::vector<std::string> ComputerPlayer::findMoves(const Board& board) const {
       updateMoves(callScore(boards[i]), i, best, newBestMoves);
     bestMoves = newBestMoves;
   }
-  std::vector<std::string> results;
+  Board::Moves results;
   for (auto i : bestMoves)
     results.emplace_back(Board::posToString(positions[i]));
   return results;
@@ -140,31 +140,43 @@ int ComputerPlayer::minMax(const Board& board, int depth, Board::Color turn, int
 }
 
 RemotePlayer::RemotePlayer(Board::Color c)
-    : Player(c), _acceptor(_service, tcp::endpoint(tcp::v4(), Port)), _socket(_service) {}
+    : Player(c), _printBoards(false), _acceptor(_service, tcp::endpoint(tcp::v4(), Port)), _socket(_service) {}
 
 using namespace boost::asio;
 
-Player::Move RemotePlayer::makeMove(Board& board, Move prevMove, int& flips) const {
-  if (!_socket.is_open()) {
-    std::cout << color << ": waiting for initial connection on port " << Port << " ... ";
-    std::cout.flush();
-    _acceptor.accept(_socket);
-    std::cout << "connected\n\n";
+void RemotePlayer::waitForConnection(const Board& board, const Board::Moves& prevMoves) const {
+  std::cout << color << ": waiting for initial connection on port " << Port << " ... ";
+  std::cout.flush();
+  _acceptor.accept(_socket);
+  std::cout << "connected\n\n";
+  auto clientType = get();
+  if (clientType == "printBoards") {
+    _printBoards = true;
+    send(prevMoves);
+    // always send initial board string even if previous move is empty, i.e.: we are first player
+    send(board.toString());
+  } else
+    send(prevMoves);
+}
+
+Player::Move RemotePlayer::makeMove(Board& board, const Board::Moves& prevMoves, int& flips) const {
+  if (!_socket.is_open())
+    waitForConnection(board, prevMoves);
+  else {
+    send(prevMoves);
+    // only send board string if other player made a move
+    if (_printBoards && !prevMoves.empty()) send(board.toString());
   }
-  send(prevMove.value_or(""));
   do {
     if (std::string line = get(); line == "q")
       return {};
-    else if (line == "v") {
-      auto v = board.validMoves(color);
-      std::string out;
-      for (const auto& s : v)
-        out += (out.empty() ? s : ", " + s);
-      send(out);
-    } else {
+    else if (line == "v")
+      send(board.validMoves(color));
+    else {
       flips = board.set(line, color);
       if (flips > 0) {
         send(std::to_string(flips));
+        if (_printBoards) send(board);
         return line;
       }
       send(errorToString(flips));

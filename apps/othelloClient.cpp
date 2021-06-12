@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 
 #include <boost/asio.hpp>
@@ -20,24 +21,40 @@ using ip::tcp;
 class OthelloClient {
 public:
   OthelloClient() : _socket(_service) { _socket.connect(tcp::endpoint(ip::address::from_string("127.0.0.1"), 1234)); }
-  void begin() {
+  void begin(bool printBoards) {
+    send(printBoards ? "printBoards" : "");
+    int turn = 0;
     do {
-      std::string move = get();
-      if (!move.empty()) std::cout << ">>> Server move was: " << move << "\n";
-    } while (makeMove());
+      // print board position after my last move
+      if (turn && printBoards) printBoard();
+      const auto moves = get();
+      if (!moves.empty()) {
+        // print board position after server's last move
+        if (printBoards) printBoard();
+        if (!turn) setColors(true);
+        turn += moves.length() / 2;
+        out(_serverColor, turn) << (moves.length() > 2 ? "moves were: ": "move was: ") << movesToString(moves) << '\n';
+      } else if (!turn) {
+        // print initial board position
+        if (printBoards) printBoard();
+        setColors(false);
+      } else
+        out(_serverColor) << "had no valid moves - skipping turn\n";
+    } while (makeMove(++turn));
   }
 
 private:
-  bool makeMove() {
+  bool makeMove(int turn) {
     do {
-      std::cout << ">>> Enter move ('a1', 'b2', ...) 'v' to show valid moves or 'q' to quit: ";
+      out(_myColor, turn) << "enter move (a1, b2, ... v=show valid moves, q=quit): ";
+      std::cout.flush();
       std::string line;
       std::getline(std::cin, line);
       if (!line.empty()) {
         send(line);
         if (line == "q") return false;
         if (line == "v")
-          std::cout << get() << '\n';
+          std::cout << movesToString(get()) << '\n';
         else {
           std::string r = get();
           if (std::all_of(r.begin(), r.end(), ::isdigit)) {
@@ -48,6 +65,35 @@ private:
         }
       }
     } while (true);
+  }
+
+  std::ostream& out(const std::string& color, std::optional<int> turn = {}) {
+    std::cout << ">>> " << color;
+    if (turn)
+      return std::cout << " (turn " << *turn << ") - ";
+    return std::cout << " ";
+  }
+
+  void setColors(bool serverMadeFirstMove) {
+    if (serverMadeFirstMove) {
+      _myColor = "White";
+      _serverColor = "Black";
+    } else {
+      _myColor = "Black";
+      _serverColor = "White";
+    }
+  }
+
+  void printBoard() {
+    const auto board = get();
+    std::cout << board << '\n';
+  }
+
+  std::string movesToString(const std::string& moves) {
+    std::string result;
+    for (int i = 0; i < moves.length(); i += 2)
+      result += (i ? ", " : "") + moves.substr(i, 2);
+    return result;
   }
 
   std::string get() {
@@ -68,17 +114,34 @@ private:
     exit(1);
   }
 
+  std::string _myColor;
+  std::string _serverColor;
   io_service _service;
   tcp::socket _socket;
   boost::system::error_code _error;
 };
 
-int main() {
+void usage(const char* program, const std::string& arg) {
+  auto file = std::filesystem::path(program).stem().string();
+  std::cerr << file << ": unrecognized option " << arg;
+  std::cerr << "\nusage: " << file << " [-p]\n";
+  exit(1);
+}
+
+int main(int argc, char** argv) {
   // Uncomment these functions to test Address Sanitizer:
   // - testAfterStack: gets caught before address sanitizer with 'Trace/BPT trap: 5'
   // - testAfterFree: seems to work properly, i.e., no errors unless compiled with sanitizer flags
   // testAfterStack(); *testAfterStackChar = 'b';
   // return testAfterFree();
-  OthelloClient().begin();
+  bool printBoards = false;
+  if (argc > 1) {
+    std::string arg = argv[1];
+    if (arg == "-p")
+      printBoards = true;
+    else
+      usage(argv[0], arg);
+  }
+  OthelloClient().begin(printBoards);
   return 0;
 }

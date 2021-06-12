@@ -71,8 +71,8 @@ std::string Board::toString() const {
   return result;
 }
 
-std::vector<std::string> Board::validMoves(Color c) const {
-  std::vector<std::string> result;
+Board::Moves Board::validMoves(Color c) const {
+  Moves result;
   const Set& myVals = c == Color::Black ? _black : _white;
   const Set& opVals = c == Color::Black ? _white : _black;
   for (int i = 0; i < Size; ++i)

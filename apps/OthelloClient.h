@@ -17,7 +17,6 @@ private:
   bool makeMove(int turn);
 
   std::ostream& out(const std::string& color, std::optional<int> turn = {});
-  void setColors(bool serverMadeFirstMove);
   void printBoard();
   std::string movesToString(const std::string&);
   void usage(const char* program, const std::string& arg);

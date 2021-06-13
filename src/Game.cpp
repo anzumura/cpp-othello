@@ -58,8 +58,7 @@ Board Game::playOneGame() {
   // inform the other player that the game is over and pass final move(s) made by last player
   _players[lastPlayer ^ 1]->gameOver(board, lastPlayerMoves);
   // inform the lastPlayer that the game is over
-  lastPlayerMoves.clear();
-  _players[lastPlayer]->gameOver(board, lastPlayerMoves);
+  _players[lastPlayer]->gameOver(board);
   return board;
 }
 

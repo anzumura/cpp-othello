@@ -27,7 +27,7 @@ public:
 
   // 'gameOver' is called when the game is finished and the final board position and any moves made
   // by the other player are passed in (for communication to RemotePlayer for example)
-  virtual void gameOver(const Board&, const Board::Moves&) const {}
+  virtual void gameOver(const Board&, const Board::Moves& = Board::Moves()) const {}
 
   // 'printTotalTime' prints the total time taken in seconds to make moves by this player
   // Mote: time is internally measured in nanoseconds, but rounded to nearest microsecond when printing

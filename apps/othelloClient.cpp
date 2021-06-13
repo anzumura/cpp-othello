@@ -35,7 +35,7 @@ void OthelloClient::begin() {
       moves = get();
     }
     if (!moves.empty()) {
-      if (!turn) setColors(true);
+      if (!turn) std::swap(_myColor, _serverColor); // server made first move so swap colors
       turn += moves.length() / 2;
       out(_serverColor, turn) << (moves.length() > 2 ? "moves were: " : "move was: ") << movesToString(moves) << '\n';
       // print board position after server's last move
@@ -43,7 +43,6 @@ void OthelloClient::begin() {
     } else if (!turn) {
       // print initial board position
       printBoard();
-      setColors(false);
     } else if (!endGame)
       out(_serverColor) << "had no valid moves - skipping turn\n";
   } while (!endGame && makeMove(++turn));
@@ -92,10 +91,6 @@ std::ostream& OthelloClient::out(const std::string& color, std::optional<int> tu
   std::cout << ">>> " << color << " ";
   if (turn) return std::cout << "(turn " << *turn << ") - ";
   return std::cout;
-}
-
-void OthelloClient::setColors(bool serverMadeFirstMove) {
-  if (serverMadeFirstMove) std::swap(_myColor, _serverColor);
 }
 
 void OthelloClient::printBoard() {

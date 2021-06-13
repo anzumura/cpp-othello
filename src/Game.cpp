@@ -52,7 +52,7 @@ Board Game::playOneGame() {
       else
         lastPlayerMoves.clear(); // clear when no turns are skipped
       lastPlayerMoves.emplace_back(*move);
-    } else if (skippedTurns)
+    } else
       ++skippedTurns;
   };
   // inform the other player that the game is over and pass final move(s) made by last player

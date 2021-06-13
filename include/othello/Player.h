@@ -59,7 +59,7 @@ private:
 class ComputerPlayer : public Player {
 public:
   ComputerPlayer(Board::Color c, int search, bool random, std::shared_ptr<Score> score)
-      : Player(c), opColor(Board::opColor(c)), _search(search), _random(random), _score(std::move(score)){};
+    : Player(c), opColor(Board::opColor(c)), _search(search), _random(random), _score(std::move(score)){};
   std::string toString() const override;
 
 private:
@@ -105,7 +105,7 @@ private:
 
 class RemotePlayer : public Player {
 public:
-  explicit RemotePlayer(Board::Color);
+  explicit RemotePlayer(Board::Color, bool debug = false);
   void gameOver(const Board&, const Board::Moves&) const override;
 
 private:
@@ -119,7 +119,9 @@ private:
   // helper functions for sending and receiving data
   std::string get() const;
   void send(const std::string&) const;
-  void send(const Board& b) const { send(b.toString()); }
+  void send(const Board& b) const {
+    if (_print) send(b.toString());
+  }
   void send(const Board::Moves& moves) const {
     std::string out;
     for (const auto& s : moves)
@@ -128,10 +130,13 @@ private:
   }
   void opFailed(const char* msg) const;
 
-  mutable bool _printBoards;
+  const bool _debug;
+  mutable bool _print = false;
   mutable boost::asio::io_service _service;
   mutable tcp::acceptor _acceptor;
   mutable tcp::socket _socket;
+  mutable boost::asio::streambuf _inputBuffer;
+  mutable std::istream _input;
   mutable boost::system::error_code _error;
 };
 

@@ -139,8 +139,9 @@ int ComputerPlayer::minMax(const Board& board, int depth, Board::Color turn, int
   return best;
 }
 
-RemotePlayer::RemotePlayer(Board::Color c)
-    : Player(c), _printBoards(false), _acceptor(_service, tcp::endpoint(tcp::v4(), Port)), _socket(_service) {}
+RemotePlayer::RemotePlayer(Board::Color c, bool debug)
+  : Player(c), _debug(debug), _acceptor(_service, tcp::endpoint(tcp::v4(), Port)), _socket(_service),
+    _input(&_inputBuffer) {}
 
 using namespace boost::asio;
 
@@ -151,7 +152,7 @@ void RemotePlayer::waitForConnection(const Board& board, const Board::Moves& pre
   std::cout << "connected\n\n";
   auto clientType = get();
   if (clientType == "printBoards") {
-    _printBoards = true;
+    _print = true;
     send(prevMoves);
     // always send initial board string even if previous move is empty, i.e.: we are first player
     send(board.toString());
@@ -162,7 +163,7 @@ void RemotePlayer::waitForConnection(const Board& board, const Board::Moves& pre
 void RemotePlayer::gameOver(const Board& board, const Board::Moves& prevMoves) const {
   send("end");
   send(prevMoves);
-  if (_printBoards && !prevMoves.empty()) send(board);
+  if (!prevMoves.empty()) send(board);
 }
 
 Player::Move RemotePlayer::makeMove(Board& board, const Board::Moves& prevMoves, int& flips) const {
@@ -171,7 +172,7 @@ Player::Move RemotePlayer::makeMove(Board& board, const Board::Moves& prevMoves,
   else {
     send(prevMoves);
     // only send board string if other player made a move
-    if (_printBoards && !prevMoves.empty()) send(board);
+    if (!prevMoves.empty()) send(board);
   }
   do {
     if (std::string line = get(); line == "q")
@@ -182,7 +183,7 @@ Player::Move RemotePlayer::makeMove(Board& board, const Board::Moves& prevMoves,
       flips = board.set(line, color);
       if (flips > 0) {
         send(std::to_string(flips));
-        if (_printBoards) send(board);
+        send(board);
         return line;
       }
       send(errorToString(flips));
@@ -191,16 +192,19 @@ Player::Move RemotePlayer::makeMove(Board& board, const Board::Moves& prevMoves,
 }
 
 std::string RemotePlayer::get() const {
-  streambuf buf;
-  read_until(_socket, buf, "\n", _error);
-  if (_error && _error != error::eof) opFailed("read");
-  std::istream input(&buf);
+  if (!_inputBuffer.size()) {
+    auto bytes = read_until(_socket, _inputBuffer, "\n", _error);
+    if (_error && _error != error::eof) opFailed("read");
+    if (_debug) std::cout << "### get - read bytes: " << bytes << ", buf: " << _inputBuffer.size() << '\n';
+  }
   std::string line;
-  std::getline(input, line); // strips final '\n'
+  std::getline(_input, line); // strips final '\n'
+  if (_debug) std::cout << "### get - line: " << line << '\n';
   return line;
 }
 
 void RemotePlayer::send(const std::string& msg) const {
+  if (_debug) std::cout << "### about to send: " << msg << '\n';
   write(_socket, buffer(msg + '\n'), _error);
   if (_error) opFailed("write");
 }

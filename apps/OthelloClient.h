@@ -13,7 +13,6 @@ class OthelloClient {
 public:
   OthelloClient(int argc, char** argv);
   void begin();
-
 private:
   bool makeMove(int turn);
 

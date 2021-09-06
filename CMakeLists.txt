@@ -13,7 +13,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_EXTENSIONS OFF)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem /opt/homebrew/include")
     set(SANITIZER_FLAGS "-fsanitize=address -fno-omit-frame-pointer -O1 -fno-optimize-sibling-calls")
     # need to set env for after stack reporting: ASAN_OPTIONS=detect_stack_use_after_return=1
     # set(SANITIZER_STACK_FLAGS "-fsanitize-address-use-after-scope")

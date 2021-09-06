@@ -33,14 +33,10 @@ void Player::printTotalTime() const {
 
 const char* Player::errorToString(int flips) {
   switch (flips) {
-  case Board::BadLength:
-    return "location must be 2 characters";
-  case Board::BadColumn:
-    return "column must be a value from 'a' to 'h'";
-  case Board::BadRow:
-    return "row must be a value from '1' to '8'";
-  case Board::BadCell:
-    return "cell already occupied";
+  case Board::BadLength: return "location must be 2 characters";
+  case Board::BadColumn: return "column must be a value from 'a' to 'h'";
+  case Board::BadRow: return "row must be a value from '1' to '8'";
+  case Board::BadCell: return "cell already occupied";
   }
   return "must flip at least one piece";
 }
@@ -74,8 +70,12 @@ std::string ComputerPlayer::toString() const {
   if (_score) ss << " (" << _score->toString() << ")";
   ss << " with";
   if (_random) ss << " randomized";
+#ifdef __clang__
+  // g++ uses libstdc++ (instead of libc++) which only to understands locale "C". Any other value causes
+  // a runtime exception: locale::facet::_S_create_c_locale
   std::locale loc("en_US.UTF-8");
   ss.imbue(loc);
+#endif
   ss << " search=" << _search << " (score called " << _totalScoreCalls << ")";
   return ss.str();
 }

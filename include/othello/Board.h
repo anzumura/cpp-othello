@@ -104,7 +104,6 @@ public:
     result.push_back('1' + pos / Rows);
     return result;
   }
-
 private:
   enum PrivateValues { PosD4 = 27, PosE4, PosD5 = 35, PosE5 };
   bool validMove(int pos, const Set& myVals, const Set& opVals) const;

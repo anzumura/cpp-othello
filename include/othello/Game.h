@@ -11,7 +11,6 @@ public:
   // 'begin' prompts for number of matches (for a 'tournament') and player types, then starts the game(s)
   // matches is 0 for a non-tournament style interactive game (showing the board each turn)
   void begin();
-
 private:
   static char getChar(Board::Color, const std::string&, const std::string&, bool(char), char);
   Board playOneGame();

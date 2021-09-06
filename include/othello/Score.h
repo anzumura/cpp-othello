@@ -21,7 +21,6 @@ public:
     return scoreBoard(board, board.white(), board.black(), debugPrint);
   }
   virtual std::string toString() const = 0;
-
 private:
   // return a score for the given board which could be Win, -Win (loss), 0 (for a draw) or a total of cell scores
   virtual int scoreBoard(const Board& board, const Board::Set& myVals, const Board::Set& opVals,
@@ -91,7 +90,6 @@ public:
     Corner = 15
   };
   std::string toString() const override { return "FullScore"; }
-
 private:
   int scoreCell(int, int, int, const Board::Set&, const Board::Set&, const Board::Set&) const override;
 };
@@ -102,7 +100,6 @@ public:
   // Meanings are similar to FullScore, but since there is no functionality for 'checking for empty or safe'
   // less overall values are needed to populate 'WeightedScoreValues' matrix (see Score.cpp for more details)
   enum Values { BadCenter = -4, BadEdge, Bad = -1, CenterEdge = 0, Center, Edge, Corner = 4 };
-
 private:
   int scoreCell(int, int, int, const Board::Set&, const Board::Set&, const Board::Set&) const override;
 };

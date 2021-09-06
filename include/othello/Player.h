@@ -35,11 +35,9 @@ public:
 
   const Board::Color color;
   virtual std::string toString() const { return othello::toString(color); }
-
 protected:
   explicit Player(Board::Color c) : color(c), totalTime(0){};
   static const char* errorToString(int);
-
 private:
   virtual Move makeMove(Board&, const Board::Moves& prevMoves, int& flips) const = 0;
   virtual void printMove(Move move, int flips, bool tournament) const;
@@ -49,7 +47,6 @@ private:
 class HumanPlayer : public Player {
 public:
   explicit HumanPlayer(Board::Color c) : Player(c){};
-
 private:
   Move makeMove(Board&, const Board::Moves&, int&) const override;
   // no need to print move for human player (since the player would have just typed it in)
@@ -61,7 +58,6 @@ public:
   ComputerPlayer(Board::Color c, int search, bool random, std::shared_ptr<Score> score)
     : Player(c), opColor(Board::opColor(c)), _search(search), _random(random), _score(std::move(score)){};
   std::string toString() const override;
-
 private:
   using Moves = std::vector<int>;
   enum Values { Min = -Score::Win - 1, Max = Score::Win + 1 };
@@ -107,7 +103,6 @@ class RemotePlayer : public Player {
 public:
   explicit RemotePlayer(Board::Color, bool debug = false);
   void gameOver(const Board&, const Board::Moves&) const override;
-
 private:
   enum Values { Port = 1234 };
   using tcp = boost::asio::ip::tcp;

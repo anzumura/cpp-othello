@@ -16,15 +16,9 @@ void Game::begin() {
     }
     Board board = playOneGame();
     switch (board.printGameResult(_matches)) {
-    case Board::GameResults::Black:
-      ++blackWins;
-      break;
-    case Board::GameResults::White:
-      ++whiteWins;
-      break;
-    case Board::GameResults::Draw:
-      ++draws;
-      break;
+    case Board::GameResults::Black: ++blackWins; break;
+    case Board::GameResults::White: ++whiteWins; break;
+    case Board::GameResults::Draw: ++draws; break;
     }
     blackPieces += board.blackCount();
     whitePieces += board.whiteCount();

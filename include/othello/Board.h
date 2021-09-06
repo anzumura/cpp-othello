@@ -1,6 +1,8 @@
 #ifndef OTHELLO_BOARD_H
 #define OTHELLO_BOARD_H
 
+#include <cassert>
+
 #include <array>
 #include <bitset>
 #include <iostream>

@@ -1,0 +1,16 @@
+Language: Cpp
+
+# Run 'clang-format -style=llvm -dump-config > .clang-format' to see defaults
+BasedOnStyle: LLVM
+
+# Override the (llvm style) values for the following options
+AlignOperands: false
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+ColumnLimit: 120
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+EmptyLineBeforeAccessModifier: Never
+PointerAlignment: Left
+SpaceAfterTemplateKeyword: false

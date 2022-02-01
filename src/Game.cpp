@@ -5,16 +5,15 @@
 namespace othello {
 
 void Game::begin() {
-  int gameCount = 1, blackWins = 0, whiteWins = 0, draws = 0, blackPieces = 0, whitePieces = 0;
-  for (auto c : Board::Colors)
-    _players.emplace_back(createPlayer(c));
+  auto gameCount = 1, blackWins = 0, whiteWins = 0, draws = 0, blackPieces = 0, whitePieces = 0;
+  for (auto c : Board::Colors) _players.emplace_back(createPlayer(c));
   do {
     if (_matches) {
-      const int width = _matches < 10 ? 2 : _matches < 100 ? 3 : _matches < 1000 ? 4 : 5;
+      const auto width = _matches < 10 ? 2 : _matches < 100 ? 3 : _matches < 1000 ? 4 : 5;
       std::cout << "Game: " << std::setw(width) << std::left << gameCount << "... ";
       std::cout.flush();
     }
-    Board board = playOneGame();
+    auto board = playOneGame();
     switch (board.printGameResult(_matches)) {
     case Board::GameResults::Black: ++blackWins; break;
     case Board::GameResults::White: ++whiteWins; break;
@@ -26,18 +25,17 @@ void Game::begin() {
   if (_matches > 1)
     std::cout << ">>> Black Wins: " << blackWins << ", White Wins: " << whiteWins << ", Draws: " << draws
               << "\n>>> Black Pieces: " << blackPieces << ", White Pieces: " << whitePieces << '\n';
-  for (const auto& p : _players)
-    p->printTotalTime();
+  for (const auto& p : _players) p->printTotalTime();
 }
 
 Board Game::playOneGame() {
   Board board;
-  int lastPlayer = 1;
+  auto lastPlayer = 1;
   Board::Moves lastPlayerMoves;
-  for (int player = 0, skippedTurns = 0; skippedTurns < 2; player ^= 1) {
+  for (auto player = 0, skippedTurns = 0; skippedTurns < 2; player ^= 1) {
     if (board.hasValidMoves(_players[player]->color)) {
       if (skippedTurns && !_matches)
-        std::cout << std::endl << _players[player ^ 1]->color << " has no valid moves - skipping turn\n";
+        std::cout << '\n' << _players[player ^ 1]->color << " has no valid moves - skipping turn\n";
       auto move = _players[player]->move(board, _matches, lastPlayerMoves);
       lastPlayer = player;
       if (!move) break;
@@ -67,14 +65,13 @@ char Game::getChar(Board::Color c, const std::string& msg, const std::string& ch
 }
 
 std::unique_ptr<Player> Game::createPlayer(Board::Color c) {
-  static const std::string msg = "player type";
-  static const std::string choices = "h=human, c=computer";
-  static const std::string remoteChoices = choices + ", r=remote";
-  static auto typePred = [](char x) { return x == 'h' || x == 'c'; };
-  static auto typeRemotePred = [](char x) { return typePred(x) || x == 'r'; };
+  static const std::string msg = "player type", choices = "h=human, c=computer";
+  static const auto remoteChoices = choices + ", r=remote";
+  static const auto typePred = [](char x) { return x == 'h' || x == 'c'; };
+  static const auto typeRemotePred = [](char x) { return typePred(x) || x == 'r'; };
   // if a tournament option is chosen then both players will be 'c' (Computer) type, otherwise the board
   // is printed each turn (currently only one player can be 'remote')
-  char type = _matches ? 'c'
+  auto type = _matches ? 'c'
     : _hasRemotePlayer ? getChar(c, msg, choices, typePred, 'c')
     : _players.empty() ? getChar(
                            c, msg, remoteChoices + " or tournaments: w=1, x=10, y=100, z=1000",
@@ -93,9 +90,9 @@ std::unique_ptr<Player> Game::createPlayer(Board::Color c) {
     _matches = 100;
   else if (type == 'z')
     _matches = 1000;
-  char search = getChar(
+  const auto search = getChar(
     c, "search depth", "0=no search, 1-9=moves", [](char x) { return x >= '0' && x <= '9'; }, '3');
-  char random = getChar(
+  const auto random = getChar(
     c, "randomized results", "y/n", [](char x) { return x == 'y' || x == 'n'; }, 'y');
   std::shared_ptr<Score> score = nullptr;
   if (search != '0') {

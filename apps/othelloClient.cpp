@@ -57,8 +57,7 @@ bool OthelloClient::makeMove(int turn) {
     std::string line;
     if (_random) {
       send("v");
-      const auto validMoves = get();
-      if (validMoves.length() > 2) {
+      if (const auto validMoves = get(); validMoves.length() > 2) {
         std::uniform_int_distribution<> dis(0, validMoves.length() / 2 - 1);
         line = validMoves.substr(dis(gen) * 2, 2);
       } else
@@ -76,7 +75,7 @@ bool OthelloClient::makeMove(int turn) {
       if (line == "v")
         std::cout << movesToString(get()) << '\n';
       else {
-        std::string r = get();
+        const auto r = get();
         if (std::all_of(r.begin(), r.end(), ::isdigit)) {
           std::cout << "  ok - flipped " << r << " piece" << (r == "1" ? "" : "s") << '\n';
           return true;
@@ -116,13 +115,12 @@ void OthelloClient::printBoard() {
 
 std::string OthelloClient::movesToString(const std::string& moves) {
   std::string result;
-  for (size_t i = 0; i < moves.length(); i += 2)
-    result += (i ? ", " : "") + moves.substr(i, 2);
+  for (size_t i = 0; i < moves.length(); i += 2) result += (i ? ", " : "") + moves.substr(i, 2);
   return result;
 }
 
 void OthelloClient::usage(const char* program, const std::string& arg) {
-  auto file = std::filesystem::path(program).stem().string();
+  const auto file = std::filesystem::path(program).stem().string();
   std::cerr << file << ": unrecognized option " << arg << "\nusage: " << file << " [-d] [-p] [-r]\n"
             << "  -d: show all messages sent and received from server\n"
             << "  -p: print board before and after each move\n"

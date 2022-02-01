@@ -20,8 +20,8 @@ protected:
       ASSERT_EQ(weightedScore->score(board, c), c == Board::Color::Black ? s : -s) << "WeightedScore for: " << c;
   }
   Board board;
-  std::unique_ptr<Score> score = std::move(std::make_unique<FullScore>());
-  std::unique_ptr<Score> weightedScore = std::move(std::make_unique<WeightedScore>());
+  std::unique_ptr<Score> score = std::make_unique<FullScore>();
+  std::unique_ptr<Score> weightedScore = std::make_unique<WeightedScore>();
 };
 
 TEST_F(ScoreTest, InitialPosition) {
@@ -305,7 +305,7 @@ TEST_F(ScoreTest, NextToEmptyTopEdges) {
 ***.....\
 *.......\
 *...*o");
-  auto score = S::Corner + 4 * S::SafeEdge;
+  const auto score = S::Corner + 4 * S::SafeEdge;
   check(score);
   set("\
 ***.....\
@@ -491,8 +491,8 @@ ooooo***\
 oo*****.");
   ASSERT_EQ(board.blackCount(), 28);
   ASSERT_EQ(board.whiteCount(), 24);
-  int black = 12 * S::Edge + 4 * S::CenterEdge + 8 * S::Center + S::BadEdge + 3 * S::Bad;
-  int white = S::Corner + S::SafeEdge + 4 * S::Edge + 7 * S::CenterEdge + 8 * S::Center + 3 * S::Bad;
+  auto black = 12 * S::Edge + 4 * S::CenterEdge + 8 * S::Center + S::BadEdge + 3 * S::Bad;
+  auto white = S::Corner + S::SafeEdge + 4 * S::Edge + 7 * S::CenterEdge + 8 * S::Center + 3 * S::Bad;
   score->score(board, Board::Color::Black, true);
   check(black - white);
   black = 11 * W::Edge + 2 * W::BadEdge + 7 * W::Bad + 4 * W::CenterEdge + 4 * W::Center;

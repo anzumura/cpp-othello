@@ -83,11 +83,11 @@ private:
       moves.push_back(move);
   }
   // 'callScore' and 'callMinMax' are helper functions used by 'findMove' and 'minMax'
-  int callScore(const Board& board) const {
+  auto callScore(const Board& board) const {
     ++_totalScoreCalls;
     return _score->score(board, color);
   }
-  int callMinMax(const Board& board, int depth, Board::Color turn, int prevMoves, int alpha, int beta) const {
+  auto callMinMax(const Board& board, int depth, Board::Color turn, int prevMoves, int alpha, int beta) const {
     if (depth) return minMax(board, depth, turn, prevMoves, alpha, beta);
     return callScore(board);
   }
@@ -119,8 +119,7 @@ private:
   }
   void send(const Board::Moves& moves) const {
     std::string out;
-    for (const auto& s : moves)
-      out += s;
+    for (auto& s : moves) out += s;
     send(out);
   }
   void opFailed(const char* msg) const;

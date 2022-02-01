@@ -8,22 +8,22 @@ using B = Board;
 using Set = const B::Set&;
 
 int Score::printScoreCells(Set myVals, Set opVals, Set empty) const {
-  int myScore = 0, opScore = 0;
-  for (int row = 0, pos = 0; row < B::Rows; ++row) {
-    for (int col = 0; col < B::Rows; ++col, ++pos)
+  auto myScore = 0, opScore = 0;
+  for (auto row = 0, pos = 0; row < B::Rows; ++row) {
+    for (auto col = 0; col < B::Rows; ++col, ++pos)
       if (myVals[pos]) {
-        int s = scoreCell(row, col, pos, myVals, opVals, empty);
+        const auto s = scoreCell(row, col, pos, myVals, opVals, empty);
         myScore += s;
         std::cout << std::setw(7) << s << " ";
       } else if (opVals[pos]) {
-        int s = scoreCell(row, col, pos, opVals, myVals, empty);
+        const auto s = scoreCell(row, col, pos, opVals, myVals, empty);
         opScore += s;
         std::cout << "   (" << std::setw(3) << s << ")";
       } else
         std::cout << "    ... ";
-    std::cout << std::endl;
+    std::cout << '\n';
   }
-  std::cout << "Score: " << myScore << " - (" << opScore << ") = " << myScore - opScore << std::endl;
+  std::cout << "Score: " << myScore << " - (" << opScore << ") = " << myScore - opScore << '\n';
   // make sure the score calculated in this function matches the 'non-debug' scoreCells function
   // will need to remove this assertion if a non-deterministic version of 'scoreCell' is created
   assert(scoreCells(myVals, opVals, empty) == myScore - opScore);
@@ -34,8 +34,8 @@ namespace {
 
 // see comments in Score.h for definition of a 'SafeEdge' position
 template<int INC> inline bool safeEdge(int pos, int low, int high, Set myVals, Set opVals, Set empty) {
-  bool allMine = true;
-  int i = pos + INC;
+  auto allMine = true;
+  auto i = pos + INC;
   // check to the right (or down) and break if we hit a space
   for (; i < high; i += INC)
     if (opVals[i])
@@ -69,8 +69,7 @@ template<int T1, int T2, int T3> inline bool emptySide(Set empty, int pos) {
 template<int T1, int T2, int T3, int LOW, int LOW_INC, int HIGH, int HIGH_INC>
 inline bool emptyEdge(Set empty, int pos) {
   if (empty[pos + T2]) return true;
-  const int x = pos + T1;
-  const int y = pos + T3;
+  const auto x = pos + T1, y = pos + T3;
   // special cases for positions diagonally next to corners (check 4 edges, but
   // can skip checking corner)
   if (x == LOW) return empty[y] || empty[pos - 1] || empty[pos + LOW_INC];
@@ -88,7 +87,7 @@ inline auto mine(Set myVals, int corner, int cornerEdge1, int cornerEdge2, int o
   return myVals[corner] && myVals[cornerEdge1] && myVals[cornerEdge2] && (myVals[otherEdge1] || myVals[otherEdge2]);
 }
 template<int INC, int EDGE_INC, int HIGH, int LOW> inline bool mineCenter(Set myVals, int pos) {
-  int i = pos + INC;
+  auto i = pos + INC;
   for (; i < HIGH; i += INC)
     if (!myVals[i]) break;
   if (i >= HIGH) {
@@ -115,8 +114,8 @@ constexpr std::array WeightedScoreValues = {Score1, Score2, Score3, Score4, Scor
 
 int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals, Set empty) const {
   // process edges
-  if (const bool sideEdge = col == 0 || col == B::RowSub1; row == 0 || row == B::RowSub1) {
-    const int rowStart = pos - col;
+  if (const auto sideEdge = col == 0 || col == B::RowSub1; row == 0 || row == B::RowSub1) {
+    const auto rowStart = pos - col;
     return sideEdge                                                           ? Corner
       : safeEdge<1>(pos, rowStart, rowStart + B::Rows, myVals, opVals, empty) ? SafeEdge
       : emptyCorner<1, 1>(empty, col, pos)                                    ? BadEdge

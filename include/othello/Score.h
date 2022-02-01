@@ -16,9 +16,9 @@ public:
   // opposite color has more pieces (or zero for a draw). Otherwise, each cell is examined and a total
   // calculated score is returned.
   enum Values { Win = 1'000'000 };
-  int score(const Board& board, Board::Color c, bool debugPrint = false) const {
-    if (c == Board::Color::Black) return scoreBoard(board, board.black(), board.white(), debugPrint);
-    return scoreBoard(board, board.white(), board.black(), debugPrint);
+  auto score(const Board& board, Board::Color c, bool debugPrint = false) const {
+    return c == Board::Color::Black ? scoreBoard(board, board.black(), board.white(), debugPrint)
+                                    : scoreBoard(board, board.white(), board.black(), debugPrint);
   }
   virtual std::string toString() const = 0;
 private:
@@ -26,11 +26,10 @@ private:
   virtual int scoreBoard(const Board& board, const Board::Set& myVals, const Board::Set& opVals,
                          bool debugPrint) const {
     if (board.hasValidMoves()) {
-      const Board::Set empty = (myVals | opVals).flip();
-      if (debugPrint) return printScoreCells(myVals, opVals, empty);
-      return scoreCells(myVals, opVals, empty);
+      const auto empty = (myVals | opVals).flip();
+      return debugPrint ? printScoreCells(myVals, opVals, empty) : scoreCells(myVals, opVals, empty);
     }
-    const int myCount = myVals.count(), opCount = opVals.count();
+    const auto myCount = myVals.count(), opCount = opVals.count();
     return myCount > opCount ? Win : myCount < opCount ? -Win : 0;
   }
 
@@ -38,9 +37,9 @@ private:
   //   Add to total if cell contains my color
   //   Subtract from total if cell contains opposite color
   int scoreCells(const Board::Set& myVals, const Board::Set& opVals, const Board::Set& empty) const {
-    int result = 0;
-    for (int row = 0, pos = 0; row < Board::Rows; ++row)
-      for (int col = 0; col < Board::Rows; ++col, ++pos)
+    auto result = 0;
+    for (auto row = 0, pos = 0; row < Board::Rows; ++row)
+      for (auto col = 0; col < Board::Rows; ++col, ++pos)
         if (myVals[pos])
           result += scoreCell(row, col, pos, myVals, opVals, empty);
         else if (opVals[pos])

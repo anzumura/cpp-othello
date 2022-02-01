@@ -1,6 +1,6 @@
 #include "OthelloClient.h"
 
-int testAfterFree() {
+auto testAfterFree() {
   int* testInt = new int{7};
   delete testInt;
   return *testInt - 7;
@@ -8,7 +8,7 @@ int testAfterFree() {
 
 char* testAfterStackChar;
 void testAfterStack() {
-  char stackChar = 'a';
+  const auto stackChar = 'a';
   *testAfterStackChar = stackChar;
 }
 

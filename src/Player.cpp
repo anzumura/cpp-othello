@@ -9,10 +9,10 @@ namespace othello {
 
 Player::Move Player::move(Board& board, bool tournament, const Board::Moves& prevMoves) const {
   assert(board.hasValidMoves(color));
-  if (!tournament) std::cout << std::endl << board << std::endl;
-  int flips = 0;
-  auto start = std::chrono::high_resolution_clock::now();
-  auto move = makeMove(board, prevMoves, flips);
+  if (!tournament) std::cout << '\n' << board << '\n';
+  auto flips = 0;
+  const auto start = std::chrono::high_resolution_clock::now();
+  const auto move = makeMove(board, prevMoves, flips);
   totalTime += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start);
   printMove(move, flips, tournament);
   return move;
@@ -49,11 +49,10 @@ Player::Move HumanPlayer::makeMove(Board& board, const Board::Moves&, int& flips
     if (line.length() == 1) {
       if (line[0] == 'q') return {};
       if (line[0] == 'v') {
-        auto moves = board.validMoves(color);
+        const auto moves = board.validMoves(color);
         std::cout << "  valid moves are:";
-        for (const auto& m : moves)
-          std::cout << " " << m;
-        std::cout << std::endl;
+        for (auto& m : moves) std::cout << " " << m;
+        std::cout << '\n';
       }
     } else {
       flips = board.set(line, color);
@@ -86,7 +85,7 @@ Player::Move ComputerPlayer::makeMove(Board& board, const Board::Moves&, int& fl
 
   const auto moves = _search == 0 ? board.validMoves(color) : findMoves(board);
   assert(!moves.empty());
-  int move = 0;
+  auto move = 0;
   if (_random && moves.size() > 1) {
     std::uniform_int_distribution<> dis(0, moves.size() - 1);
     move = dis(gen);
@@ -98,8 +97,8 @@ Player::Move ComputerPlayer::makeMove(Board& board, const Board::Moves&, int& fl
 Board::Moves ComputerPlayer::findMoves(const Board& board) const {
   Board::Boards boards;
   Board::Positions positions;
-  const int moves = board.validMoves(color, boards, positions);
-  const int nextLevel = _search - 1;
+  const auto moves = board.validMoves(color, boards, positions);
+  const auto nextLevel = _search - 1;
   // return more than one position if moves have the same score
   Moves bestMoves;
   for (int i = 0, best = Min; i < moves; ++i)
@@ -108,33 +107,31 @@ Board::Moves ComputerPlayer::findMoves(const Board& board) const {
   if (bestMoves.size() > 1) {
     int best = Min;
     std::vector<int> newBestMoves;
-    for (auto i : bestMoves)
-      updateMoves(callScore(boards[i]), i, best, newBestMoves);
+    for (auto i : bestMoves) updateMoves(callScore(boards[i]), i, best, newBestMoves);
     bestMoves = newBestMoves;
   }
   Board::Moves results;
-  for (auto i : bestMoves)
-    results.emplace_back(Board::posToString(positions[i]));
+  for (auto i : bestMoves) results.emplace_back(Board::posToString(positions[i]));
   return results;
 }
 
 int ComputerPlayer::minMax(const Board& board, int depth, Board::Color turn, int prevMoves, int alpha, int beta) const {
   Board::Boards boards;
-  const int moves = board.validMoves(turn, boards);
-  const int nextLevel = depth - 1;
+  const auto moves = board.validMoves(turn, boards);
+  const auto nextLevel = depth - 1;
   // if no valid moves for current player then go to next level unless there were no valid moves
   // for previous level - in this case stop traversing and return score (by setting depth to 0)
   if (moves == 0) return callMinMax(board, prevMoves ? nextLevel : 0, Board::opColor(turn), 0, alpha, beta);
   // maximizing player
   if (turn == color) {
     int best = Min;
-    for (int i = 0; i < moves && best < beta; ++i, alpha = std::max(alpha, best))
+    for (auto i = 0; i < moves && best < beta; ++i, alpha = std::max(alpha, best))
       best = std::max(best, callMinMax(boards[i], nextLevel, opColor, moves, alpha, beta));
     return best;
   }
   // minimizing player
   int best = Max;
-  for (int i = 0; i < moves && best > alpha; ++i, beta = std::min(beta, best))
+  for (auto i = 0; i < moves && best > alpha; ++i, beta = std::min(beta, best))
     best = std::min(best, callMinMax(boards[i], nextLevel, color, moves, alpha, beta));
   return best;
 }
@@ -150,8 +147,7 @@ void RemotePlayer::waitForConnection(const Board& board, const Board::Moves& pre
   std::cout.flush();
   _acceptor.accept(_socket);
   std::cout << "connected\n\n";
-  auto clientType = get();
-  if (clientType == "printBoards") {
+  if (auto clientType = get(); clientType == "printBoards") {
     _print = true;
     send(prevMoves);
     // always send initial board string even if previous move is empty, i.e.: we are first player
@@ -193,7 +189,7 @@ Player::Move RemotePlayer::makeMove(Board& board, const Board::Moves& prevMoves,
 
 std::string RemotePlayer::get() const {
   if (!_inputBuffer.size()) {
-    auto bytes = read_until(_socket, _inputBuffer, "\n", _error);
+    const auto bytes = read_until(_socket, _inputBuffer, "\n", _error);
     if (_error && _error != error::eof) opFailed("read");
     if (_debug) std::cout << "### get - read bytes: " << bytes << ", buf: " << _inputBuffer.size() << '\n';
   }

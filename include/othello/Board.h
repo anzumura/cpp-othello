@@ -51,7 +51,7 @@ public:
   explicit Board(const std::string&, int initialEmpty = 0);
   Board(int emptyRows, const std::string& stringLayout) : Board(stringLayout, emptyRows * Rows) {}
   // operator== is needed for gMock tests
-  bool operator==(const Board& rhs) const { return _black == rhs._black && _white == rhs._white; }
+  auto operator==(const Board& rhs) const { return _black == rhs._black && _white == rhs._white; }
 
   // simple toString function to help with testing (returns a 64 length string)
   std::string toString() const;
@@ -69,10 +69,10 @@ public:
   // for each move and return the total number of valid moves (method used by ComputerPlayer)
   int validMoves(Color, Boards& boards, Positions& positions) const;
   // search algorithms only need to fill 'positions' for first level so provide an simpler overload
-  int validMoves(Color c, Boards& boards) const {
-    int count = 0;
+  auto validMoves(Color c, Boards& boards) const {
+    auto count = 0;
     Board board(*this);
-    for (int i = 0; i < Size; ++i)
+    for (auto i = 0; i < Size; ++i)
       if (!occupied(i) && board.set(i, c)) {
         assert(count < MaxValidMoves);
         boards[count++] = board;
@@ -82,7 +82,7 @@ public:
   }
 
   bool hasValidMoves(Color) const;
-  bool hasValidMoves() const { return hasValidMoves(Color::Black) || hasValidMoves(Color::White); }
+  auto hasValidMoves() const { return hasValidMoves(Color::Black) || hasValidMoves(Color::White); }
   enum class GameResults { White, Black, Draw };
   GameResults printGameResult(bool tournament = false) const;
   auto black(int i) const { return _black[i]; }
@@ -118,8 +118,8 @@ private:
   Set _white;
 };
 
-inline constexpr const char* toString(Board::Color c) { return c == Board::Color::Black ? "Black" : "White"; }
-inline std::ostream& operator<<(std::ostream& os, const Board::Color& c) { return os << toString(c); }
+inline constexpr auto* toString(Board::Color c) { return c == Board::Color::Black ? "Black" : "White"; }
+inline auto& operator<<(std::ostream& os, const Board::Color& c) { return os << toString(c); }
 // output friendly printing including borders with letters and numbers
 std::ostream& operator<<(std::ostream&, const Board&);
 

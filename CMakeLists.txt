@@ -13,9 +13,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_EXTENSIONS OFF)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # enable some warnings and turn them into errors
+    # enable some warnings and turn them into errors (skip -Wdeprecated for now because of boost)
     set(WARN_FLAGS "-Werror -Wall -Wextra -Wunused -Wc++20-compat-pedantic -Wunreachable-code-aggressive")
-    # skip -Wdeprecated for now because of boost
     # disable a warning
     set(WARN_FLAGS "${WARN_FLAGS} -Wno-logical-op-parentheses")
     set(SANITIZER_FLAGS "-fsanitize=address -fno-omit-frame-pointer -O1 -fno-optimize-sibling-calls")
@@ -34,6 +33,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+# On macOS boost can be installed using 'homebrew install boost' which pulls in version 1.76 (whereas boost
+# is now on version 1.78).
 find_package(Boost 1.76.0 REQUIRED COMPONENTS system)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIR})

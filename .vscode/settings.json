@@ -1,6 +1,5 @@
 {
   "editor.rulers": [80,120],
-  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "files.associations": {
     "array": "cpp",
     "__bit_reference": "cpp",
@@ -92,8 +91,6 @@
     "cinttypes": "cpp",
     "filesystem": "cpp"
   },
-  "C_Cpp.errorSquiggles": "Disabled",
-  "C_Cpp.clang_format_fallbackStyle": "{ ConstructorInitializerIndentWidth: 2, ColumnLimit: 120, PointerAlignment: Left, AllowShortIfStatementsOnASingleLine: true, SpaceAfterTemplateKeyword: false, AlignOperands: false, ContinuationIndentWidth: 2  }",
   "cSpell.words": [
     "asio",
     "chrono"

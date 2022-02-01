@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14..3.20)
+cmake_minimum_required(VERSION 3.14..3.22)
 project(othello VERSION 1.0
                 DESCRIPTION "Othello Game"
                 LANGUAGES CXX)
@@ -13,10 +13,15 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_EXTENSIONS OFF)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # enable some warnings and turn them into errors
+    set(WARN_FLAGS "-Werror -Wall -Wextra -Wunused -Wc++20-compat-pedantic -Wunreachable-code-aggressive")
+    # skip -Wdeprecated for now because of boost
+    # disable a warning
+    set(WARN_FLAGS "${WARN_FLAGS} -Wno-logical-op-parentheses")
     set(SANITIZER_FLAGS "-fsanitize=address -fno-omit-frame-pointer -O1 -fno-optimize-sibling-calls")
     # need to set env for after stack reporting: ASAN_OPTIONS=detect_stack_use_after_return=1
     # set(SANITIZER_STACK_FLAGS "-fsanitize-address-use-after-scope")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SANITIZER_FLAGS} ${SANITIZER_STACK_FLAGS}")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SANITIZER_FLAGS} ${SANITIZER_STACK_FLAGS} ${WARN_FLAGS}")
   endif()
   include(CTest)
 endif()

@@ -8,7 +8,7 @@ using namespace boost::asio;
 using ip::tcp;
 
 OthelloClient::OthelloClient(int argc, char** argv) : _socket(_service), _input(&_inputBuffer) {
-  for (int i = 1; i < argc; ++i) {
+  for (auto i = 1; i < argc; ++i) {
     std::string arg = argv[i];
     if (arg == "-d")
       _debug = true;
@@ -24,8 +24,8 @@ OthelloClient::OthelloClient(int argc, char** argv) : _socket(_service), _input(
 
 void OthelloClient::begin() {
   send(_printBoard ? "printBoards" : "");
-  int turn = 0;
-  bool endGame = false;
+  auto turn = 0;
+  auto endGame = false;
   do {
     // print board position after my last move
     if (turn) printBoard();
@@ -57,7 +57,7 @@ bool OthelloClient::makeMove(int turn) {
     std::string line;
     if (_random) {
       send("v");
-      auto validMoves = get();
+      const auto validMoves = get();
       if (validMoves.length() > 2) {
         std::uniform_int_distribution<> dis(0, validMoves.length() / 2 - 1);
         line = validMoves.substr(dis(gen) * 2, 2);
@@ -97,13 +97,13 @@ void OthelloClient::printBoard() {
   if (_printBoard) {
     const auto board = get();
     assert(board.length() == 64);
-    int black = 0, white = 0;
+    auto black = 0, white = 0;
     std::cout << "\n   a b c d e f g h\n"
               << " +----------------\n";
-    for (int row = 0; row < 8; ++row) {
+    for (auto row = 0; row < 8; ++row) {
       std::cout << row + 1 << '|';
-      for (int col = 0; col < 8; ++col) {
-        const char c = board[row * 8 + col];
+      for (auto col = 0; col < 8; ++col) {
+        const auto c = board[row * 8 + col];
         if (c == '*') ++black;
         if (c == 'o') ++white;
         std::cout << ' ' << c;
@@ -116,7 +116,7 @@ void OthelloClient::printBoard() {
 
 std::string OthelloClient::movesToString(const std::string& moves) {
   std::string result;
-  for (int i = 0; i < moves.length(); i += 2)
+  for (size_t i = 0; i < moves.length(); i += 2)
     result += (i ? ", " : "") + moves.substr(i, 2);
   return result;
 }
@@ -132,7 +132,7 @@ void OthelloClient::usage(const char* program, const std::string& arg) {
 
 std::string OthelloClient::get() {
   if (!_inputBuffer.size()) {
-    auto bytes = read_until(_socket, _inputBuffer, "\n", _error);
+    const auto bytes = read_until(_socket, _inputBuffer, "\n", _error);
     if (_error && _error != error::eof) opFailed("read");
     if (_debug) std::cout << "### get - read bytes: " << bytes << ", buf: " << _inputBuffer.size() << '\n';
   }

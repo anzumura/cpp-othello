@@ -33,9 +33,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-# On macOS boost can be installed using 'homebrew install boost' which pulls in version 1.76 (whereas boost
-# is now on version 1.78).
-find_package(Boost 1.76.0 REQUIRED COMPONENTS system)
+# On macOS boost can be installed using 'homebrew install boost' which pulls in version 1.78
+find_package(Boost 1.78.0 REQUIRED COMPONENTS system)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIR})
   message("-- Boost found: ${Boost_VERSION_STRING}")

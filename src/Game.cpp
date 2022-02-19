@@ -5,7 +5,11 @@
 namespace othello {
 
 void Game::begin() {
+<<<<<<< HEAD
   auto gameCount = 1, blackWins = 0, whiteWins = 0, draws = 0, blackPieces = 0, whitePieces = 0;
+=======
+  int gameCount = 1, blackWins = 0, whiteWins = 0, draws = 0, blackPieces = 0, whitePieces = 0;
+>>>>>>> 2614648 (add .clang-format file and reformat)
   for (auto c : Board::Colors) _players.emplace_back(createPlayer(c));
   do {
     if (_matches) {

@@ -119,7 +119,11 @@ private:
   }
   void send(const Board::Moves& moves) const {
     std::string out;
+<<<<<<< HEAD
     for (auto& s : moves) out += s;
+=======
+    for (const auto& s : moves) out += s;
+>>>>>>> 2614648 (add .clang-format file and reformat)
     send(out);
   }
   void opFailed(const char* msg) const;

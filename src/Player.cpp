@@ -51,13 +51,8 @@ Player::Move HumanPlayer::makeMove(Board& board, const Board::Moves&, int& flips
       if (line[0] == 'v') {
         const auto moves = board.validMoves(color);
         std::cout << "  valid moves are:";
-<<<<<<< HEAD
         for (auto& m : moves) std::cout << " " << m;
         std::cout << '\n';
-=======
-        for (const auto& m : moves) std::cout << " " << m;
-        std::cout << std::endl;
->>>>>>> 2614648 (add .clang-format file and reformat)
       }
     } else {
       flips = board.set(line, color);

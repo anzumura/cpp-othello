@@ -14,7 +14,9 @@ class Board {
 public:
   enum class Color { Black, White };
   static constexpr std::array Colors = {Color::Black, Color::White};
-  static constexpr Color opColor(Color c) { return c == Color::Black ? Color::White : Color::Black; }
+  static constexpr Color opColor(Color c) {
+    return c == Color::Black ? Color::White : Color::Black;
+  }
   enum Values {
     BadLength = -4,
     BadColumn,
@@ -38,20 +40,28 @@ public:
   static constexpr char EmptyCell = '.';
 
   // construct a Board with initial '4 disk' position
-  Board() : _black((1LL << PosE4) | (1LL << PosD5)), _white((1LL << PosD4) | (1LL << PosE5)) {}
+  Board()
+      : _black((1LL << PosE4) | (1LL << PosD5)),
+        _white((1LL << PosD4) | (1LL << PosE5)) {}
 
   // construct a Board from a 64 length char representation where:
   //   . = empty cell
   //   * = black cell
   //   o = white cell
-  // 'initialEmpty' can be used to allow shorted stings when making boards (helpful for testing), i.e.:
-  //   Board(63, "o") creates a board with just a single white cell in the bottom right corner
-  // partial boards are also fine: any cells beyond the end of the string are assumed to be empty, i.e.:
-  //   Board(".xo....o") creates a board with some values in the first row, but the rest empty
+  // 'initialEmpty' can be used to allow shorted stings when making boards
+  // (helpful for testing), i.e.:
+  //   Board(63, "o") creates board with a white cell in the bottom right corner
+  // partial boards are also fine: any cells beyond the end of the string are
+  // assumed to be empty, i.e.:
+  //   Board(".xo....o") creates board with some values in the first row
   explicit Board(const std::string&, int initialEmpty = 0);
-  Board(int emptyRows, const std::string& stringLayout) : Board(stringLayout, emptyRows * Rows) {}
+  Board(int emptyRows, const std::string& stringLayout)
+      : Board(stringLayout, emptyRows * Rows) {}
+
   // operator== is needed for gMock tests
-  auto operator==(const Board& rhs) const { return _black == rhs._black && _white == rhs._white; }
+  auto operator==(const Board& rhs) const {
+    return _black == rhs._black && _white == rhs._white;
+  }
 
   // simple toString function to help with testing (returns a 64 length string)
   std::string toString() const;
@@ -65,10 +75,13 @@ public:
   // get list of valid moves for a given color
   Moves validMoves(Color) const;
 
-  // fill 'positions' with positions of valid moves and 'boards' with the corresponding new board
-  // for each move and return the total number of valid moves (method used by ComputerPlayer)
+  // fill 'positions' with positions of valid moves and 'boards' with the
+  // corresponding new board for each move and return the total number of valid
+  // moves (method used by ComputerPlayer)
   int validMoves(Color, Boards& boards, Positions& positions) const;
-  // search algorithms only need to fill 'positions' for first level so provide an simpler overload
+
+  // search algorithms only need to fill 'positions' for first level so provide
+  // an simpler overload
   auto validMoves(Color c, Boards& boards) const {
     auto count = 0;
     Board board(*this);
@@ -82,7 +95,9 @@ public:
   }
 
   bool hasValidMoves(Color) const;
-  auto hasValidMoves() const { return hasValidMoves(Color::Black) || hasValidMoves(Color::White); }
+  auto hasValidMoves() const {
+    return hasValidMoves(Color::Black) || hasValidMoves(Color::White);
+  }
   enum class GameResults { White, Black, Draw };
   GameResults printGameResult(bool tournament = false) const;
   auto black(int i) const { return _black[i]; }
@@ -99,6 +114,7 @@ public:
   //   BadRow: pos string second character was not a value from '1' to '8'
   //   BadCell: the cell represented by pos is already occupied
   int set(const std::string& pos, Color);
+
   static auto posToString(int pos) {
     std::string result(1, 'a' + pos % Rows);
     result.push_back('1' + pos / Rows);
@@ -118,8 +134,13 @@ private:
   Set _white;
 };
 
-inline constexpr auto* toString(Board::Color c) { return c == Board::Color::Black ? "Black" : "White"; }
-inline auto& operator<<(std::ostream& os, const Board::Color& c) { return os << toString(c); }
+inline constexpr auto* toString(Board::Color c) {
+  return c == Board::Color::Black ? "Black" : "White";
+}
+inline auto& operator<<(std::ostream& os, const Board::Color& c) {
+  return os << toString(c);
+}
+
 // output friendly printing including borders with letters and numbers
 std::ostream& operator<<(std::ostream&, const Board&);
 

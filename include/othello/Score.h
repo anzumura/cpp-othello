@@ -12,22 +12,28 @@ public:
   Score& operator=(const Score&) = delete;
   virtual ~Score() = default;
 
-  // If there are no valid moves then return 'Win' if the given color has more pieces or '-Win' if the
-  // opposite color has more pieces (or zero for a draw). Otherwise, each cell is examined and a total
-  // calculated score is returned.
   enum Values { Win = 1'000'000 };
-  auto score(const Board& board, Board::Color c, bool debugPrint = false) const {
-    return c == Board::Color::Black ? scoreBoard(board, board.black(), board.white(), debugPrint)
-                                    : scoreBoard(board, board.white(), board.black(), debugPrint);
+
+  // If there are no valid moves then return 'Win' if given 'c' has more pieces
+  // or '-Win' if the opposite color has more pieces (or zero for a draw).
+  // Otherwise, each cell is examined and a total calculated score is returned.
+  auto score(const Board& board, Board::Color c,
+             bool debugPrint = false) const {
+    return c == Board::Color::Black
+             ? scoreBoard(board, board.black(), board.white(), debugPrint)
+             : scoreBoard(board, board.white(), board.black(), debugPrint);
   }
+
   virtual std::string toString() const = 0;
 private:
-  // return a score for the given board which could be Win, -Win (loss), 0 (for a draw) or a total of cell scores
-  virtual int scoreBoard(const Board& board, const Board::Set& myVals, const Board::Set& opVals,
-                         bool debugPrint) const {
+  // return a score for the given board which could be Win, -Win (loss), 0 (for
+  // a draw) or a total of cell scores
+  virtual int scoreBoard(const Board& board, const Board::Set& myVals,
+                         const Board::Set& opVals, bool debugPrint) const {
     if (board.hasValidMoves()) {
       const auto empty = (myVals | opVals).flip();
-      return debugPrint ? printScoreCells(myVals, opVals, empty) : scoreCells(myVals, opVals, empty);
+      return debugPrint ? printScoreCells(myVals, opVals, empty)
+                        : scoreCells(myVals, opVals, empty);
     }
     const auto myCount = myVals.count(), opCount = opVals.count();
     return myCount > opCount ? Win : myCount < opCount ? -Win : 0;
@@ -36,7 +42,8 @@ private:
   // loop through each cell and calculate the aggregate score:
   //   Add to total if cell contains my color
   //   Subtract from total if cell contains opposite color
-  int scoreCells(const Board::Set& myVals, const Board::Set& opVals, const Board::Set& empty) const {
+  int scoreCells(const Board::Set& myVals, const Board::Set& opVals,
+                 const Board::Set& empty) const {
     auto result = 0;
     for (auto row = 0, pos = 0; row < Board::Rows; ++row)
       for (auto col = 0; col < Board::Rows; ++col, ++pos)
@@ -48,36 +55,42 @@ private:
   }
 
   // print the score of each cell in a grid to help testing:
-  //   Scores for opposite color are inside ()
-  //   Empty cells show '....' to help distinguish them from a '0' calculated score
-  //   Prints totals for my color and oppsite color below the grid
-  //   Asserts total calculated matchs result from calling non-debug version of 'scoreCells'
-  int printScoreCells(const Board::Set&, const Board::Set&, const Board::Set&) const;
+  // - Scores for opposite color are inside ()
+  // - Empty cells show '....' to help distinguish them from a '0' score value
+  // - Prints totals for my color and oppsite color below the grid
+  // - Asserts totals match result from calling non-debug 'scoreCells'
+  int printScoreCells(const Board::Set&, const Board::Set&,
+                      const Board::Set&) const;
 
-  // scoreCell is called for each non-empty cell and is passed the following values:
-  //   row: row of the cell (from 0 to 7)
-  //   col: column of the cell (from 0 to 7)
-  //   pos: the position on the board (from 0 to 63)
-  //   myVals: bitset<64> with values set to true for same color positions (as the cell being scored)
-  //   opVals: bitset<64> with values set to true for opposite color positions
-  //   empty: bitset<64> with values set to true for empty positions
-  virtual int scoreCell(int row, int col, int pos, const Board::Set& myVals, const Board::Set& opVals,
+  // scoreCell is called for each non-empty cell and is passed the following:
+  // - row: row of the cell (from 0 to 7)
+  // - col: column of the cell (from 0 to 7)
+  // - pos: the position on the board (from 0 to 63)
+  // - myVals: bitset<64> with values set to true for same color positions (as
+  //   the cell being scored)
+  // - opVals: bitset<64> with values set to true for opposite color positions
+  // - empty: bitset<64> with values set to true for empty positions
+  virtual int scoreCell(int row, int col, int pos, const Board::Set& myVals,
+                        const Board::Set& opVals,
                         const Board::Set& empty) const = 0;
 };
 
 class FullScore : public Score {
 public:
   // The score of a cell will be one of the following values:
-  //   Corner: most valuable location since it can't be flipped
-  //   SafeEdge: edge location that can't be flipped, i.e., same color extends to a corner or edge is full
-  //   BadEdge: edge 'bad' location since the adjacent corner is empty
-  //   Edge: edge location that isn't one of the locations already mentioned
-  //   BadCenter: non-edge 'bad' location since the adjacent corner is empty, i.e.: b2, g2, b6, g6
-  //     Note: BadEdge, Edge and BadCenter can become SafeEdge if they can't be flipped (surrounded in same color)
-  //   Bad: non-edge 'bad' location since at least one of the adjacent edges is empty
-  //     Note: Bad can become CenterEdge if all the adjacent edge locations become non-empty
-  //   CenterEdge: adjacent-to-edge location that isn't one of the locations already mentioned
-  //   Center: location not in the outer two rows or columns
+  // - Corner: most valuable location since it can't be flipped
+  // - SafeEdge: edge location that can't be flipped, i.e., same color extends
+  //   to a corner or edge is full BadEdge: edge 'bad' location since the
+  //   adjacent corner is empty
+  // - Edge: edge location that isn't one of the locations already mentioned
+  // - BadCenter: non-edge 'bad' location since the adjacent corner is empty,
+  //   i.e.: b2, g2, b6, g6. Note: BadEdge, Edge and BadCenter can become
+  //   SafeEdge if they can't be flipped (surrounded in same color)
+  // - Bad: non-edge 'bad' location since at least one adjacent edges is empty
+  //   Note: Bad can become CenterEdge if all the adjacent edge locations
+  //   become non-empty
+  // - CenterEdge: adjacent-to-edge location that isn't one of the locations
+  //   already mentioned Center: location not in the outer two rows or columns
   enum Values {
     BadEdge = -4,
     BadCenter = -5,
@@ -90,17 +103,28 @@ public:
   };
   std::string toString() const override { return "FullScore"; }
 private:
-  int scoreCell(int, int, int, const Board::Set&, const Board::Set&, const Board::Set&) const override;
+  int scoreCell(int, int, int, const Board::Set&, const Board::Set&,
+                const Board::Set&) const override;
 };
 
 class WeightedScore : public Score {
 public:
   std::string toString() const override { return "WeightedScore"; }
-  // Meanings are similar to FullScore, but since there is no functionality for 'checking for empty or safe'
-  // less overall values are needed to populate 'WeightedScoreValues' matrix (see Score.cpp for more details)
-  enum Values { BadCenter = -4, BadEdge, Bad = -1, CenterEdge = 0, Center, Edge, Corner = 4 };
+  // Meanings are similar to FullScore, but since there is no functionality for
+  // 'checking for empty or safe' less overall values are needed to populate
+  // 'WeightedScoreValues' matrix (see Score.cpp for more details)
+  enum Values {
+    BadCenter = -4,
+    BadEdge,
+    Bad = -1,
+    CenterEdge = 0,
+    Center,
+    Edge,
+    Corner = 4
+  };
 private:
-  int scoreCell(int, int, int, const Board::Set&, const Board::Set&, const Board::Set&) const override;
+  int scoreCell(int, int, int, const Board::Set&, const Board::Set&,
+                const Board::Set&) const override;
 };
 
 } // namespace othello

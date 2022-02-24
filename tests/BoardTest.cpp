@@ -6,14 +6,17 @@ namespace othello {
 
 class BoardTest : public ::testing::Test {
 protected:
-  void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * Board::Rows); }
+  void set(int emptyRows, const std::string& initialLayout) {
+    board = Board(initialLayout, emptyRows * Board::Rows);
+  }
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
   void check(int emptyRows, const std::string& expectedLayout) const {
     std::string expected(emptyRows * Board::Rows, '.');
     check(expected + expectedLayout);
   }
   void check(const std::string& expected) const {
-    EXPECT_EQ(board.toString(), expected + std::string(Board::Size - expected.length(), '.'));
+    EXPECT_EQ(board.toString(),
+              expected + std::string(Board::Size - expected.length(), '.'));
   }
   Board board;
 };
@@ -131,11 +134,9 @@ TEST_F(BoardTest, FlipDown) {
   // test flip down boundary position
   const auto moves = std::array{std::make_pair("o", 1), std::make_pair("*", 0)};
   for (auto& m : moves) {
-    set(6,
-        std::string("\
+    set(6, std::string("\
 .......*\
-.......") +
-          m.first);
+.......") + m.first);
     ASSERT_EQ(board.set("h6", Board::Color::White), m.second);
   }
 }
@@ -241,7 +242,8 @@ TEST_F(BoardTest, MultipleFlipsLeft) {
     };
     set(f("o..") + f("o*.") + f("o*.") + f("o*.") + f("o"));
     std::vector<std::string> moves;
-    for (auto j = 1; j < Board::RowSub2; ++j) moves.emplace_back(std::string(1, 'c' + i) + std::to_string(j));
+    for (auto j = 1; j < Board::RowSub2; ++j)
+      moves.emplace_back(std::string(1, 'c' + i) + std::to_string(j));
     ASSERT_EQ(board.validMoves(Board::Color::White), moves);
     ASSERT_EQ(board.set(moves[2], Board::Color::White), 3);
     check(f("o..") + f("oo.") + f("ooo") + f("oo.") + f("o"));
@@ -257,7 +259,8 @@ TEST_F(BoardTest, MultipleFlipsRight) {
     };
     set(f("..*") + f(".o*") + f(".o*") + f(".o*") + f("..*"));
     std::vector<std::string> moves;
-    for (auto j = 1; j < Board::RowSub2; ++j) moves.emplace_back(std::string(1, 'a' + i) + std::to_string(j));
+    for (auto j = 1; j < Board::RowSub2; ++j)
+      moves.emplace_back(std::string(1, 'a' + i) + std::to_string(j));
     ASSERT_EQ(board.validMoves(Board::Color::Black), moves);
     ASSERT_EQ(board.set(moves[2], Board::Color::Black), 3);
     check(f("..*") + f(".**") + f("***") + f(".**") + f("..*"));

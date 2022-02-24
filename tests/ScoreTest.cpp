@@ -9,15 +9,20 @@ using W = WeightedScore;
 
 class ScoreTest : public ::testing::Test {
 protected:
-  void set(int emptyRows, const std::string& initialLayout) { board = Board(initialLayout, emptyRows * Board::Rows); }
+  void set(int emptyRows, const std::string& initialLayout) {
+    board = Board(initialLayout, emptyRows * Board::Rows);
+  }
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
   void check(int s) {
     for (auto c : Board::Colors)
-      ASSERT_EQ(score->score(board, c), c == Board::Color::Black ? s : -s) << "FullScore for: " << c;
+      ASSERT_EQ(score->score(board, c), c == Board::Color::Black ? s : -s)
+        << "FullScore for: " << c;
   }
   void checkWeighted(int s) {
     for (auto c : Board::Colors)
-      ASSERT_EQ(weightedScore->score(board, c), c == Board::Color::Black ? s : -s) << "WeightedScore for: " << c;
+      ASSERT_EQ(weightedScore->score(board, c),
+                c == Board::Color::Black ? s : -s)
+        << "WeightedScore for: " << c;
   }
   Board board;
   std::unique_ptr<Score> score = std::make_unique<FullScore>();
@@ -48,10 +53,12 @@ TEST_F(ScoreTest, Draw) {
 }
 
 TEST_F(ScoreTest, AfterOneFlip) {
-  board.set("d3", Board::Color::Black); // flips 1 resulting in 4 black and 1 white
+  board.set("d3",
+            Board::Color::Black); // flips 1 resulting in 4 black and 1 white
   check(3);
-  // for WeightedScore, black now has 3 (of the initial 4 pieces) and white has 1 - each of these is worth 1
-  // and the new location 'd3' is worth 0 for a total score of 2 for black
+  // for WeightedScore, black now has 3 (of the initial 4 pieces) and white has
+  // 1 - each of these is worth 1 and the new location 'd3' is worth 0 for a
+  // total score of 2 for black
   checkWeighted(2);
 }
 
@@ -491,12 +498,16 @@ ooooo***\
 oo*****.");
   ASSERT_EQ(board.blackCount(), 28);
   ASSERT_EQ(board.whiteCount(), 24);
-  auto black = 12 * S::Edge + 4 * S::CenterEdge + 8 * S::Center + S::BadEdge + 3 * S::Bad;
-  auto white = S::Corner + S::SafeEdge + 4 * S::Edge + 7 * S::CenterEdge + 8 * S::Center + 3 * S::Bad;
+  auto black =
+    12 * S::Edge + 4 * S::CenterEdge + 8 * S::Center + S::BadEdge + 3 * S::Bad;
+  auto white = S::Corner + S::SafeEdge + 4 * S::Edge + 7 * S::CenterEdge +
+               8 * S::Center + 3 * S::Bad;
   score->score(board, Board::Color::Black, true);
   check(black - white);
-  black = 11 * W::Edge + 2 * W::BadEdge + 7 * W::Bad + 4 * W::CenterEdge + 4 * W::Center;
-  white = W::Corner + W::BadEdge + W::BadCenter + 4 * W::Edge + 9 * W::Bad + 4 * W::CenterEdge + 4 * W::Center;
+  black = 11 * W::Edge + 2 * W::BadEdge + 7 * W::Bad + 4 * W::CenterEdge +
+          4 * W::Center;
+  white = W::Corner + W::BadEdge + W::BadCenter + 4 * W::Edge + 9 * W::Bad +
+          4 * W::CenterEdge + 4 * W::Center;
   weightedScore->score(board, Board::Color::Black, true);
   checkWeighted(black - white);
 }

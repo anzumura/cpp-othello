@@ -1,5 +1,4 @@
-#ifndef OTHELLO_PLAYER_H
-#define OTHELLO_PLAYER_H
+#pragma once
 
 #include <othello/Score.h>
 
@@ -149,5 +148,3 @@ private:
 };
 
 } // namespace othello
-
-#endif // OTHELLO_PLAYER_H

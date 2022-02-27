@@ -1,5 +1,4 @@
-#ifndef OTHELLO_OTHELLO_CLIENT_H
-#define OTHELLO_OTHELLO_CLIENT_H
+#pragma once
 
 #include <filesystem>
 #include <iostream>
@@ -39,5 +38,3 @@ private:
 };
 
 } // namespace othello
-
-#endif

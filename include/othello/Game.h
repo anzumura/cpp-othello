@@ -1,5 +1,4 @@
-#ifndef OTHELLO_GAME_H
-#define OTHELLO_GAME_H
+#pragma once
 
 #include <othello/Player.h>
 
@@ -27,5 +26,3 @@ private:
 };
 
 } // namespace othello
-
-#endif // OTHELLO_GAME_H

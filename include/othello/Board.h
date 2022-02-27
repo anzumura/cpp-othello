@@ -1,5 +1,4 @@
-#ifndef OTHELLO_BOARD_H
-#define OTHELLO_BOARD_H
+#pragma once
 
 #include <cassert>
 
@@ -145,5 +144,3 @@ inline auto& operator<<(std::ostream& os, const Board::Color& c) {
 std::ostream& operator<<(std::ostream&, const Board&);
 
 } // namespace othello
-
-#endif // OTHELLO_BOARD_H

@@ -37,7 +37,7 @@ void Player::printTotalTime() const {
 
 const char* Player::errorToString(int flips) {
   switch (flips) {
-  case Board::BadLength: return "location must be 2 characters";
+  case Board::BadSize: return "location must be 2 characters";
   case Board::BadColumn: return "column must be a value from 'a' to 'h'";
   case Board::BadRow: return "row must be a value from '1' to '8'";
   case Board::BadCell: return "cell already occupied";
@@ -51,7 +51,7 @@ Player::Move HumanPlayer::makeMove(Board& board, const Board::Moves&,
     std::cout << "enter " << color << "'s move: ";
     std::string line;
     std::getline(std::cin, line);
-    if (line.length() == 1) {
+    if (line.size() == 1) {
       if (line[0] == 'q') return {};
       if (line[0] == 'v') {
         const auto moves = board.validMoves(color);
@@ -108,7 +108,8 @@ Board::Moves ComputerPlayer::findMoves(const Board& board) const {
   const auto nextLevel = _search - 1;
   // return more than one position if moves have the same score
   Moves bestMoves;
-  for (int i = 0, best = Min; i < moves; ++i)
+  int best = Min;
+  for (size_t i = 0; i < moves; ++i)
     updateMoves(callMinMax(boards[i], nextLevel, opColor, moves, best, Max), i,
                 best, bestMoves);
   // if there are multiple moves with the same score then only return ones with
@@ -140,7 +141,7 @@ int ComputerPlayer::minMax(const Board& board, int depth, Board::Color turn,
   // maximizing player
   if (turn == color) {
     int best = Min;
-    for (auto i = 0; i < moves && best < beta;
+    for (size_t i = 0; i < moves && best < beta;
          ++i, alpha = std::max(alpha, best))
       best = std::max(
         best, callMinMax(boards[i], nextLevel, opColor, moves, alpha, beta));
@@ -148,7 +149,8 @@ int ComputerPlayer::minMax(const Board& board, int depth, Board::Color turn,
   }
   // minimizing player
   int best = Max;
-  for (auto i = 0; i < moves && best > alpha; ++i, beta = std::min(beta, best))
+  for (size_t i = 0; i < moves && best > alpha;
+       ++i, beta = std::min(beta, best))
     best = std::min(
       best, callMinMax(boards[i], nextLevel, color, moves, alpha, beta));
   return best;

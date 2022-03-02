@@ -24,7 +24,7 @@ OthelloClient::OthelloClient(int argc, char** argv) : _socket(_service), _input(
 
 void OthelloClient::begin() {
   send(_printBoard ? "printBoards" : "");
-  auto turn = 0;
+  size_t turn = 0;
   auto endGame = false;
   do {
     // print board position after my last move
@@ -36,8 +36,8 @@ void OthelloClient::begin() {
     }
     if (!moves.empty()) {
       if (!turn) std::swap(_myColor, _serverColor); // server made first move so swap colors
-      turn += moves.length() / 2;
-      out(_serverColor, turn) << (moves.length() > 2 ? "moves were: " : "move was: ") << movesToString(moves) << '\n';
+      turn += moves.size() / 2;
+      out(_serverColor, turn) << (moves.size() > 2 ? "moves were: " : "move was: ") << movesToString(moves) << '\n';
       // print board position after server's last move
       printBoard();
     } else if (!turn) {
@@ -57,12 +57,12 @@ bool OthelloClient::makeMove(int turn) {
     std::string line;
     if (_random) {
       send("v");
-      if (const auto validMoves = get(); validMoves.length() > 2) {
-        std::uniform_int_distribution<> dis(0, validMoves.length() / 2 - 1);
+      if (const auto validMoves = get(); validMoves.size() > 2) {
+        std::uniform_int_distribution<> dis(0, validMoves.size() / 2 - 1);
         line = validMoves.substr(dis(gen) * 2, 2);
       } else
         line = validMoves.substr(0, 2);
-      assert(line.length() == 2);
+      assert(line.size() == 2);
       out(_myColor, turn) << "making random move at: " << line << '\n';
     } else {
       out(_myColor, turn) << "enter move (a1, b2, ... v=show valid moves, q=quit): ";
@@ -95,7 +95,7 @@ std::ostream& OthelloClient::out(const std::string& color, std::optional<int> tu
 void OthelloClient::printBoard() {
   if (_printBoard) {
     const auto board = get();
-    assert(board.length() == 64);
+    assert(board.size() == 64);
     auto black = 0, white = 0;
     std::cout << "\n   a b c d e f g h\n"
               << " +----------------\n";
@@ -115,7 +115,8 @@ void OthelloClient::printBoard() {
 
 std::string OthelloClient::movesToString(const std::string& moves) {
   std::string result;
-  for (size_t i = 0; i < moves.length(); i += 2) result += (i ? ", " : "") + moves.substr(i, 2);
+  for (size_t i = 0; i < moves.size(); i += 2)
+    result += (i ? ", " : "") + moves.substr(i, 2);
   return result;
 }
 

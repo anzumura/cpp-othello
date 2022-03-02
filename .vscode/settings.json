@@ -89,7 +89,13 @@
     "memory_resource": "cpp",
     "stop_token": "cpp",
     "cinttypes": "cpp",
-    "filesystem": "cpp"
+    "filesystem": "cpp",
+    "__bits": "cpp",
+    "csignal": "cpp",
+    "coroutine": "cpp",
+    "future": "cpp",
+    "typeindex": "cpp",
+    "source_location": "cpp"
   },
   "cSpell.words": [
     "asio",

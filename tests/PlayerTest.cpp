@@ -16,7 +16,7 @@ public:
   MOCK_METHOD(std::string, toString, (), (const, override));
   MOCK_METHOD(int, scoreBoard, (const Board&, Set, Set, bool),
               (const, override));
-  MOCK_METHOD(int, scoreCell, (int, int, int, Set, Set, Set),
+  MOCK_METHOD(int, scoreCell, (size_t, size_t, size_t, Set, Set, Set),
               (const, override));
 };
 
@@ -27,7 +27,7 @@ protected:
     const auto moves = b.validMoves(c, boards);
     // use WillRepeatedly instead of WillOnce because some child nodes may not
     // be scored due to alpha-beta pruning
-    for (auto i = 0, j = scoreStart; i < moves; ++i, j += jump)
+    for (size_t i = 0, j = scoreStart; i < moves; ++i, j += jump)
       EXPECT_CALL(*score, scoreBoard(boards[i], _, _, _))
         .WillRepeatedly(Return(j));
   }

@@ -72,7 +72,7 @@ char Game::getChar(Board::Color c, const std::string& msg,
               << def << "': ";
     std::getline(std::cin, line);
     if (line.empty()) return def;
-  } while (line.length() != 1 || !pred(line[0]));
+  } while (line.size() != 1 || !pred(line[0]));
   return line[0];
 }
 

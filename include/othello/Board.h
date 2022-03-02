@@ -1,9 +1,8 @@
 #pragma once
 
-#include <cassert>
-
 #include <array>
 #include <bitset>
+#include <cassert>
 #include <iostream>
 #include <vector>
 
@@ -17,7 +16,7 @@ public:
     return c == Color::Black ? Color::White : Color::Black;
   }
   enum Values {
-    BadLength = -4,
+    BadSize = -4,
     BadColumn,
     BadRow,
     BadCell, // see 'set' function for details on error conditions
@@ -32,7 +31,7 @@ public:
   };
   using Moves = std::vector<std::string>;
   using Boards = std::array<Board, MaxValidMoves>;
-  using Positions = std::array<int, MaxValidMoves>;
+  using Positions = std::array<size_t, MaxValidMoves>;
   using Set = std::bitset<Size>;
   static constexpr char BlackCell = '*';
   static constexpr char WhiteCell = 'o';
@@ -43,7 +42,7 @@ public:
       : _black((1LL << PosE4) | (1LL << PosD5)),
         _white((1LL << PosD4) | (1LL << PosE5)) {}
 
-  // construct a Board from a 64 length char representation where:
+  // construct a Board from a char representation where:
   //   . = empty cell
   //   * = black cell
   //   o = white cell
@@ -53,8 +52,8 @@ public:
   // partial boards are also fine: any cells beyond the end of the string are
   // assumed to be empty, i.e.:
   //   Board(".xo....o") creates board with some values in the first row
-  explicit Board(const std::string&, int initialEmpty = 0);
-  Board(int emptyRows, const std::string& stringLayout)
+  explicit Board(const std::string&, size_t initialEmpty = 0);
+  Board(size_t emptyRows, const std::string& stringLayout)
       : Board(stringLayout, emptyRows * Rows) {}
 
   // operator== is needed for gMock tests
@@ -62,7 +61,7 @@ public:
     return _black == rhs._black && _white == rhs._white;
   }
 
-  // simple toString function to help with testing (returns a 64 length string)
+  // simple toString function to help with testing (returns a 64 size string)
   std::string toString() const;
 
   // methods used by Score function
@@ -77,14 +76,14 @@ public:
   // fill 'positions' with positions of valid moves and 'boards' with the
   // corresponding new board for each move and return the total number of valid
   // moves (method used by ComputerPlayer)
-  int validMoves(Color, Boards& boards, Positions& positions) const;
+  size_t validMoves(Color, Boards& boards, Positions& positions) const;
 
   // search algorithms only need to fill 'positions' for first level so provide
   // an simpler overload
   auto validMoves(Color c, Boards& boards) const {
-    auto count = 0;
+    size_t count = 0;
     Board board(*this);
-    for (auto i = 0; i < Size; ++i)
+    for (size_t i = 0; i < Size; ++i)
       if (!occupied(i) && board.set(i, c)) {
         assert(count < MaxValidMoves);
         boards[count++] = board;
@@ -99,8 +98,8 @@ public:
   }
   enum class GameResults { White, Black, Draw };
   GameResults printGameResult(bool tournament = false) const;
-  auto black(int i) const { return _black[i]; }
-  auto white(int i) const { return _white[i]; }
+  auto black(size_t i) const { return _black[i]; }
+  auto white(size_t i) const { return _white[i]; }
 
   // Set updates Board to reflect the new position (including performing flips)
   // and returns the number of disks that were flipped. If no disks would be
@@ -108,26 +107,26 @@ public:
   // illegal). pos should be a value like 'a1' or 'h8' (column letter followed
   // by row number)
   // Negative numbers are returned for error conditions:
-  //   BadLength: pos string was not length 2
+  //   BadSize: pos string was not size 2
   //   BadColumn: pos string first character was not a value from 'a' to 'f'
   //   BadRow: pos string second character was not a value from '1' to '8'
   //   BadCell: the cell represented by pos is already occupied
   int set(const std::string& pos, Color);
 
-  static auto posToString(int pos) {
+  static auto posToString(size_t pos) {
     std::string result(1, 'a' + pos % Rows);
-    result.push_back('1' + pos / Rows);
+    result.push_back('1' + static_cast<char>(pos) / static_cast<char>(Rows));
     return result;
   }
 private:
   enum PrivateValues { PosD4 = 27, PosE4, PosD5 = 35, PosE5 };
-  bool validMove(int pos, const Set& myVals, const Set& opVals) const;
-  bool occupied(int pos) const { return _black[pos] || _white[pos]; }
-  int set(int pos, Color c) {
+  bool validMove(size_t pos, const Set& myVals, const Set& opVals) const;
+  bool occupied(size_t pos) const { return _black[pos] || _white[pos]; }
+  int set(size_t pos, Color c) {
     if (c == Color::Black) return set(pos, _black, _white);
     return set(pos, _white, _black);
   }
-  int set(int pos, Set& myVals, Set& opVals);
+  int set(size_t pos, Set& myVals, Set& opVals);
 
   Set _black;
   Set _white;

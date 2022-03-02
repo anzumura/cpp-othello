@@ -16,7 +16,7 @@ protected:
   }
   void check(const std::string& expected) const {
     EXPECT_EQ(board.toString(),
-              expected + std::string(Board::Size - expected.length(), '.'));
+              expected + std::string(Board::Size - expected.size(), '.'));
   }
   Board board;
 };
@@ -350,9 +350,9 @@ TEST_F(BoardTest, FlipHittingTopEdge) {
 TEST_F(BoardTest, SetFailsForBadRowOrColumn) {
   for (auto v : Board::Colors) {
     // bad lengths
-    EXPECT_EQ(board.set("", v), Board::BadLength);
-    EXPECT_EQ(board.set("f", v), Board::BadLength);
-    EXPECT_EQ(board.set("f44", v), Board::BadLength);
+    EXPECT_EQ(board.set("", v), Board::BadSize);
+    EXPECT_EQ(board.set("f", v), Board::BadSize);
+    EXPECT_EQ(board.set("f44", v), Board::BadSize);
     // bad rows
     EXPECT_EQ(board.set("f0", v), Board::BadRow);
     EXPECT_EQ(board.set("f9", v), Board::BadRow);

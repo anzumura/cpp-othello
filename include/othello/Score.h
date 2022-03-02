@@ -44,8 +44,8 @@ private:
   int scoreCells(const Board::Set& myVals, const Board::Set& opVals,
                  const Board::Set& empty) const {
     auto result = 0;
-    for (auto row = 0, pos = 0; row < Board::Rows; ++row)
-      for (auto col = 0; col < Board::Rows; ++col, ++pos)
+    for (size_t row = 0, pos = 0; row < Board::Rows; ++row)
+      for (size_t col = 0; col < Board::Rows; ++col, ++pos)
         if (myVals[pos])
           result += scoreCell(row, col, pos, myVals, opVals, empty);
         else if (opVals[pos])
@@ -69,8 +69,8 @@ private:
   //   the cell being scored)
   // - opVals: bitset<64> with values set to true for opposite color positions
   // - empty: bitset<64> with values set to true for empty positions
-  virtual int scoreCell(int row, int col, int pos, const Board::Set& myVals,
-                        const Board::Set& opVals,
+  virtual int scoreCell(size_t row, size_t col, size_t pos,
+                        const Board::Set& myVals, const Board::Set& opVals,
                         const Board::Set& empty) const = 0;
 };
 
@@ -91,18 +91,18 @@ public:
   // - CenterEdge: adjacent-to-edge location that isn't one of the locations
   //   already mentioned Center: location not in the outer two rows or columns
   enum Values {
-    BadEdge = -4,
+    BadEdge = -7,
     BadCenter = -5,
     Bad = -1,
     CenterEdge = 0,
     Center = 1,
-    Edge = 2,
-    SafeEdge = 6,
-    Corner = 15
+    Edge = 3,
+    SafeEdge = 7,
+    Corner = 17
   };
   std::string toString() const override { return "FullScore"; }
 private:
-  int scoreCell(int, int, int, const Board::Set&, const Board::Set&,
+  int scoreCell(size_t, size_t, size_t, const Board::Set&, const Board::Set&,
                 const Board::Set&) const override;
 };
 
@@ -122,7 +122,7 @@ public:
     Corner = 4
   };
 private:
-  int scoreCell(int, int, int, const Board::Set&, const Board::Set&,
+  int scoreCell(size_t, size_t, size_t, const Board::Set&, const Board::Set&,
                 const Board::Set&) const override;
 };
 

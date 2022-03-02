@@ -9,8 +9,8 @@ using Set = const B::Set&;
 
 int Score::printScoreCells(Set myVals, Set opVals, Set empty) const {
   auto myScore = 0, opScore = 0;
-  for (auto row = 0, pos = 0; row < B::Rows; ++row) {
-    for (auto col = 0; col < B::Rows; ++col, ++pos)
+  for (size_t row = 0, pos = 0; row < B::Rows; ++row) {
+    for (size_t col = 0; col < B::Rows; ++col, ++pos)
       if (myVals[pos]) {
         const auto s = scoreCell(row, col, pos, myVals, opVals, empty);
         myScore += s;
@@ -36,8 +36,8 @@ namespace {
 
 // see comments in Score.h for definition of a 'SafeEdge' position
 template<int INC>
-inline bool safeEdge(int pos, int low, int high, Set myVals, Set opVals,
-                     Set empty) {
+inline bool safeEdge(int pos, int low, int high, Set myVals,
+                     Set opVals, Set empty) {
   auto allMine = true;
   auto i = pos + INC;
   // check to the right (or down) and break if we hit a space
@@ -92,8 +92,8 @@ inline auto emptyDown(Set empty, int pos) {
 
 // return true if corner and edges beside the corner are my color as well as at
 // least on of the other diagonal edges
-inline auto mine(Set myVals, int corner, int cornerEdge1, int cornerEdge2,
-                 int otherEdge1, int otherEdge2) {
+inline auto mine(Set myVals, size_t corner, size_t cornerEdge1,
+                 size_t cornerEdge2, size_t otherEdge1, size_t otherEdge2) {
   return myVals[corner] && myVals[cornerEdge1] && myVals[cornerEdge2] &&
          (myVals[otherEdge1] || myVals[otherEdge2]);
 }
@@ -101,16 +101,16 @@ template<int INC, int EDGE_INC, int HIGH, int LOW>
 inline bool mineCenter(Set myVals, int pos) {
   auto i = pos + INC;
   for (; i < HIGH; i += INC)
-    if (!myVals[i]) break;
+    if (!myVals[static_cast<size_t>(i)]) break;
   if (i >= HIGH) {
     for (i = pos + EDGE_INC - INC; i < HIGH + EDGE_INC; i += INC)
-      if (!myVals[i]) break;
+      if (!myVals[static_cast<size_t>(i)]) break;
     if (i >= HIGH + EDGE_INC) return true;
   }
   for (i = pos - INC; i >= LOW; i -= INC)
-    if (!myVals[i]) return false;
+    if (!myVals[static_cast<size_t>(i)]) return false;
   for (i = pos + EDGE_INC + INC; i >= LOW + EDGE_INC; i -= INC)
-    if (!myVals[i]) return false;
+    if (!myVals[static_cast<size_t>(i)]) return false;
   return true;
 }
 
@@ -132,8 +132,8 @@ constexpr std::array WeightedScoreValues = {Score1, Score2, Score3, Score4,
 
 } // namespace
 
-int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals,
-                         Set empty) const {
+int FullScore::scoreCell(size_t row, size_t col, size_t pos, Set myVals,
+                         Set opVals, Set empty) const {
   // process edges
   if (const auto sideEdge = col == 0 || col == B::RowSub1;
       row == 0 || row == B::RowSub1) {
@@ -177,7 +177,8 @@ int FullScore::scoreCell(int row, int col, int pos, Set myVals, Set opVals,
            : Center;
 }
 
-int WeightedScore::scoreCell(int row, int col, int, Set, Set, Set) const {
+int WeightedScore::scoreCell(size_t row, size_t col, size_t, Set, Set,
+                             Set) const {
   return WeightedScoreValues[row][col];
 }
 

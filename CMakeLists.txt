@@ -13,7 +13,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_EXTENSIONS OFF)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # enable some warnings (skip -Wdeprecated because of boost)
+    # enable some warnings (skip -Wdeprecated and -Wconversion because of boost)
     set(WARN_FLAGS "-Werror -W -Wall -Wunused -Wunreachable-code-aggressive")
     # disable a warning
     set(WARN_FLAGS "${WARN_FLAGS} -Wno-logical-op-parentheses")

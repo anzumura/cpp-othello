@@ -85,7 +85,7 @@ private:
 
   // 'updateMoves' is used by 'findMoves' to work with sets of moves with the
   // same score value
-  static void updateMoves(int score, int move, int& best, Moves& moves) {
+  static void updateMoves(int score, size_t move, int& best, Moves& moves) {
     if (score > best) {
       best = score;
       moves.clear();

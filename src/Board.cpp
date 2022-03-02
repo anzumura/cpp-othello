@@ -59,9 +59,9 @@ constexpr auto Border = "\
 
 } // namespace
 
-Board::Board(const std::string& str, int initialEmpty) {
+Board::Board(const std::string& str, size_t initialEmpty) {
   assert(initialEmpty >= 0 && initialEmpty <= Size);
-  assert(initialEmpty + str.length() <= Size);
+  assert(initialEmpty + str.size() <= Size);
   for (auto i = initialEmpty; auto c : str) {
     if (c == BlackCell)
       _black.set(i);
@@ -73,7 +73,7 @@ Board::Board(const std::string& str, int initialEmpty) {
 
 std::string Board::toString() const {
   std::string result(Size, EmptyCell);
-  for (auto i = 0; i < Size; ++i)
+  for (size_t i = 0; i < Size; ++i)
     if (_black[i]) {
       assert(!_white[i]);
       result[i] = BlackCell;
@@ -86,16 +86,16 @@ Board::Moves Board::validMoves(Color c) const {
   Moves result;
   auto& myVals = c == Color::Black ? _black : _white;
   auto& opVals = c == Color::Black ? _white : _black;
-  for (auto i = 0; i < Size; ++i)
+  for (size_t i = 0; i < Size; ++i)
     if (!occupied(i) && validMove(i, myVals, opVals))
       result.emplace_back(posToString(i));
   return result;
 }
 
-int Board::validMoves(Color c, Boards& boards, Positions& positions) const {
-  auto count = 0;
+size_t Board::validMoves(Color c, Boards& boards, Positions& positions) const {
+  size_t count = 0;
   Board board(*this);
-  for (auto i = 0; i < Size; ++i)
+  for (size_t i = 0; i < Size; ++i)
     if (!occupied(i) && board.set(i, c)) {
       assert(count < MaxValidMoves);
       boards[count] = board;
@@ -108,14 +108,14 @@ int Board::validMoves(Color c, Boards& boards, Positions& positions) const {
 bool Board::hasValidMoves(Color c) const {
   auto& myVals = c == Color::Black ? _black : _white;
   auto& opVals = c == Color::Black ? _white : _black;
-  for (auto i = 0; i < Size; ++i)
+  for (size_t i = 0; i < Size; ++i)
     if (!occupied(i) && validMove(i, myVals, opVals)) return true;
   return false;
 }
 
-bool Board::validMove(int pos, const Set& myVals, const Set& opVals) const {
+bool Board::validMove(size_t pos, const Set& myVals, const Set& opVals) const {
   const auto valid = [&](const auto& c) {
-    if (auto x = pos + c.first; opVals.test(x)) {
+    if (int x = static_cast<int>(pos) + c.first; opVals.test(x)) {
       x += c.first;
       do {
         if (myVals[x]) return true;
@@ -138,17 +138,17 @@ bool Board::validMove(int pos, const Set& myVals, const Set& opVals) const {
 }
 
 int Board::set(const std::string& pos, Color c) {
-  if (pos.length() != 2) return BadLength;
-  const auto col = pos[0] - 'a';
+  if (pos.size() != 2) return BadSize;
+  const auto col = static_cast<size_t>(pos[0] - 'a');
   if (!rowSizeCheck(col)) return BadColumn;
-  const auto row = pos[1] - '1';
+  const auto row = static_cast<size_t>(pos[1] - '1');
   if (!rowSizeCheck(row)) return BadRow;
-  const auto x = row * Rows + col;
+  const auto x = static_cast<size_t>(row * Rows + col);
   if (occupied(x)) return BadCell;
   return set(x, c);
 }
 
-int Board::set(int pos, Set& myVals, Set& opVals) {
+int Board::set(size_t pos, Set& myVals, Set& opVals) {
   auto totalFlipped = 0;
   // bounds are already checked before calling 'flip' so can use do-while
   const auto flip = [&](const auto& c) {
@@ -226,7 +226,7 @@ std::ostream& operator<<(std::ostream& os, const Board& b) {
                                  toString(Board::Color::White) + '(' +
                                  Board::WhiteCell + "): ";
   os << Border;
-  for (auto i = 0; i < Board::Size; ++i) {
+  for (size_t i = 0; i < Board::Size; ++i) {
     if (i % Board::Rows == 0) os << "\n" << i / Board::Rows + 1 << '|';
     if (b.black(i)) {
       assert(!b.white(i));

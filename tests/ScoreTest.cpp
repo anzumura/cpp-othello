@@ -92,12 +92,12 @@ TEST_F(ScoreTest, SafeHorizontalEdge) {
 **......\
 ........\
 ..*o");
-  //check(S::Corner + S::SafeEdge);
+  check(S::Corner + S::SafeEdge);
   set("\
 **....**\
 ........\
 ..*o");
-  //check(2 * (S::Corner + S::SafeEdge));
+  check(2 * (S::Corner + S::SafeEdge));
   set("\
 oooo****\
 ........\
@@ -107,7 +107,7 @@ oooo****\
 ....o*..\
 ........\
 *o*o*o*o");
-  //check(0);
+  check(0);
   set(5, "\
 ....o*..\
 ........\

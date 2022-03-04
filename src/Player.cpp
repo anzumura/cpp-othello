@@ -115,7 +115,7 @@ Board::Moves ComputerPlayer::findMoves(const Board& board) const {
   // if there are multiple moves with the same score then only return ones with
   // the best 'first move' score
   if (bestMoves.size() > 1) {
-    int best = Min;
+    best = Min;
     std::vector<int> newBestMoves;
     for (auto i : bestMoves)
       updateMoves(callScore(boards[i]), i, best, newBestMoves);

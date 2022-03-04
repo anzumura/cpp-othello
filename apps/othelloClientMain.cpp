@@ -14,10 +14,11 @@ void testAfterStack() {
 
 int main(int argc, char** argv) {
   // Uncomment these functions to test Address Sanitizer:
-  // - testAfterStack: gets caught before address sanitizer with 'Trace/BPT trap: 5'
-  // - testAfterFree: seems to work properly, i.e., no errors unless compiled with sanitizer flags
-  // testAfterStack(); *testAfterStackChar = 'b';
-  // return testAfterFree();
+  // - testAfterStack: gets caught before address sanitizer with 'Trace/BPT
+  // trap: 5'
+  // - testAfterFree: seems to work properly, i.e., no errors unless compiled
+  // with sanitizer flags testAfterStack(); *testAfterStackChar = 'b'; return
+  // testAfterFree();
   othello::OthelloClient(argc, argv).begin();
   return 0;
 }

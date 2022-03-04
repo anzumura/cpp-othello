@@ -7,7 +7,8 @@ namespace othello {
 using namespace boost::asio;
 using ip::tcp;
 
-OthelloClient::OthelloClient(int argc, char** argv) : _socket(_service), _input(&_inputBuffer) {
+OthelloClient::OthelloClient(int argc, char** argv)
+    : _socket(_service), _input(&_inputBuffer) {
   for (auto i = 1; i < argc; ++i) {
     std::string arg = argv[i];
     if (arg == "-d")
@@ -35,9 +36,13 @@ void OthelloClient::begin() {
       moves = get();
     }
     if (!moves.empty()) {
-      if (!turn) std::swap(_myColor, _serverColor); // server made first move so swap colors
+      if (!turn)
+        std::swap(_myColor,
+                  _serverColor); // server made first move so swap colors
       turn += moves.size() / 2;
-      out(_serverColor, turn) << (moves.size() > 2 ? "moves were: " : "move was: ") << movesToString(moves) << '\n';
+      out(_serverColor, turn)
+        << (moves.size() > 2 ? "moves were: " : "move was: ")
+        << movesToString(moves) << '\n';
       // print board position after server's last move
       printBoard();
     } else if (!turn) {
@@ -65,7 +70,8 @@ bool OthelloClient::makeMove(int turn) {
       assert(line.size() == 2);
       out(_myColor, turn) << "making random move at: " << line << '\n';
     } else {
-      out(_myColor, turn) << "enter move (a1, b2, ... v=show valid moves, q=quit): ";
+      out(_myColor, turn)
+        << "enter move (a1, b2, ... v=show valid moves, q=quit): ";
       std::cout.flush();
       std::getline(std::cin, line);
     }
@@ -77,7 +83,8 @@ bool OthelloClient::makeMove(int turn) {
       else {
         const auto r = get();
         if (std::all_of(r.begin(), r.end(), ::isdigit)) {
-          std::cout << "  ok - flipped " << r << " piece" << (r == "1" ? "" : "s") << '\n';
+          std::cout << "  ok - flipped " << r << " piece"
+                    << (r == "1" ? "" : "s") << '\n';
           return true;
         }
         std::cout << "  error - server returned: " << r << '\n';
@@ -86,7 +93,8 @@ bool OthelloClient::makeMove(int turn) {
   } while (true);
 }
 
-std::ostream& OthelloClient::out(const std::string& color, std::optional<int> turn) {
+std::ostream& OthelloClient::out(const std::string& color,
+                                 std::optional<int> turn) {
   std::cout << ">>> " << color << " ";
   if (turn) return std::cout << "(turn " << *turn << ") - ";
   return std::cout;
@@ -122,7 +130,8 @@ std::string OthelloClient::movesToString(const std::string& moves) {
 
 void OthelloClient::usage(const char* program, const std::string& arg) {
   const auto file = std::filesystem::path(program).stem().string();
-  std::cerr << file << ": unrecognized option " << arg << "\nusage: " << file << " [-d] [-p] [-r]\n"
+  std::cerr << file << ": unrecognized option " << arg << "\nusage: " << file
+            << " [-d] [-p] [-r]\n"
             << "  -d: show all messages sent and received from server\n"
             << "  -p: print board before and after each move\n"
             << "  -r: make a random move instead of waiting for user input\n";
@@ -133,7 +142,9 @@ std::string OthelloClient::get() {
   if (!_inputBuffer.size()) {
     const auto bytes = read_until(_socket, _inputBuffer, "\n", _error);
     if (_error && _error != error::eof) opFailed("read");
-    if (_debug) std::cout << "### get - read bytes: " << bytes << ", buf: " << _inputBuffer.size() << '\n';
+    if (_debug)
+      std::cout << "### get - read bytes: " << bytes
+                << ", buf: " << _inputBuffer.size() << '\n';
   }
   std::string line;
   std::getline(_input, line); // strips final '\n'

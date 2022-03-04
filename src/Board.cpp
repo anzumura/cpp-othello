@@ -60,7 +60,7 @@ constexpr auto Border = "\
 } // namespace
 
 Board::Board(const std::string& str, size_t initialEmpty) {
-  assert(initialEmpty >= 0 && initialEmpty <= Size);
+  assert(initialEmpty <= Size);
   assert(initialEmpty + str.size() <= Size);
   for (auto i = initialEmpty; auto c : str) {
     if (c == BlackCell)

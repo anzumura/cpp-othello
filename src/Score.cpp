@@ -36,8 +36,8 @@ namespace {
 
 // see comments in Score.h for definition of a 'SafeEdge' position
 template<int INC>
-inline bool safeEdge(int pos, int low, int high, Set myVals,
-                     Set opVals, Set empty) {
+inline bool safeEdge(int pos, int low, int high, Set myVals, Set opVals,
+                     Set empty) {
   auto allMine = true;
   auto i = pos + INC;
   // check to the right (or down) and break if we hit a space

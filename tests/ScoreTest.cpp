@@ -9,7 +9,7 @@ using W = WeightedScore;
 
 class ScoreTest : public ::testing::Test {
 protected:
-  void set(int emptyRows, const std::string& initialLayout) {
+  void set(size_t emptyRows, const std::string& initialLayout) {
     board = Board(initialLayout, emptyRows * Board::Rows);
   }
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
@@ -64,19 +64,19 @@ TEST_F(ScoreTest, AfterOneFlip) {
 
 TEST_F(ScoreTest, Corners) {
   // use boards with at least one valid move in order to avoid 'Win' scores
-  std::array corners{std::make_pair(0, "\
+  std::array corners{std::make_pair(0UL, "\
 *.......\
 ........\
 ...*o"),
-                     std::make_pair(0, "\
+                     std::make_pair(0UL, "\
 .......*\
 ........\
 ...*o"),
-                     std::make_pair(5, "\
+                     std::make_pair(5UL, "\
 ...*o...\
 ........\
 *"),
-                     std::make_pair(5, "\
+                     std::make_pair(5UL, "\
 ...*o...\
 ........\
 .......*")};
@@ -312,19 +312,19 @@ TEST_F(ScoreTest, NextToEmptyTopEdges) {
 ***.....\
 *.......\
 *...*o");
-  const auto score = S::Corner + 4 * S::SafeEdge;
-  check(score);
+  const auto expectedScore = S::Corner + 4 * S::SafeEdge;
+  check(expectedScore);
   set("\
 ***.....\
 **......\
 *...*o");
-  check(score + S::SafeEdge);
+  check(expectedScore + S::SafeEdge);
   // next to empty
   set("\
 ****....\
 **......\
 ....*o");
-  check(score + S::SafeEdge);
+  check(expectedScore + S::SafeEdge);
   set("\
 ***.....\
 .*......\

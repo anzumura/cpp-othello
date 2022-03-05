@@ -115,8 +115,13 @@ public:
 
   static auto posToString(size_t pos) {
     std::string result(1, 'a' + pos % Rows);
-    result.push_back('1' + static_cast<char>(pos) / static_cast<char>(Rows));
+    result.push_back('1' + static_cast<char>(pos / Rows));
     return result;
+  }
+
+  static bool test(const Set& s, int i) { return s[static_cast<size_t>(i)]; }
+  template<typename... Ts> static bool test(const Set& s, int i, Ts... args) {
+    return test(s, i) || test(s, args...);
   }
 private:
   enum PrivateValues { PosD4 = 27, PosE4, PosD5 = 35, PosE5 };

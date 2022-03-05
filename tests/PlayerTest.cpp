@@ -27,9 +27,9 @@ protected:
     const auto moves = b.validMoves(c, boards);
     // use WillRepeatedly instead of WillOnce because some child nodes may not
     // be scored due to alpha-beta pruning
-    for (size_t i = 0, j = scoreStart; i < moves; ++i, j += jump)
+    for (size_t i = 0; i < moves; ++i, scoreStart += jump)
       EXPECT_CALL(*score, scoreBoard(boards[i], _, _, _))
-        .WillRepeatedly(Return(j));
+        .WillRepeatedly(Return(scoreStart));
   }
 
   // 4 initial valid moves for Black

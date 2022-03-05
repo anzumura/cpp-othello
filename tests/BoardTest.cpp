@@ -6,11 +6,11 @@ namespace othello {
 
 class BoardTest : public ::testing::Test {
 protected:
-  void set(int emptyRows, const std::string& initialLayout) {
+  void set(size_t emptyRows, const std::string& initialLayout) {
     board = Board(initialLayout, emptyRows * Board::Rows);
   }
   void set(const std::string& initialLayout) { board = Board(initialLayout); }
-  void check(int emptyRows, const std::string& expectedLayout) const {
+  void check(size_t emptyRows, const std::string& expectedLayout) const {
     std::string expected(emptyRows * Board::Rows, '.');
     check(expected + expectedLayout);
   }
@@ -202,7 +202,7 @@ TEST_F(BoardTest, FlipDownRight) {
 }
 
 TEST_F(BoardTest, MultipleFlipsDown) {
-  for (auto i = 0; i < Board::RowSub2; ++i) {
+  for (size_t i = 0; i < Board::RowSub2; ++i) {
     set(i + 1, "\
 ...***..\
 ..ooooo");
@@ -218,7 +218,7 @@ TEST_F(BoardTest, MultipleFlipsDown) {
 }
 
 TEST_F(BoardTest, MultipleFlipsUp) {
-  for (auto i = 0; i < Board::RowSub2; ++i) {
+  for (size_t i = 0; i < Board::RowSub2; ++i) {
     set(i, "\
 ..*****.\
 ...ooo");
@@ -234,7 +234,7 @@ TEST_F(BoardTest, MultipleFlipsUp) {
 }
 
 TEST_F(BoardTest, MultipleFlipsLeft) {
-  for (auto i = 0; i < Board::RowSub2; ++i) {
+  for (size_t i = 0; i < Board::RowSub2; ++i) {
     const auto f = [i](const char* s) {
       std::string result(i, '.');
       result.append(s);
@@ -242,8 +242,9 @@ TEST_F(BoardTest, MultipleFlipsLeft) {
     };
     set(f("o..") + f("o*.") + f("o*.") + f("o*.") + f("o"));
     std::vector<std::string> moves;
-    for (auto j = 1; j < Board::RowSub2; ++j)
-      moves.emplace_back(std::string(1, 'c' + i) + std::to_string(j));
+    for (size_t j = 1; j < Board::RowSub2; ++j)
+      moves.emplace_back(std::string(1, 'c' + static_cast<char>(i)) +
+                         std::to_string(j));
     ASSERT_EQ(board.validMoves(Board::Color::White), moves);
     ASSERT_EQ(board.set(moves[2], Board::Color::White), 3);
     check(f("o..") + f("oo.") + f("ooo") + f("oo.") + f("o"));
@@ -251,7 +252,7 @@ TEST_F(BoardTest, MultipleFlipsLeft) {
 }
 
 TEST_F(BoardTest, MultipleFlipsRight) {
-  for (auto i = 0; i < Board::RowSub2; ++i) {
+  for (size_t i = 0; i < Board::RowSub2; ++i) {
     const auto f = [i](const char* s) {
       std::string result(i, '.');
       result.append(s);
@@ -260,7 +261,8 @@ TEST_F(BoardTest, MultipleFlipsRight) {
     set(f("..*") + f(".o*") + f(".o*") + f(".o*") + f("..*"));
     std::vector<std::string> moves;
     for (auto j = 1; j < Board::RowSub2; ++j)
-      moves.emplace_back(std::string(1, 'a' + i) + std::to_string(j));
+      moves.emplace_back(std::string(1, 'a' + static_cast<char>(i)) +
+                         std::to_string(j));
     ASSERT_EQ(board.validMoves(Board::Color::Black), moves);
     ASSERT_EQ(board.set(moves[2], Board::Color::Black), 3);
     check(f("..*") + f(".**") + f("***") + f(".**") + f("..*"));

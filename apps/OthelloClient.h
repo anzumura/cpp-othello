@@ -13,9 +13,9 @@ public:
   OthelloClient(int argc, char** argv);
   void begin();
 private:
-  bool makeMove(int turn);
+  bool makeMove(size_t turn);
 
-  std::ostream& out(const std::string& color, std::optional<int> turn = {});
+  std::ostream& out(const std::string& color, std::optional<size_t> turn = {});
   void printBoard();
   std::string movesToString(const std::string&);
   void usage(const char* program, const std::string& arg);

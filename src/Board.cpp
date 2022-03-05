@@ -13,19 +13,19 @@ enum BoardValues {
   SeventhRowStart = 48
 };
 
-inline auto rowSizeCheck(int x) { return x >= FirstPos && x < Board::Rows; };
+inline auto rowSizeCheck(size_t x) { return x < Board::Rows; };
 
 // must be > 2rd row to flip up
-inline auto canFlipUp(int x) { return x > SecondRowEnd; };
+inline auto canFlipUp(size_t x) { return x > SecondRowEnd; };
 
 // must be < 7th row flip down
-inline auto canFlipDown(int x) { return x < SeventhRowStart; };
+inline auto canFlipDown(size_t x) { return x < SeventhRowStart; };
 
 // must be > 2rd column to flip left
-inline auto canFlipLeft(int x) { return x % Board::Rows > OneColumn; };
+inline auto canFlipLeft(size_t x) { return x % Board::Rows > OneColumn; };
 
 // must be < 7th column to flip right
-inline auto canFlipRight(int x) { return x % Board::Rows < Board::RowSub2; };
+inline auto canFlipRight(size_t x) { return x % Board::Rows < Board::RowSub2; };
 
 constexpr auto TopEdge = [](int x) { return x >= FirstPos; };
 constexpr auto BottomEdge = [](int x) { return x < Board::Size; };
@@ -115,11 +115,11 @@ bool Board::hasValidMoves(Color c) const {
 
 bool Board::validMove(size_t pos, const Set& myVals, const Set& opVals) const {
   const auto valid = [&](const auto& c) {
-    if (int x = static_cast<int>(pos) + c.first; opVals.test(x)) {
+    if (int x = static_cast<int>(pos) + c.first; test(opVals, x)) {
       x += c.first;
       do {
-        if (myVals[x]) return true;
-        if (!opVals[x]) break;
+        if (test(myVals, x)) return true;
+        if (!test(opVals, x)) break;
         x += c.first;
       } while (c.second(x));
     }
@@ -148,45 +148,47 @@ int Board::set(const std::string& pos, Color c) {
   return set(x, c);
 }
 
-int Board::set(size_t pos, Set& myVals, Set& opVals) {
+int Board::set(size_t posIn, Set& myVals, Set& opVals) {
   auto totalFlipped = 0;
+  const auto pos = static_cast<int>(posIn);
   // bounds are already checked before calling 'flip' so can use do-while
   const auto flip = [&](const auto& c) {
-    if (auto x = pos + c.first; opVals.test(x)) {
+    if (auto x = pos + c.first; test(opVals, x)) {
       x += c.first;
       do {
-        if (myVals[x]) { // found 'op-vals' + 'my-val' so flip backwards
+        if (test(myVals, x)) { // found 'op-vals' + 'my-val' so flip backwards
           for (x -= c.first; x != pos; x -= c.first) {
-            assert(!myVals[x]);
-            assert(opVals[x]);
+            const auto v = static_cast<size_t>(x);
+            assert(!myVals[v]);
+            assert(opVals[v]);
             ++totalFlipped;
-            myVals.set(x);
-            opVals.reset(x);
+            myVals.set(v);
+            opVals.reset(v);
           }
           break;
-        } else if (!opVals[x])
+        } else if (!test(opVals, x))
           break; // found a space in the chain so nothing to flip
         x += c.first;
       } while (c.second(x));
     }
   };
   // check 8 directions for flips
-  const auto flipUp = canFlipUp(pos);
+  const auto flipUp = canFlipUp(posIn);
   if (flipUp) flip(UpCheck);
-  const auto flipDown = canFlipDown(pos);
+  const auto flipDown = canFlipDown(posIn);
   if (flipDown) flip(DownCheck);
-  if (canFlipLeft(pos)) {
+  if (canFlipLeft(posIn)) {
     flip(LeftCheck);
     if (flipUp) flip(UpLeftCheck);
     if (flipDown) flip(DownLeftCheck);
   }
-  if (canFlipRight(pos)) {
+  if (canFlipRight(posIn)) {
     flip(RightCheck);
     if (flipUp) flip(UpRightCheck);
     if (flipDown) flip(DownRightCheck);
   }
-  // set 'pos' cell (passed into this function) if it resulted in flips
-  if (totalFlipped > 0) myVals.set(pos);
+  // set 'posIn' cell (passed into this function) if it resulted in flips
+  if (totalFlipped > 0) myVals.set(posIn);
   return totalFlipped;
 }
 

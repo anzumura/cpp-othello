@@ -42,44 +42,45 @@ inline bool safeEdge(int pos, int low, int high, Set myVals, Set opVals,
   auto i = pos + INC;
   // check to the right (or down) and break if we hit a space
   for (; i < high; i += INC)
-    if (opVals[i])
+    if (B::test(opVals, i))
       allMine = false;
-    else if (!myVals[i])
+    else if (!B::test(myVals, i))
       break;
   // didn't hit a space to the right
   if (i >= high) {
     if (allMine) return true; // all my color to the right
     // there were opposite colors to the right so check left
     for (i = pos - INC; i >= low; i -= INC)
-      if (empty[i]) return false; // hit a space so not safe
-    return true;                  // return safe since entire row is occupied
+      if (B::test(empty, i)) return false; // hit a space so not safe
+    return true; // return safe since entire row is occupied
   }
   // hit a space to the right so check left
   for (i = pos - INC; i >= low; i -= INC)
-    if (opVals[i] || !myVals[i])
+    if (B::test(opVals, i) || !B::test(myVals, i))
       return false; // hit an opposite value or a space so return false
   return true;      // all my color to the left
 }
 
 template<int DEC, int INC> inline bool emptyCorner(Set empty, int x, int pos) {
-  return (x == 1 && empty[pos - DEC]) || (x == B::RowSub2 && empty[pos + INC]);
+  return x == 1 && B::test(empty, pos - DEC) ||
+         x == B::RowSub2 && B::test(empty, pos + INC);
 }
 
 // Return true if any of the edge positions are empty (based on T1, T2 and T3
 // offsets from pos). So if pos is in the second row then check 'up and left',
 // 'up' and 'up and right'.
 template<int T1, int T2, int T3> inline bool emptySide(Set empty, int pos) {
-  return empty[pos + T1] || empty[pos + T2] || empty[pos + T3];
+  return B::test(empty, pos + T1, pos + T2, pos + T3);
 }
 template<int T1, int T2, int T3, int LOW, int LOW_INC, int HIGH, int HIGH_INC>
 inline bool emptyEdge(Set empty, int pos) {
-  if (empty[pos + T2]) return true;
+  if (B::test(empty, pos + T2)) return true;
   const auto x = pos + T1, y = pos + T3;
   // special cases for positions diagonally next to corners (check 4 edges, but
   // can skip checking corner)
-  if (x == LOW) return empty[y] || empty[pos - 1] || empty[pos + LOW_INC];
-  if (y == HIGH) return empty[x] || empty[pos + 1] || empty[pos + HIGH_INC];
-  return empty[x] || empty[y];
+  if (x == LOW) return B::test(empty, y, pos - 1, pos + LOW_INC);
+  if (y == HIGH) return B::test(empty, x, pos + 1, pos + HIGH_INC);
+  return B::test(empty, x, y);
 }
 inline auto emptyUp(Set empty, int pos) {
   return emptyEdge<-B::RowAdd1, -B::Rows, -B::RowSub1, 0, B::RowSub1,
@@ -132,12 +133,14 @@ constexpr std::array WeightedScoreValues = {Score1, Score2, Score3, Score4,
 
 } // namespace
 
-int FullScore::scoreCell(size_t row, size_t col, size_t pos, Set myVals,
+int FullScore::scoreCell(size_t rowIn, size_t colIn, size_t posIn, Set myVals,
                          Set opVals, Set empty) const {
+  const auto row = static_cast<int>(rowIn), col = static_cast<int>(colIn),
+             pos = static_cast<int>(posIn);
   // process edges
   if (const auto sideEdge = col == 0 || col == B::RowSub1;
       row == 0 || row == B::RowSub1) {
-    const auto rowStart = pos - col;
+    const auto rowStart = static_cast<int>(pos) - col;
     return sideEdge ? Corner
            : safeEdge<1>(pos, rowStart, rowStart + B::Rows, myVals, opVals,
                          empty)

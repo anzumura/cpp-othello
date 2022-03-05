@@ -54,7 +54,7 @@ void OthelloClient::begin() {
   if (endGame) std::cout << "Game Over\n";
 }
 
-bool OthelloClient::makeMove(int turn) {
+bool OthelloClient::makeMove(size_t turn) {
   static std::random_device rd;
   static std::mt19937 gen(rd());
 
@@ -63,7 +63,7 @@ bool OthelloClient::makeMove(int turn) {
     if (_random) {
       send("v");
       if (const auto validMoves = get(); validMoves.size() > 2) {
-        std::uniform_int_distribution<> dis(0, validMoves.size() / 2 - 1);
+        std::uniform_int_distribution<size_t> dis(0, validMoves.size() / 2 - 1);
         line = validMoves.substr(dis(gen) * 2, 2);
       } else
         line = validMoves.substr(0, 2);
@@ -94,7 +94,7 @@ bool OthelloClient::makeMove(int turn) {
 }
 
 std::ostream& OthelloClient::out(const std::string& color,
-                                 std::optional<int> turn) {
+                                 std::optional<size_t> turn) {
   std::cout << ">>> " << color << " ";
   if (turn) return std::cout << "(turn " << *turn << ") - ";
   return std::cout;
@@ -107,9 +107,9 @@ void OthelloClient::printBoard() {
     auto black = 0, white = 0;
     std::cout << "\n   a b c d e f g h\n"
               << " +----------------\n";
-    for (auto row = 0; row < 8; ++row) {
+    for (size_t row = 0; row < 8; ++row) {
       std::cout << row + 1 << '|';
-      for (auto col = 0; col < 8; ++col) {
+      for (size_t col = 0; col < 8; ++col) {
         const auto c = board[row * 8 + col];
         if (c == '*') ++black;
         if (c == 'o') ++white;

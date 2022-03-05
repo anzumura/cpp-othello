@@ -20,7 +20,7 @@ private:
   // createPlayer also updates _matches and _tournament depending on user input
   std::unique_ptr<Player> createPlayer(Board::Color);
 
-  int _matches;
+  size_t _matches;
   bool _hasRemotePlayer;
   std::vector<std::unique_ptr<Player>> _players;
 };

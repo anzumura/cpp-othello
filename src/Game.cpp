@@ -5,8 +5,8 @@
 namespace othello {
 
 void Game::begin() {
-  auto gameCount = 1, blackWins = 0, whiteWins = 0, draws = 0, blackPieces = 0,
-       whitePieces = 0;
+  size_t gameCount = 1, blackWins = 0, whiteWins = 0, draws = 0,
+         blackPieces = 0, whitePieces = 0;
   for (auto c : Board::Colors) _players.emplace_back(createPlayer(c));
   do {
     if (_matches) {
@@ -37,9 +37,9 @@ void Game::begin() {
 
 Board Game::playOneGame() {
   Board board;
-  auto lastPlayer = 1;
+  size_t lastPlayer = 1;
   Board::Moves lastPlayerMoves;
-  for (auto player = 0, skippedTurns = 0; skippedTurns < 2; player ^= 1) {
+  for (size_t player = 0, skippedTurns = 0; skippedTurns < 2; player ^= 1) {
     if (board.hasValidMoves(_players[player]->color)) {
       if (skippedTurns && !_matches)
         std::cout << '\n'

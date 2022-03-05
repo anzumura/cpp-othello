@@ -11,7 +11,7 @@ Player::Move Player::move(Board& board, bool tournament,
                           const Board::Moves& prevMoves) const {
   assert(board.hasValidMoves(color));
   if (!tournament) std::cout << '\n' << board << '\n';
-  auto flips = 0;
+  int flips = 0;
   const auto start = std::chrono::high_resolution_clock::now();
   const auto move = makeMove(board, prevMoves, flips);
   totalTime += std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -31,7 +31,8 @@ void Player::printMove(Move move, int flips, bool tournament) const {
 
 void Player::printTotalTime() const {
   std::cout << "Total time for " << toString() << ": " << std::fixed
-            << std::setprecision(6) << totalTime.count() / 1'000'000'000.0
+            << std::setprecision(6)
+            << static_cast<double>(totalTime.count()) / 1'000'000'000.0
             << " seconds\n";
 }
 
@@ -63,8 +64,8 @@ Player::Move HumanPlayer::makeMove(Board& board, const Board::Moves&,
       flips = board.set(line, color);
       if (flips > 0) return line;
       std::cout << "  invalid move: '" << line << "' - " << errorToString(flips)
-                << "\n  please enter a location (eg 'a1' or 'h8'), 'q' to quit "
-                   "or 'v' to print valid moves\n";
+                << "\n  enter location (eg 'a1' or 'h8'), 'q'=quit "
+                   ", 'v'=print valid moves\n";
     }
   } while (true);
 }
@@ -92,9 +93,9 @@ Player::Move ComputerPlayer::makeMove(Board& board, const Board::Moves&,
 
   const auto moves = _search == 0 ? board.validMoves(color) : findMoves(board);
   assert(!moves.empty());
-  auto move = 0;
+  size_t move = 0;
   if (_random && moves.size() > 1) {
-    std::uniform_int_distribution<> dis(0, moves.size() - 1);
+    std::uniform_int_distribution<size_t> dis(0, moves.size() - 1);
     move = dis(gen);
   }
   flips = board.set(moves[move], color);
@@ -116,7 +117,7 @@ Board::Moves ComputerPlayer::findMoves(const Board& board) const {
   // the best 'first move' score
   if (bestMoves.size() > 1) {
     best = Min;
-    std::vector<int> newBestMoves;
+    Moves newBestMoves;
     for (auto i : bestMoves)
       updateMoves(callScore(boards[i]), i, best, newBestMoves);
     bestMoves = newBestMoves;
@@ -127,8 +128,8 @@ Board::Moves ComputerPlayer::findMoves(const Board& board) const {
   return results;
 }
 
-int ComputerPlayer::minMax(const Board& board, int depth, Board::Color turn,
-                           int prevMoves, int alpha, int beta) const {
+int ComputerPlayer::minMax(const Board& board, size_t depth, Board::Color turn,
+                           size_t prevMoves, int alpha, int beta) const {
   Board::Boards boards;
   const auto moves = board.validMoves(turn, boards);
   const auto nextLevel = depth - 1;

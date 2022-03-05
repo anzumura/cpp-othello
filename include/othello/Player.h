@@ -43,8 +43,7 @@ protected:
   explicit Player(Board::Color c) : color(c), totalTime(0){};
   static const char* errorToString(int);
 private:
-  virtual Move makeMove(Board&, const Board::Moves& prevMoves,
-                        int& flips) const = 0;
+  virtual Move makeMove(Board&, const Board::Moves& prevMoves, int&) const = 0;
   virtual void printMove(Move move, int flips, bool tournament) const;
   mutable std::chrono::nanoseconds totalTime;
 };
@@ -53,7 +52,7 @@ class HumanPlayer : public Player {
 public:
   explicit HumanPlayer(Board::Color c) : Player(c){};
 private:
-  Move makeMove(Board&, const Board::Moves&, int&) const override;
+  Move makeMove(Board&, const Board::Moves&, int& flips) const override;
 
   // no need to print for human player (since player would have just typed it)
   void printMove(Move, int, bool) const override {}
@@ -61,27 +60,29 @@ private:
 
 class ComputerPlayer : public Player {
 public:
-  ComputerPlayer(Board::Color c, int search, bool random,
+  ComputerPlayer(Board::Color c, size_t search, bool random,
                  std::shared_ptr<Score> score)
       : Player(c), opColor(Board::opColor(c)), _search(search), _random(random),
         _score(std::move(score)){};
   std::string toString() const override;
 private:
-  using Moves = std::vector<int>;
+  using Moves = std::vector<size_t>;
   enum Values { Min = -Score::Win - 1, Max = Score::Win + 1 };
 
   // 'makeMove' gets the set of valid moves if search = 0 or calls 'findMoves'
   // when search > 0 and makes either the first move in the list or a randomly
   // chosen one if _random is true Note: ComputerPlayer version of 'makeMove'
-  // always returns a move (never empty string)
-  Move makeMove(Board&, const Board::Moves&, int&) const override;
+  // always returns a move (never empty string). 'flips' should be a positive
+  // number if the move was valid or a negaive number for an error (like
+  // BadCell, BadColumn, etc.)
+  Move makeMove(Board&, const Board::Moves&, int& flips) const override;
 
   // 'findMoves' returns one or more 'best' moves (based on minMax and values
   // returned from '_score')
   Board::Moves findMoves(const Board&) const;
 
   // 'minMax' is the recursize min-max algorithm with alpha-beta pruning
-  int minMax(const Board&, int, Board::Color, int, int, int) const;
+  int minMax(const Board&, size_t depth, Board::Color, size_t, int, int) const;
 
   // 'updateMoves' is used by 'findMoves' to work with sets of moves with the
   // same score value
@@ -99,14 +100,14 @@ private:
     ++_totalScoreCalls;
     return _score->score(board, color);
   }
-  auto callMinMax(const Board& board, int depth, Board::Color turn,
-                  int prevMoves, int alpha, int beta) const {
+  auto callMinMax(const Board& board, size_t depth, Board::Color turn,
+                  size_t prevMoves, int alpha, int beta) const {
     if (depth) return minMax(board, depth, turn, prevMoves, alpha, beta);
     return callScore(board);
   }
 
   const Board::Color opColor;
-  const int _search;
+  const size_t _search;
   const bool _random;
   const std::shared_ptr<Score> _score;
   mutable long long _totalScoreCalls = 0;

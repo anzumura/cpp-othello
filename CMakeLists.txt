@@ -48,6 +48,10 @@ else()
   message(FATAL_ERROR "Boost not found!")
 endif()
 
+# add this flag here after building googletest since it has a couple instances
+# of this warning (gmock-internal-utils.cc::124 and gmock-spec-builders.cc::69)
+add_compile_options(-Wzero-as-null-pointer-constant)
+
 add_subdirectory(src)
 add_subdirectory(apps)
 

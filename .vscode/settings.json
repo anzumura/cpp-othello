@@ -1,22 +1,25 @@
 {
+  "C_Cpp.default.cppStandard": "c++20",
+  "C_Cpp.default.defines": [
+    "GTEST_ENABLE_CATCH_EXCEPTIONS_=1",
+    "TARGET_OS_OSX=1"
+  ],
+  "cSpell.words": [
+    "asio",
+    "chrono"
+  ],
+  "cSpell.ignorePaths": [
+    ".git",
+    ".vscode",
+    "build"
+  ],
+  "editor.tabSize": 2,
   "editor.rulers": [
     80
   ],
-  "workbench.editor.enablePreview": false,
-  "editor.tokenColorCustomizations": {
-    "comments": "#525252",
-    "textMateRules": [
-      {
-        "scope": "comment",
-        "settings": {
-          "fontStyle": ""
-        }
-      }
-    ]
-  },
   "files.associations": {
-    "array": "cpp",
     "__bit_reference": "cpp",
+    "__bits": "cpp",
     "__config": "cpp",
     "__debug": "cpp",
     "__errc": "cpp",
@@ -33,11 +36,13 @@
     "__tuple": "cpp",
     "algorithm": "cpp",
     "any": "cpp",
+    "array": "cpp",
     "atomic": "cpp",
     "bit": "cpp",
     "bitset": "cpp",
     "cctype": "cpp",
     "chrono": "cpp",
+    "cinttypes": "cpp",
     "clocale": "cpp",
     "cmath": "cpp",
     "codecvt": "cpp",
@@ -45,6 +50,8 @@
     "complex": "cpp",
     "concepts": "cpp",
     "condition_variable": "cpp",
+    "coroutine": "cpp",
+    "csignal": "cpp",
     "cstdarg": "cpp",
     "cstddef": "cpp",
     "cstdint": "cpp",
@@ -56,9 +63,11 @@
     "cwctype": "cpp",
     "deque": "cpp",
     "exception": "cpp",
+    "filesystem": "cpp",
     "forward_list": "cpp",
     "fstream": "cpp",
     "functional": "cpp",
+    "future": "cpp",
     "initializer_list": "cpp",
     "iomanip": "cpp",
     "ios": "cpp",
@@ -71,6 +80,7 @@
     "locale": "cpp",
     "map": "cpp",
     "memory": "cpp",
+    "memory_resource": "cpp",
     "mutex": "cpp",
     "new": "cpp",
     "numbers": "cpp",
@@ -85,6 +95,8 @@
     "sstream": "cpp",
     "stack": "cpp",
     "stdexcept": "cpp",
+    "stop_token": "cpp",
+    "source_location": "cpp",
     "streambuf": "cpp",
     "string": "cpp",
     "string_view": "cpp",
@@ -93,26 +105,18 @@
     "thread": "cpp",
     "tuple": "cpp",
     "type_traits": "cpp",
+    "typeindex": "cpp",
     "typeinfo": "cpp",
     "unordered_map": "cpp",
     "unordered_set": "cpp",
     "utility": "cpp",
     "variant": "cpp",
     "vector": "cpp",
-    "*.tcc": "cpp",
-    "memory_resource": "cpp",
-    "stop_token": "cpp",
-    "cinttypes": "cpp",
-    "filesystem": "cpp",
-    "__bits": "cpp",
-    "csignal": "cpp",
-    "coroutine": "cpp",
-    "future": "cpp",
-    "typeindex": "cpp",
-    "source_location": "cpp"
+    "*.tcc": "cpp"
   },
-  "cSpell.words": [
-    "asio",
-    "chrono"
-  ]
+  "files.exclude": {
+    "build": true
+  },
+  "testMate.cpp.test.parallelExecutionLimit": 8,
+  "testMate.cpp.log.logpanel": true
 }

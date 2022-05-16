@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.14..3.22)
-project(othello VERSION 1.0
-                DESCRIPTION "Othello Game"
-                LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.14..3.23)
+project(cpp_othello VERSION 1.0
+                    DESCRIPTION "Othello Game"
+                    LANGUAGES CXX)
 
 ### Require out-of-source builds
 file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
@@ -11,21 +11,23 @@ endif()
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set(CMAKE_CXX_STANDARD 20)
-  # enable some warnings and turn them into errors (-W is the same as -Wextra)
-  add_compile_options(-Werror -W -Wall -Wunused -Wconversion -Wshadow)
-  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # '-Wdeprecated' causes an error with GCC on line 918 in 'gtest-internal.h'
-    add_compile_options(-Wdeprecated -Wunreachable-code-aggressive
-      -Wno-logical-op-parentheses)
-    set(SANITIZER_FLAGS "-fsanitize=address -fno-omit-frame-pointer -O1 \
--fno-optimize-sibling-calls")
-    # need to set env for stack: ASAN_OPTIONS=detect_stack_use_after_return=1
-    # string(APPEND SANITIZER_FLAGS "-fsanitize-address-use-after-scope")
-    string(APPEND CMAKE_CXX_FLAGS_DEBUG " ${SANITIZER_FLAGS}")
-  elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    add_compile_options(-Wno-parentheses)
-  endif()
+  set(CMAKE_CXX_EXTENSIONS OFF) # use -std=c++xx instead of -std=g++xx
   include(CTest)
+endif()
+
+# enable some warnings and turn them into errors
+add_compile_options(-Werror -Wextra -Wall -Wunused -Wconversion -Wshadow)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # '-Wdeprecated' causes an error with GCC on line 918 in 'gtest-internal.h'
+  add_compile_options(-Wdeprecated -Wunreachable-code-aggressive
+    -Wno-logical-op-parentheses)
+  set(SANITIZER_FLAGS "-fsanitize=address -fno-omit-frame-pointer -O1 \
+-fno-optimize-sibling-calls")
+  # need to set env for stack: ASAN_OPTIONS=detect_stack_use_after_return=1
+  # string(APPEND SANITIZER_FLAGS "-fsanitize-address-use-after-scope")
+  string(APPEND CMAKE_CXX_FLAGS_DEBUG " ${SANITIZER_FLAGS}")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  add_compile_options(-Wno-parentheses)
 endif()
 
 include(FetchContent)
@@ -55,7 +57,6 @@ add_compile_options(-Wzero-as-null-pointer-constant)
 add_subdirectory(src)
 add_subdirectory(apps)
 
-if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
-  AND BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(tests)
 endif()

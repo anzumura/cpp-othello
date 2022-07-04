@@ -1,7 +1,7 @@
 {
   "env": {
     "clangVer": "clang/13.1.6",
-    "gccVer": "gcc/11.2.0_3",
+    "gccVer": "gcc/11.3.0_2",
     "brew": "/opt/homebrew",
     "googletest": "${workspaceFolder}/build/_deps/googletest-src",
     "localIncludePath": [

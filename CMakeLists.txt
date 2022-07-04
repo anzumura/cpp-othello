@@ -41,7 +41,7 @@ FetchContent_MakeAvailable(googletest)
 
 # On macOS boost can be installed using 'homebrew install boost' which pulls in
 # version 1.78
-find_package(Boost 1.78.0 REQUIRED COMPONENTS system)
+find_package(Boost 1.79.0 REQUIRED COMPONENTS system)
 if(Boost_FOUND)
   # add 'SYSTEM' to skip warnings ('conversion', 'deprecated', 'shadow', etc.)
   include_directories(SYSTEM ${Boost_INCLUDE_DIR})

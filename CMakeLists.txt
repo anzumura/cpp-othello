@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14..3.23)
+cmake_minimum_required(VERSION 3.21)
 project(cpp_othello VERSION 1.0
                     DESCRIPTION "Othello Game"
                     LANGUAGES CXX)

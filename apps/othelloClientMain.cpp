@@ -1,5 +1,6 @@
 #include "OthelloClient.h"
 
+/*
 auto testAfterFree() {
   int* testInt = new int{7};
   delete testInt;
@@ -11,6 +12,7 @@ void testAfterStack() {
   const auto stackChar = 'a';
   *testAfterStackChar = stackChar;
 }
+*/
 
 int main(int argc, char** argv) {
   // Uncomment these functions to test Address Sanitizer:

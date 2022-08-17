@@ -1,7 +1,9 @@
 {
   "env": {
     "clangVer": "clang/13.1.6",
-    "gccVer": "gcc/11.3.0_2",
+    "gccMajor": "12",
+    "gccVer": "gcc/${gccMajor}.1.0",
+    "appleVer": "aarch64-apple-darwin21",
     "brew": "/opt/homebrew",
     "googletest": "${workspaceFolder}/build/_deps/googletest-src",
     "localIncludePath": [
@@ -14,8 +16,8 @@
     ],
     "tools": "/Library/Developer/CommandLineTools",
     "sdk": "${tools}/SDKs/MacOSX.sdk/usr/include",
-    "g++": "${brew}/include/c++/11",
-    "gcc": "${brew}/Cellar/${gccVer}/lib/gcc/11/gcc/aarch64-apple-darwin21/11"
+    "g++": "${brew}/include/c++/${gccMajor}",
+    "gcc": "${brew}/Cellar/${gccVer}/lib/gcc/current/gcc/${appleVer}/${gccMajor}"
   },
   "configurations": [
     {
@@ -32,11 +34,11 @@
     },
     {
       "name": "Mac-GCC",
-      "compilerPath": "${brew}/bin/g++-11",
+      "compilerPath": "${brew}/bin/g++-${gccMajor}",
       "includePath": [
         "${localIncludePath}",
         "${g++}",
-        "${g++}/aarch64-apple-darwin21",
+        "${g++}/${appleVer}",
         "${g++}/backward",
         "${gcc}/include",
         "${gcc}/include-fixed",

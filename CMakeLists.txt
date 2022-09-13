@@ -34,13 +34,13 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
-  # 1.11.0 was released on June 11, 2021 (or change to HEAD)
-  GIT_TAG release-1.11.0
+  # 1.11.0 was released on June 11, 2021
+  # 1.12.1 was released on June 30, 2022
+  GIT_TAG release-1.12.1 # change to HEAD to get latest
 )
 FetchContent_MakeAvailable(googletest)
 
-# On macOS boost can be installed using 'homebrew install boost' which pulls in
-# version 1.78
+# On macOS boost can be installed using 'homebrew install boost'
 find_package(Boost 1.79.0 REQUIRED COMPONENTS system)
 if(Boost_FOUND)
   # add 'SYSTEM' to skip warnings ('conversion', 'deprecated', 'shadow', etc.)

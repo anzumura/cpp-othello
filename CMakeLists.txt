@@ -16,7 +16,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 # enable some warnings and turn them into errors
-add_compile_options(-Werror -Wextra -Wall -Wunused -Wconversion -Wshadow)
+add_compile_options(-Werror -Wextra -Wall -Wunused -Wshadow)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   # '-Wdeprecated' causes an error with GCC on line 918 in 'gtest-internal.h'
   add_compile_options(-Wdeprecated -Wunreachable-code-aggressive
@@ -34,9 +34,10 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
-  # 1.11.0 was released on June 11, 2021
-  # 1.12.1 was released on June 30, 2022
-  GIT_TAG release-1.12.1 # change to HEAD to get latest
+  # release-1.11.0 was released on June 11, 2021
+  # release-1.12.1 was released on June 30, 2022
+  # v1.13.0 was released on Jan 17, 2023
+  GIT_TAG v1.13.0 # change to HEAD to get latest
 )
 FetchContent_MakeAvailable(googletest)
 
@@ -52,7 +53,7 @@ endif()
 
 # add this flag here after building googletest since it has a couple instances
 # of this warning (gmock-internal-utils.cc::124 and gmock-spec-builders.cc::69)
-add_compile_options(-Wzero-as-null-pointer-constant)
+add_compile_options(-Wzero-as-null-pointer-constant -Wconversion)
 
 add_subdirectory(src)
 add_subdirectory(apps)
